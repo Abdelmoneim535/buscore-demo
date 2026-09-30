@@ -60,45 +60,176 @@ from app.models import branches_models, customers_models
 Base.metadata.create_all(bind=engine)
 
 # 
-# Seed Data  إنشاء بيانات افتراضية عند أول تشغيل
+# FULL SEED  كل البيانات الأساسية
 # 
-try:
+def _seed_all_data():
+    """يملأ قاعدة البيانات بكل البيانات الافتراضية"""
     from app.database.database import SessionLocal
-    from app.models.user_models import User
     from app.auth_utils import get_password_hash
-    
-    _db = SessionLocal()
-    try:
-        # إذا لا يوجد مستخدمون  أنشئهم
-        if _db.query(User).count() == 0:
-            print("SEED: Creating default users...")
-            _db.add(User(
-                username="admin",
-                email="admin@buscore.com",
-                hashed_password=get_password_hash("admin"),
-                is_active=True,
-                is_admin=True,
-                role="admin",
-                is_super_admin=True,
-            ))
-            _db.add(User(
-                username="demo",
-                email="demo@buscore.com",
-                hashed_password=get_password_hash("demo"),
-                is_active=True,
-                is_admin=True,
-                role="admin",
-            ))
-            _db.commit()
-            print("SEED: Users created (admin/admin, demo/demo)")
-    finally:
-        _db.close()
-except Exception as _e:
-    print(f"SEED ERROR: {_e}")
-    import traceback
-    traceback.print_exc()
 
-app = FastAPI(title="BusCore API", version="1.0.0")
+    db = SessionLocal()
+    try:
+        # 1) المستخدمون
+        from app.models.user_models import User
+        if db.query(User).count() == 0:
+            db.add(User(username="admin", email="admin@buscore.com",
+                       hashed_password=get_password_hash("admin"),
+                       is_active=True, is_admin=True, role="admin", is_super_admin=True))
+            db.add(User(username="demo", email="demo@buscore.com",
+                       hashed_password=get_password_hash("demo"),
+                       is_active=True, is_admin=True, role="admin"))
+            db.commit()
+            print("SEED: 2 users")
+
+        # 2) الفروع
+        try:
+            from app.models.branches_models import Branch
+            if db.query(Branch).count() == 0:
+                db.add(Branch(code="BR-001", name="المركز الرئيسي - الخرطوم",
+                             name_en="Main Branch - Khartoum",
+                             phone="+249123456789", is_active=True))
+                db.add(Branch(code="BR-002", name="فرع بورتسودان",
+                             name_en="Port Sudan Branch",
+                             phone="+249123456790", is_active=True))
+                db.commit()
+                print("SEED: 2 branches")
+        except Exception as e:
+            print(f"SEED branches error: {e}")
+
+        # 3) المدن
+        try:
+            from app.models.stations_models import City
+            if db.query(City).count() == 0:
+                cities = [
+                    ("الخرطوم", "KRT", "Khartoum"),
+                    ("ود مدني", "MAD", "Wad Madani"),
+                    ("عطبرة", "ABT", "Atbara"),
+                    ("بورتسودان", "PZU", "Port Sudan"),
+                    ("كسلا", "KSL", "Kassala"),
+                ]
+                for name, code, name_en in cities:
+                    db.add(City(name=name, code=code, name_en=name_en))
+                db.commit()
+                print("SEED: 5 cities")
+        except Exception as e:
+            print(f"SEED cities error: {e}")
+
+        # 4) المحطات
+        try:
+            from app.models.stations_models import Station, City
+            if db.query(Station).count() == 0:
+                khartoum = db.query(City).filter(City.code == "KRT").first()
+                wadmadani = db.query(City).filter(City.code == "MAD").first()
+                atbara = db.query(City).filter(City.code == "ABT").first()
+                portsudan = db.query(City).filter(City.code == "PZU").first()
+                kassala = db.query(City).filter(City.code == "KSL").first()
+
+                stations = [
+                    Station(name="محطة الخرطوم الرئيسية", name_en="Khartoum Main", city_id=khartoum.id if khartoum else None),
+                    Station(name="محطة ود مدني", name_en="Wad Madani", city_id=wadmadani.id if wadmadani else None),
+                    Station(name="محطة عطبرة", name_en="Atbara", city_id=atbara.id if atbara else None),
+                    Station(name="محطة بورتسودان", name_en="Port Sudan", city_id=portsudan.id if portsudan else None),
+                    Station(name="محطة كسلا", name_en="Kassala", city_id=kassala.id if kassala else None),
+                ]
+                for s in stations:
+                    db.add(s)
+                db.commit()
+                print("SEED: 5 stations")
+        except Exception as e:
+            print(f"SEED stations error: {e}")
+
+        # 5) الحافلات
+        try:
+            from app.models.bus_models import Bus
+            if db.query(Bus).count() == 0:
+                buses = [
+                    ("خ-5213", "MERCEDES", 2027),
+                    ("خ-1233", "MERCEDES", 2027),
+                    ("خ-5238", "MERCEDES", 2025),
+                    ("خ-7568", "MERCEDES", 2025),
+                    ("خ-9908", "MERCEDES", 2026),
+                ]
+                for plate, model, year in buses:
+                    db.add(Bus(plate_number=plate, model=model, year=year,
+                              total_seats=55, is_active=True))
+                db.commit()
+                print("SEED: 5 buses")
+        except Exception as e:
+            print(f"SEED buses error: {e}")
+
+        # 6) الرحلات
+        try:
+            from app.models.trips_models import Trip, Route
+            from app.models.bus_models import Bus
+            from app.models.stations_models import Station
+            from datetime import datetime, timedelta
+
+            if db.query(Route).count() == 0:
+                st1 = db.query(Station).filter(Station.name_en == "Khartoum Main").first()
+                st2 = db.query(Station).filter(Station.name_en == "Port Sudan").first()
+                st3 = db.query(Station).filter(Station.name_en == "Wad Madani").first()
+                st4 = db.query(Station).filter(Station.name_en == "Atbara").first()
+                st5 = db.query(Station).filter(Station.name_en == "Kassala").first()
+
+                routes_data = []
+                if st1 and st2:
+                    routes_data.append(Route(code="KRT-PZU", departure_station_id=st1.id, arrival_station_id=st2.id))
+                if st1 and st3:
+                    routes_data.append(Route(code="KRT-MAD", departure_station_id=st1.id, arrival_station_id=st3.id))
+                if st1 and st4:
+                    routes_data.append(Route(code="KRT-ABT", departure_station_id=st1.id, arrival_station_id=st4.id))
+                if st1 and st5:
+                    routes_data.append(Route(code="KRT-KSL", departure_station_id=st1.id, arrival_station_id=st5.id))
+                for r in routes_data:
+                    db.add(r)
+                db.commit()
+                print(f"SEED: {len(routes_data)} routes")
+
+            if db.query(Trip).count() == 0:
+                from app.models.trips_models import Route
+                buses = db.query(Bus).all()
+                routes = db.query(Route).all()
+                base_time = datetime.now() + timedelta(days=1)
+                count = 0
+                for i, bus in enumerate(buses):
+                    if i < len(routes):
+                        route = routes[i % len(routes)]
+                        departure = base_time.replace(hour=8 + i, minute=0, second=0, microsecond=0)
+                        db.add(Trip(
+                            route_id=route.id,
+                            bus_id=bus.id,
+                            total_seats=bus.total_seats or 55,
+                            departure_time=departure,
+                            arrival_time=departure + timedelta(hours=4),
+                            price_at_time=25000 + (i * 1000),
+                            is_active=True,
+                            is_online_sellable=True,
+                        ))
+                        count += 1
+                db.commit()
+                print(f"SEED: {count} trips")
+        except Exception as e:
+            print(f"SEED trips error: {e}")
+            import traceback
+            traceback.print_exc()
+
+        print("SEED: COMPLETE")
+
+    except Exception as e:
+        print(f"SEED FATAL: {e}")
+        import traceback
+        traceback.print_exc()
+    finally:
+        db.close()
+
+
+try:
+    _seed_all_data()
+except Exception as _e:
+    print(f"SEED outer error: {_e}")
+
+
+
 
 # ========================================
 # 🌐 إعدادات اللغة (Locale) — مكافئ LocaleMiddleware
