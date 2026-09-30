@@ -1,0 +1,558 @@
+{% extends "admin/base_admin.html" %}
+
+{% block title %}{{ _("كشف حساب الموظف") }} - BusCore{% endblock %}
+{% block page_title %}{{ _("كشف حساب الموظف") }}{% endblock %}
+
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <a href="/admin/employees" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-{% if lang == 'ar' %}right{% else %}left{% endif %} me-1"></i>
+        {{ _("العودة للعاملين") }}
+    </a>
+    <button class="btn btn-primary" onclick="openAddTransactionModal()">
+        <i class="fas fa-plus me-2"></i>{{ _("إضافة حركة مالية") }}
+    </button>
+</div>
+
+<!-- معلومات الموظف -->
+<div class="card border-0 shadow-sm mb-3">
+    <div class="card-body">
+        <div class="row align-items-center">
+            <div class="col-md-2 text-center">
+                <div class="rounded-circle bg-primary text-white d-inline-flex align-items-center justify-content-center"
+                     style="width: 80px; height: 80px; font-size: 2rem;">
+                    <i class="fas fa-user"></i>
+                </div>
+            </div>
+            <div class="col-md-10">
+                <h3 class="mb-1" id="empName">-</h3>
+                <p class="text-muted mb-2" id="empPosition">-</p>
+                <div class="row">
+                    <div class="col-md-3">
+                        <small class="text-muted">{{ _("الهاتف") }}</small>
+                        <div><strong id="empPhone" dir="ltr">-</strong></div>
+                    </div>
+                    <div class="col-md-3">
+                        <small class="text-muted">{{ _("تاريخ التعيين") }}</small>
+                        <div><strong id="empHireDate">-</strong></div>
+                    </div>
+                    <div class="col-md-3">
+                        <small class="text-muted">{{ _("الراتب الأساسي") }}</small>
+                        <div><strong class="text-success" id="empBaseSalary">-</strong></div>
+                    </div>
+                    <div class="col-md-3">
+                        <small class="text-muted">{{ _("الحالة") }}</small>
+                        <div><span id="empStatus">-</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- بطاقات الملخص المالي -->
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm" style="border-{% if lang == 'ar' %}right{% else %}left{% endif %}: 4px solid #198754;">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <small class="text-muted">{{ _("إجمالي الرواتب") }}</small>
+                        <h4 class="mb-0 fw-bold text-success" id="totalSalary">0</h4>
+                    </div>
+                    <i class="fas fa-money-check-alt fa-2x text-success" style="opacity: 0.3;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm" style="border-{% if lang == 'ar' %}right{% else %}left{% endif %}: 4px solid #ffc107;">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <small class="text-muted">{{ _("إجمالي السلف") }}</small>
+                        <h4 class="mb-0 fw-bold text-warning" id="totalAdvance">0</h4>
+                    </div>
+                    <i class="fas fa-hand-holding-usd fa-2x text-warning" style="opacity: 0.3;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm" style="border-{% if lang == 'ar' %}right{% else %}left{% endif %}: 4px solid #dc3545;">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <small class="text-muted">{{ _("إجمالي الخصومات") }}</small>
+                        <h4 class="mb-0 fw-bold text-danger" id="totalDeduction">0</h4>
+                    </div>
+                    <i class="fas fa-minus-circle fa-2x text-danger" style="opacity: 0.3;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm" style="border-{% if lang == 'ar' %}right{% else %}left{% endif %}: 4px solid #0d6efd;">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <small class="text-muted">{{ _("المكافآت") }}</small>
+                        <h4 class="mb-0 fw-bold text-primary" id="totalBonus">0</h4>
+                    </div>
+                    <i class="fas fa-gift fa-2x text-primary" style="opacity: 0.3;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- جدول الحركات -->
+<div class="card border-0 shadow-sm">
+    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+        <h5 class="mb-0 fw-bold"><i class="fas fa-list me-2 text-primary"></i>{{ _("الحركات المالية") }}</h5>
+        <span class="badge bg-primary" id="txnCount">0</span>
+    </div>
+    <div class="card-body">
+        <div id="transactionsContainer">
+            <div class="text-center py-4">
+                <div class="spinner-border text-primary"></div>
+                <p class="mt-2 text-muted">{{ _("جاري التحميل...") }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: إضافة/تعديل حركة -->
+<div class="modal fade" id="transactionModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="modalTitle">
+                    <i class="fas fa-plus me-2"></i>{{ _("إضافة حركة مالية") }}
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="txnId">
+                <div class="mb-3">
+                    <label class="form-label fw-bold">{{ _("نوع الحركة") }} <span class="text-danger">*</span></label>
+                    <select id="txnType" class="form-select" onchange="toggleSalaryPeriod()" required>
+                        <option value="salary">{{ _("راتب") }}</option>
+                        <option value="advance">{{ _("سلفة") }}</option>
+                        <option value="deduction">{{ _("خصم") }}</option>
+                        <option value="bonus">{{ _("مكافأة") }}</option>
+                    </select>
+                </div>
+
+                <div class="row g-2 mb-3" id="salaryPeriodFields">
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">{{ _("الشهر") }}</label>
+                        <select id="txnMonth" class="form-select">
+                            <option value="1">{{ _("يناير") }}</option>
+                            <option value="2">{{ _("فبراير") }}</option>
+                            <option value="3">{{ _("مارس") }}</option>
+                            <option value="4">{{ _("أبريل") }}</option>
+                            <option value="5">{{ _("مايو") }}</option>
+                            <option value="6">{{ _("يونيو") }}</option>
+                            <option value="7">{{ _("يوليو") }}</option>
+                            <option value="8">{{ _("أغسطس") }}</option>
+                            <option value="9">{{ _("سبتمبر") }}</option>
+                            <option value="10">{{ _("أكتوبر") }}</option>
+                            <option value="11">{{ _("نوفمبر") }}</option>
+                            <option value="12">{{ _("ديسمبر") }}</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">{{ _("السنة") }}</label>
+                        <input type="number" id="txnYear" class="form-control" min="2000" max="2100">
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">{{ _("المبلغ (ج.س)") }} <span class="text-danger">*</span></label>
+                    <input type="number" id="txnAmount" class="form-control" min="0.01" step="0.01" required>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">{{ _("التاريخ") }} <span class="text-danger">*</span></label>
+                    <input type="datetime-local" id="txnDate" class="form-control" required>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">{{ _("طريقة الدفع") }}</label>
+                    <select id="txnPaymentMethod" class="form-select">
+                        <option value="cash">{{ _("نقدًا") }}</option>
+                        <option value="bank">{{ _("تحويل بنكي") }}</option>
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">{{ _("ملاحظات") }}</label>
+                    <textarea id="txnNotes" class="form-control" rows="2"></textarea>
+                </div>
+
+                <div id="modalMessage"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ _("إلغاء") }}</button>
+                <button type="button" class="btn btn-primary" id="saveTxnBtn" onclick="saveTransaction()">
+                    <i class="fas fa-save me-2"></i>{{ _("حفظ") }}
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: تأكيد الحذف -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title"><i class="fas fa-exclamation-triangle me-2"></i>{{ _("تأكيد الحذف") }}</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>{{ _("هل أنت متأكد من حذف هذه الحركة؟") }}</p>
+                <p class="text-danger small mb-0">
+                    <i class="fas fa-info-circle me-1"></i>
+                    {{ _("سيتم حذف المصروف المرتبط بها تلقائيًا.") }}
+                </p>
+                <input type="hidden" id="deleteTxnId">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ _("إلغاء") }}</button>
+                <button type="button" class="btn btn-danger" onclick="confirmDelete()">
+                    <i class="fas fa-trash me-2"></i>{{ _("حذف نهائي") }}
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+const LANG = "{{ lang }}";
+const EMPLOYEE_ID = parseInt(window.location.pathname.split('/')[3]);
+let transactionModal, deleteModal;
+let currentEmployee = null;
+let allTransactions = [];
+
+document.addEventListener('DOMContentLoaded', async function() {
+    transactionModal = new bootstrap.Modal(document.getElementById('transactionModal'));
+    deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+
+    const now = new Date();
+    now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+    document.getElementById('txnDate').value = now.toISOString().slice(0, 16);
+    document.getElementById('txnYear').value = new Date().getFullYear();
+    document.getElementById('txnMonth').value = new Date().getMonth() + 1;
+
+    await loadStatement();
+});
+
+async function loadStatement() {
+    try {
+        const res = await fetch(`/employees/${EMPLOYEE_ID}/statement`);
+        if (!res.ok) throw new Error('{{ _("الموظف غير موجود") }}');
+
+        const data = await res.json();
+        currentEmployee = data.summary.employee;
+        allTransactions = data.transactions;
+
+        renderEmployeeInfo(currentEmployee);
+        renderSummary(data.summary);
+        renderTransactions(allTransactions);
+
+    } catch (e) {
+        console.error(e);
+        document.getElementById('transactionsContainer').innerHTML = `
+            <div class="alert alert-danger">${e.message}</div>
+        `;
+    }
+}
+
+function renderEmployeeInfo(emp) {
+    const displayName = (LANG === 'en' && emp.full_name_en) ? emp.full_name_en : emp.full_name;
+    const displayPosition = (LANG === 'en' && emp.position_en) ? emp.position_en : (emp.position || '-');
+
+    document.getElementById('empName').textContent = displayName;
+    document.getElementById('empPosition').textContent = displayPosition;
+    document.getElementById('empPhone').textContent = emp.phone || '-';
+    document.getElementById('empHireDate').textContent = emp.hire_date ? formatDate(emp.hire_date) : '-';
+    document.getElementById('empBaseSalary').textContent = formatCurrency(emp.base_salary);
+    document.getElementById('empStatus').innerHTML = emp.is_active
+        ? '<span class="badge bg-success">{{ _("نشط") }}</span>'
+        : '<span class="badge bg-danger">{{ _("متوقف") }}</span>';
+}
+
+function renderSummary(s) {
+    document.getElementById('totalSalary').textContent = formatCurrency(s.total_salary);
+    document.getElementById('totalAdvance').textContent = formatCurrency(s.total_advance);
+    document.getElementById('totalDeduction').textContent = formatCurrency(s.total_deduction);
+    document.getElementById('totalBonus').textContent = formatCurrency(s.total_bonus);
+    document.getElementById('txnCount').textContent = s.transactions_count;
+}
+
+function renderTransactions(transactions) {
+    const container = document.getElementById('transactionsContainer');
+
+    if (transactions.length === 0) {
+        container.innerHTML = `
+            <div class="text-center py-5">
+                <i class="fas fa-receipt fa-4x text-muted mb-3"></i>
+                <h5>{{ _("لا توجد حركات مالية") }}</h5>
+                <p class="text-muted">{{ _("ابدأ بإضافة راتب أو سلفة") }}</p>
+            </div>
+        `;
+        return;
+    }
+
+    let html = '<div class="table-responsive"><table class="table table-hover align-middle">';
+    html += `
+        <thead class="table-light">
+            <tr>
+                <th width="60">#</th>
+                <th width="130">{{ _("النوع") }}</th>
+                <th width="150">{{ _("المبلغ") }}</th>
+                <th>{{ _("الفترة / ملاحظات") }}</th>
+                <th width="140">{{ _("التاريخ") }}</th>
+                <th width="100">{{ _("الدفع") }}</th>
+                <th width="120">{{ _("الإجراءات") }}</th>
+            </tr>
+        </thead>
+        <tbody>
+    `;
+
+    transactions.forEach((t, index) => {
+        const typeInfo = getTypeInfo(t.transaction_type);
+        const period = t.period_month && t.period_year
+            ? `${getMonthName(t.period_month)} ${t.period_year}`
+            : '';
+
+        html += `
+            <tr>
+                <td>${index + 1}</td>
+                <td><span class="badge bg-${typeInfo.color}">${typeInfo.label}</span></td>
+                <td><strong class="text-${typeInfo.color}">${formatCurrency(t.amount)}</strong></td>
+                <td>
+                    ${period ? `<small class="d-block"><strong>${period}</strong></small>` : ''}
+                    <small class="text-muted">${t.notes || ''}</small>
+                </td>
+                <td><small>${formatDate(t.transaction_date)}</small></td>
+                <td><small>${getPaymentMethodLabel(t.payment_method)}</small></td>
+                <td>
+                    <div class="d-flex gap-1">
+                        <button class="btn btn-sm btn-outline-primary"
+                                onclick="openEditTransactionModal(${t.id})" title="{{ _('تعديل') }}">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger"
+                                onclick="openDeleteModal(${t.id})" title="{{ _('حذف') }}">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </td>
+            </tr>
+        `;
+    });
+
+    html += '</tbody></table></div>';
+    container.innerHTML = html;
+}
+
+function getTypeInfo(type) {
+    const map = {
+        'salary': { label: '{{ _("راتب") }}', color: 'success' },
+        'advance': { label: '{{ _("سلفة") }}', color: 'warning' },
+        'deduction': { label: '{{ _("خصم") }}', color: 'danger' },
+        'bonus': { label: '{{ _("مكافأة") }}', color: 'primary' }
+    };
+    return map[type] || { label: type, color: 'secondary' };
+}
+
+function getPaymentMethodLabel(method) {
+    const map = {
+        'cash': '{{ _("نقدًا") }}',
+        'bank': '{{ _("بنكي") }}',
+        'cheque': '{{ _("شيك") }}'
+    };
+    return map[method] || method || '-';
+}
+
+function getMonthName(month) {
+    const ar = ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+    const en = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    return (LANG === 'ar' ? ar : en)[month - 1] || month;
+}
+
+function formatDate(dateString) {
+    if (!dateString) return '-';
+    const d = new Date(dateString);
+    if (LANG === 'ar') {
+        const months = ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+        return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
+    }
+    return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+}
+
+function formatCurrency(amount) {
+    const num = parseFloat(amount) || 0;
+    const locale = LANG === 'ar' ? 'ar-SD' : 'en-SD';
+    return new Intl.NumberFormat(locale, {
+        style: 'currency', currency: 'SDG', minimumFractionDigits: 0
+    }).format(num);
+}
+
+function toggleSalaryPeriod() {
+    const type = document.getElementById('txnType').value;
+    const fields = document.getElementById('salaryPeriodFields');
+    if (type === 'salary') {
+        fields.style.display = 'flex';
+    } else {
+        fields.style.display = 'none';
+    }
+}
+
+function openAddTransactionModal() {
+    document.getElementById('modalTitle').innerHTML = '<i class="fas fa-plus me-2"></i>{{ _("إضافة حركة مالية") }}';
+    document.getElementById('txnId').value = '';
+    document.getElementById('txnType').value = 'salary';
+    document.getElementById('txnAmount').value = '';
+    document.getElementById('txnNotes').value = '';
+    document.getElementById('txnPaymentMethod').value = 'cash';
+    document.getElementById('modalMessage').innerHTML = '';
+
+    const now = new Date();
+    now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+    document.getElementById('txnDate').value = now.toISOString().slice(0, 16);
+    document.getElementById('txnYear').value = new Date().getFullYear();
+    document.getElementById('txnMonth').value = new Date().getMonth() + 1;
+
+    toggleSalaryPeriod();
+    transactionModal.show();
+}
+
+function openEditTransactionModal(id) {
+    const t = allTransactions.find(x => x.id === id);
+    if (!t) return;
+
+    document.getElementById('modalTitle').innerHTML = '<i class="fas fa-edit me-2"></i>{{ _("تعديل الحركة") }}';
+    document.getElementById('txnId').value = t.id;
+    document.getElementById('txnType').value = t.transaction_type;
+    document.getElementById('txnAmount').value = t.amount;
+    document.getElementById('txnNotes').value = t.notes || '';
+    document.getElementById('txnPaymentMethod').value = t.payment_method || 'cash';
+    if (t.period_month) document.getElementById('txnMonth').value = t.period_month;
+    if (t.period_year) document.getElementById('txnYear').value = t.period_year;
+
+    const dt = new Date(t.transaction_date);
+    dt.setMinutes(dt.getMinutes() - dt.getTimezoneOffset());
+    document.getElementById('txnDate').value = dt.toISOString().slice(0, 16);
+
+    document.getElementById('modalMessage').innerHTML = '';
+    toggleSalaryPeriod();
+    transactionModal.show();
+}
+
+async function saveTransaction() {
+    const id = document.getElementById('txnId').value;
+    const type = document.getElementById('txnType').value;
+    const amount = document.getElementById('txnAmount').value;
+    const date = document.getElementById('txnDate').value;
+    const paymentMethod = document.getElementById('txnPaymentMethod').value;
+    const notes = document.getElementById('txnNotes').value.trim() || null;
+    const month = parseInt(document.getElementById('txnMonth').value);
+    const year = parseInt(document.getElementById('txnYear').value);
+    const messageDiv = document.getElementById('modalMessage');
+    const saveBtn = document.getElementById('saveTxnBtn');
+
+    if (!amount || parseFloat(amount) <= 0) {
+        messageDiv.innerHTML = '<div class="alert alert-danger">{{ _("الرجاء إدخال مبلغ صحيح") }}</div>';
+        return;
+    }
+    if (!date) {
+        messageDiv.innerHTML = '<div class="alert alert-danger">{{ _("الرجاء تحديد التاريخ") }}</div>';
+        return;
+    }
+
+    const payload = {
+        employee_id: EMPLOYEE_ID,
+        transaction_type: type,
+        amount: parseFloat(amount),
+        transaction_date: new Date(date).toISOString(),
+        period_month: type === 'salary' ? month : null,
+        period_year: type === 'salary' ? year : null,
+        payment_method: paymentMethod,
+        notes: notes
+    };
+
+    try {
+        saveBtn.disabled = true;
+        saveBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>{{ _("جاري الحفظ...") }}';
+        messageDiv.innerHTML = '';
+
+        let response;
+        if (id) {
+            response = await fetch(`/employees/transactions/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+        } else {
+            response = await fetch('/employees/transactions', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+        }
+
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.detail || '{{ _("فشل الحفظ") }}');
+        }
+
+        messageDiv.innerHTML = '<div class="alert alert-success">✅ {{ _("تم الحفظ بنجاح!") }}</div>';
+        setTimeout(async () => {
+            transactionModal.hide();
+            await loadStatement();
+        }, 800);
+
+    } catch (error) {
+        messageDiv.innerHTML = `<div class="alert alert-danger">❌ ${error.message}</div>`;
+    } finally {
+        saveBtn.disabled = false;
+        saveBtn.innerHTML = '<i class="fas fa-save me-2"></i>{{ _("حفظ") }}';
+    }
+}
+
+function openDeleteModal(id) {
+    document.getElementById('deleteTxnId').value = id;
+    deleteModal.show();
+}
+
+async function confirmDelete() {
+    const id = document.getElementById('deleteTxnId').value;
+    try {
+        const response = await fetch(`/employees/transactions/${id}`, { method: 'DELETE' });
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.detail || '{{ _("فشل الحذف") }}');
+        }
+        deleteModal.hide();
+        await loadStatement();
+    } catch (error) {
+        alert('❌ ' + error.message);
+    }
+}
+
+window.openAddTransactionModal = openAddTransactionModal;
+window.openEditTransactionModal = openEditTransactionModal;
+window.saveTransaction = saveTransaction;
+window.openDeleteModal = openDeleteModal;
+window.confirmDelete = confirmDelete;
+window.toggleSalaryPeriod = toggleSalaryPeriod;
+</script>
+{% endblock %}

@@ -1,0 +1,62 @@
+﻿# Python
+__pycache__/
+*.py[cod]
+*.so
+.Python
+venv/
+env/
+ENV/
+
+# Database
+*.db
+*.db.backup*
+buscore.db
+demo.db
+*.FINAL_*
+
+# Backups & Broken
+*.backup
+*.backup_*
+*.broken_*
+*.before_*
+
+# Archives
+*.zip
+*.tar.gz
+
+# PDFs & Reports
+*.pdf
+*.pptx
+
+# ngrok
+ngrok/
+ngrok.exe
+
+# Render
+dist/
+build/
+*.spec
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Scripts (developmental)
+add_*.py
+create_*.py
+check_*.py
+fix_*.py
+phase*.py
+gen_*.py
+generate_*.py
+export_*.py
+health_check.py
+confirmation_old.txt

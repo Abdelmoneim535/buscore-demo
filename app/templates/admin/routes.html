@@ -1,0 +1,464 @@
+{% extends "admin/base_admin.html" %}
+
+{% block title %}{{ _("إدارة المسارات") }} - BusCore{% endblock %}
+{% block page_title %}{{ _("إدارة المسارات") }}{% endblock %}
+
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <p class="text-muted mb-0">{{ _("إدارة المسارات بين المحطات") }}</p>
+    <button class="btn btn-primary" onclick="openAddModal()">
+        <i class="fas fa-plus me-2"></i>{{ _("إضافة مسار جديد") }}
+    </button>
+</div>
+
+<div class="card border-0 shadow-sm page-table-card">
+    <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <h5 class="mb-0 fw-bold">
+            <i class="fas fa-route me-2 text-primary"></i>{{ _("قائمة المسارات") }}
+            <span class="badge bg-primary ms-2" id="totalCount">0</span>
+        </h5>
+        <div class="page-table-controls">
+            <div class="input-group input-group-sm search-box">
+                <span class="input-group-text bg-light"><i class="fas fa-search"></i></span>
+                <input type="text" id="searchInput" class="form-control search-input"
+                       placeholder="{{ _('بحث...') }}">
+            </div>
+            <select id="pageSize" class="form-select form-select-sm page-size-select">
+                <option value="10">10 / {{ _("صفحة") }}</option>
+                <option value="25">25 / {{ _("صفحة") }}</option>
+                <option value="50">50 / {{ _("صفحة") }}</option>
+                <option value="0">{{ _("عرض الكل") }}</option>
+            </select>
+        </div>
+    </div>
+    <div class="page-table-container" id="routesTableContainer">
+        <div class="text-center py-5">
+            <div class="spinner-border text-primary"></div>
+            <p class="mt-2 text-muted">{{ _("جاري التحميل...") }}</p>
+        </div>
+    </div>
+    <div class="page-pagination" id="paginationContainer"></div>
+</div>
+
+<!-- Modal: إضافة مسار -->
+<div class="modal fade" id="routeModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-plus me-2"></i>{{ _("إضافة مسار جديد") }}
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">{{ _("محطة المغادرة") }} <span class="text-danger">*</span></label>
+                        <select id="departureStation" class="form-select" required>
+                            <option value="">{{ _("اختر محطة المغادرة") }}</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">{{ _("محطة الوصول") }} <span class="text-danger">*</span></label>
+                        <select id="arrivalStation" class="form-select" required>
+                            <option value="">{{ _("اختر محطة الوصول") }}</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">{{ _("كود المسار") }} <span class="text-danger">*</span></label>
+                        <input type="text" id="routeCode" class="form-control"
+                               placeholder="{{ _('مثال: KRT-PZU-001') }}" required>
+                        <small class="text-muted">{{ _("يُنصح باستخدام أكواد المدن + رقم تسلسلي") }}</small>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">{{ _("المسافة (كم)") }}</label>
+                        <input type="number" id="routeDistance" class="form-control"
+                               placeholder="{{ _('مثال: 800') }}" min="1">
+                    </div>
+                    <div class="col-12">
+                        <div id="routePreview" class="alert alert-info d-none">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>{{ _("معاينة المسار:") }}</strong>
+                            <span id="previewText"></span>
+                        </div>
+                    </div>
+                </div>
+                <div id="modalMessage"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ _("إلغاء") }}</button>
+                <button type="button" class="btn btn-primary" id="saveRouteBtn" onclick="saveRoute()">
+                    <i class="fas fa-save me-2"></i>{{ _("حفظ") }}
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: إضافة سعر للمسار -->
+<div class="modal fade" id="priceModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-money-bill-wave me-2"></i>{{ _("إضافة سعر للمسار") }}
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-info">
+                    <strong>{{ _("المسار:") }}</strong> <span id="priceRouteName">-</span>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold">{{ _("السعر (ج.س)") }} <span class="text-danger">*</span></label>
+                    <input type="number" id="routePrice" class="form-control"
+                           placeholder="{{ _('مثال: 25000') }}" min="0" step="100" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold">{{ _("تاريخ التفعيل") }} <span class="text-danger">*</span></label>
+                    <input type="datetime-local" id="priceEffectiveDate" class="form-control" required>
+                    <small class="text-muted">{{ _("سيتم تطبيق هذا السعر على الرحلات من هذا التاريخ فصاعداً") }}</small>
+                </div>
+                <input type="hidden" id="priceRouteId">
+                <div id="priceMessage"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ _("إلغاء") }}</button>
+                <button type="button" class="btn btn-success" id="savePriceBtn" onclick="savePrice()">
+                    <i class="fas fa-save me-2"></i>{{ _("حفظ السعر") }}
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: تأكيد الحذف -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title"><i class="fas fa-exclamation-triangle me-2"></i>{{ _("تأكيد الحذف") }}</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>{{ _("هل أنت متأكد من حذف المسار") }} <strong id="deleteRouteName"></strong>؟</p>
+                <input type="hidden" id="deleteRouteId">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ _("إلغاء") }}</button>
+                <button type="button" class="btn btn-danger" onclick="confirmDelete()">
+                    <i class="fas fa-trash me-2"></i>{{ _("حذف نهائي") }}
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+const LANG = "{{ lang }}";
+let routeModal, priceModal, deleteModal;
+let allRoutes = [];
+let allStations = [];
+
+document.addEventListener('DOMContentLoaded', async function() {
+    routeModal = new bootstrap.Modal(document.getElementById('routeModal'));
+    priceModal = new bootstrap.Modal(document.getElementById('priceModal'));
+    deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+
+    //  تهيئة TableManager
+    TableManager.init({
+        containerId: 'routesTableContainer',
+        paginationId: 'paginationContainer',
+        totalCountId: 'totalCount',
+        emptyIcon: 'fa-route',
+        emptyTitle: '{{ _("لا توجد مسارات") }}',
+        emptyMessage: '{{ _("ابدأ بإضافة مسار جديد") }}',
+        searchFields: ['code', '_departure_name', '_departure_name_en'],
+        columns: [
+            { title: '#', width: '60', render: (item, idx) => idx },
+            { title: '{{ _("الكود") }}', width: '160', render: (item) => `
+                <span class="badge bg-primary fs-6">${item.code}</span>
+            `},
+            { title: '{{ _("المسار") }}', render: (item) => `
+                <strong>${getStationName(item.departure_station_id)}</strong>
+                <i class="fas fa-arrow-${LANG === 'ar' ? 'left' : 'right'} text-primary mx-2"></i>
+                <strong>${getStationName(item.arrival_station_id)}</strong>
+            `},
+            { title: '{{ _("المسافة") }}', width: '110', render: (item) =>
+                item.distance_km ? `${item.distance_km} {{ _("كم") }}` : '-'
+            },
+            { title: '{{ _("الإجراءات") }}', width: '180', render: (item) => `
+                <div class="d-flex gap-1 flex-nowrap justify-content-center">
+                    <button class="btn btn-sm btn-outline-success"
+                            onclick="openPriceModal(${item.id})"
+                            title="{{ _('إضافة سعر') }}">
+                        <i class="fas fa-money-bill-wave"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-danger"
+                            onclick="openDeleteModal(${item.id})"
+                            title="{{ _('حذف') }}">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            `}
+        ]
+    });
+
+    //  ربط البحث + حجم الصفحة
+    document.getElementById('searchInput').addEventListener('input', () => TableManager.applyFilters());
+    document.getElementById('pageSize').addEventListener('change', () => {
+        TableManager.currentPage = 1;
+        TableManager.render();
+    });
+
+    // سعر التفعيل الافتراضي
+    const now = new Date();
+    now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+    document.getElementById('priceEffectiveDate').value = now.toISOString().slice(0, 16);
+
+    await loadStations();
+    await loadRoutes();
+
+    document.getElementById('departureStation').addEventListener('change', updatePreview);
+    document.getElementById('arrivalStation').addEventListener('change', updatePreview);
+    document.getElementById('routeCode').addEventListener('input', updatePreview);
+});
+
+async function loadStations() {
+    try {
+        const response = await fetch('/stations/');
+        allStations = await response.json();
+
+        const depSelect = document.getElementById('departureStation');
+        const arrSelect = document.getElementById('arrivalStation');
+
+        let optionsDep = '<option value="">{{ _("اختر محطة المغادرة") }}</option>';
+        let optionsArr = '<option value="">{{ _("اختر محطة الوصول") }}</option>';
+        allStations.forEach(s => {
+            optionsDep += `<option value="${s.id}">${s.name}</option>`;
+            optionsArr += `<option value="${s.id}">${s.name}</option>`;
+        });
+        depSelect.innerHTML = optionsDep;
+        arrSelect.innerHTML = optionsArr;
+
+    } catch (error) {
+        console.error('Error loading stations:', error);
+    }
+}
+
+function getStationName(id) {
+    const station = allStations.find(s => s.id == id);
+    if (!station) return '{{ _("محطة") }} #' + id;
+    return (LANG === 'en' && station.name_en) ? station.name_en : station.name;
+}
+
+function updatePreview() {
+    const depId = document.getElementById('departureStation').value;
+    const arrId = document.getElementById('arrivalStation').value;
+    const code = document.getElementById('routeCode').value;
+    const preview = document.getElementById('routePreview');
+    const text = document.getElementById('previewText');
+
+    if (depId && arrId && code) {
+        const dep = allStations.find(s => s.id == depId);
+        const arr = allStations.find(s => s.id == arrId);
+        if (dep && arr) {
+            text.innerHTML = `<span class="badge bg-primary">${code}</span> ${dep.name}  ${arr.name}`;
+            preview.classList.remove('d-none');
+        }
+    } else {
+        preview.classList.add('d-none');
+    }
+}
+
+async function loadRoutes() {
+    try {
+        const response = await fetch('/trips/routes');
+        allRoutes = await response.json();
+
+        //  ترتيب أبجدي حسب كود المسار
+        allRoutes.sort((a, b) => (a.code || '').localeCompare(b.code || ''));
+
+        //  إضافة حقول مساعدة للبحث (أسماء المحطات)
+        allRoutes.forEach(route => {
+            const dep = allStations.find(s => s.id == route.departure_station_id);
+            const arr = allStations.find(s => s.id == route.arrival_station_id);
+            route._departure_name = dep ? dep.name : '';
+            route._departure_name_en = dep ? (dep.name_en || '') : '';
+            route._arrival_name = arr ? arr.name : '';
+            route._arrival_name_en = arr ? (arr.name_en || '') : '';
+        });
+
+        TableManager.setData(allRoutes);
+    } catch (error) {
+        console.error('Error loading routes:', error);
+        document.getElementById('routesTableContainer').innerHTML =
+            '<div class="alert alert-danger m-3">{{ _("فشل تحميل المسارات") }}: ' + error.message + '</div>';
+    }
+}
+
+function openAddModal() {
+    document.getElementById('departureStation').value = '';
+    document.getElementById('arrivalStation').value = '';
+    document.getElementById('routeCode').value = '';
+    document.getElementById('routeDistance').value = '';
+    document.getElementById('routePreview').classList.add('d-none');
+    document.getElementById('modalMessage').innerHTML = '';
+    routeModal.show();
+}
+
+async function saveRoute() {
+    const depId = document.getElementById('departureStation').value;
+    const arrId = document.getElementById('arrivalStation').value;
+    const code = document.getElementById('routeCode').value.trim();
+    const distance = document.getElementById('routeDistance').value;
+    const messageDiv = document.getElementById('modalMessage');
+    const saveBtn = document.getElementById('saveRouteBtn');
+
+    if (!depId) {
+        messageDiv.innerHTML = '<div class="alert alert-danger">{{ _("الرجاء اختيار محطة المغادرة") }}</div>';
+        return;
+    }
+    if (!arrId) {
+        messageDiv.innerHTML = '<div class="alert alert-danger">{{ _("الرجاء اختيار محطة الوصول") }}</div>';
+        return;
+    }
+    if (depId === arrId) {
+        messageDiv.innerHTML = '<div class="alert alert-danger">{{ _("لا يمكن أن تكون محطة المغادرة والوصول متطابقتين") }}</div>';
+        return;
+    }
+    if (!code) {
+        messageDiv.innerHTML = '<div class="alert alert-danger">{{ _("الرجاء إدخال كود المسار") }}</div>';
+        return;
+    }
+
+    try {
+        saveBtn.disabled = true;
+        saveBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>{{ _("جاري الحفظ...") }}';
+        messageDiv.innerHTML = '';
+
+        const response = await fetch('/trips/routes', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                code: code,
+                departure_station_id: parseInt(depId),
+                arrival_station_id: parseInt(arrId),
+                distance_km: distance ? parseInt(distance) : null
+            })
+        });
+
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.detail || '{{ _("فشل الحفظ") }}');
+        }
+
+        messageDiv.innerHTML = '<div class="alert alert-success"> {{ _("تم حفظ المسار بنجاح!") }}</div>';
+        setTimeout(async () => {
+            routeModal.hide();
+            await loadRoutes();
+        }, 800);
+
+    } catch (error) {
+        messageDiv.innerHTML = '<div class="alert alert-danger"> ' + error.message + '</div>';
+    } finally {
+        saveBtn.disabled = false;
+        saveBtn.innerHTML = '<i class="fas fa-save me-2"></i>{{ _("حفظ") }}';
+    }
+}
+
+function openPriceModal(routeId) {
+    const route = allRoutes.find(r => r.id === routeId);
+    if (!route) return;
+
+    document.getElementById('priceRouteId').value = route.id;
+    document.getElementById('priceRouteName').textContent =
+        route.code + ' - ' + getStationName(route.departure_station_id) + '  ' + getStationName(route.arrival_station_id);
+    document.getElementById('routePrice').value = '';
+    document.getElementById('priceMessage').innerHTML = '';
+
+    const now = new Date();
+    now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+    document.getElementById('priceEffectiveDate').value = now.toISOString().slice(0, 16);
+
+    priceModal.show();
+}
+
+async function savePrice() {
+    const routeId = document.getElementById('priceRouteId').value;
+    const price = document.getElementById('routePrice').value;
+    const effectiveDate = document.getElementById('priceEffectiveDate').value;
+    const messageDiv = document.getElementById('priceMessage');
+    const saveBtn = document.getElementById('savePriceBtn');
+
+    if (!price || price <= 0) {
+        messageDiv.innerHTML = '<div class="alert alert-danger">{{ _("الرجاء إدخال سعر صحيح") }}</div>';
+        return;
+    }
+    if (!effectiveDate) {
+        messageDiv.innerHTML = '<div class="alert alert-danger">{{ _("الرجاء اختيار تاريخ التفعيل") }}</div>';
+        return;
+    }
+
+    try {
+        saveBtn.disabled = true;
+        saveBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>{{ _("جاري الحفظ...") }}';
+        messageDiv.innerHTML = '';
+
+        const response = await fetch('/trips/prices', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                route_id: parseInt(routeId),
+                price: parseFloat(price),
+                effective_date: new Date(effectiveDate).toISOString()
+            })
+        });
+
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.detail || '{{ _("فشل الحفظ") }}');
+        }
+
+        messageDiv.innerHTML = '<div class="alert alert-success"> {{ _("تم حفظ السعر بنجاح!") }}</div>';
+        setTimeout(() => {
+            priceModal.hide();
+        }, 1000);
+
+    } catch (error) {
+        messageDiv.innerHTML = '<div class="alert alert-danger"> ' + error.message + '</div>';
+    } finally {
+        saveBtn.disabled = false;
+        saveBtn.innerHTML = '<i class="fas fa-save me-2"></i>{{ _("حفظ السعر") }}';
+    }
+}
+
+function openDeleteModal(id) {
+    const route = allRoutes.find(r => r.id === id);
+    if (!route) return;
+
+    document.getElementById('deleteRouteId').value = route.id;
+    document.getElementById('deleteRouteName').textContent = route.code;
+    deleteModal.show();
+}
+
+async function confirmDelete() {
+    const id = document.getElementById('deleteRouteId').value;
+    try {
+        const response = await fetch(`/trips/routes/${id}`, { method: 'DELETE' });
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.detail || '{{ _("فشل الحذف. قد يكون المسار مرتبطاً برحلات.") }}');
+        }
+        deleteModal.hide();
+        await loadRoutes();
+    } catch (error) {
+        alert(' ' + error.message);
+    }
+}
+</script>
+{% endblock %}

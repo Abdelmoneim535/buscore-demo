@@ -1,0 +1,14 @@
+﻿# BusCore Requirements
+fastapi
+uvicorn[standard]
+gunicorn
+jinja2
+sqlalchemy
+python-multipart
+babel
+python-jose[cryptography]
+itsdangerous
+pydantic[email]
+bcrypt
+python-dotenv
+passlib[bcrypt]

@@ -1,0 +1,289 @@
+{% extends "base.html" %}
+
+{% block title %}BusCore - {{ _("احجز تذكرتك الآن") }}{% endblock %}
+
+{% block content %}
+
+<!-- ======================================== -->
+<!-- 🎯 البانر الرئيسي -->
+<!-- ======================================== -->
+<section class="hero-section-modern">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8 text-center text-white mb-4">
+                <h1 class="display-4 fw-bold mb-3">{{ _("سافر بكل راحة وأمان") }}</h1>
+                <p class="lead mb-0"> {{ _("احجز تذكرتك الإلكترونية خلال دقيقة واحدة") }}</p>
+            </div>
+        </div>
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <div class="search-card">
+                    <form id="searchForm" class="row g-3 align-items-end">
+                        <div class="col-md-4">
+                            <label class="form-label">
+                                <i class="fas fa-map-marker-alt text-primary me-1"></i>{{ _("من") }}
+                            </label>
+                            <select id="departureStation" class="form-select form-select-lg" required>
+                                <option value="">{{ _("اختر محطة المغادرة") }}</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">
+                                <i class="fas fa-map-marker-alt text-danger me-1"></i>{{ _("إلى") }}
+                            </label>
+                            <select id="arrivalStation" class="form-select form-select-lg" required>
+                                <option value="">{{ _("اختر محطة الوصول") }}</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">
+                                <i class="fas fa-calendar-alt text-warning me-1"></i>{{ _("تاريخ السفر") }}
+                            </label>
+                            <input type="date" id="travelDate" class="form-control form-control-lg" required>
+                        </div>
+                        <div class="col-12 mt-3">
+                            <button type="submit" class="btn btn-warning btn-lg w-100 fw-bold">
+                                <i class="fas fa-search me-2"></i> {{ _("ابحث عن الرحلات") }}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ======================================== -->
+<!-- 🔥 الوجهات الشهيرة -->
+<!-- ======================================== -->
+<section class="container py-5">
+    <div class="text-center mb-5">
+        <h2 class="fw-bold">🔥 {{ _("الوجهات الشهيرة") }}</h2>
+        <p class="text-muted">{{ _("اكتشف أكثر الوجهات المفضلة لدى المسافرين") }}</p>
+    </div>
+    <div class="row g-4" id="popularDestinations">
+        <div class="col-6 col-md-3">
+            <div class="destination-card" onclick="quickSearch('KRT')">
+                <div class="destination-icon bg-primary">
+                    <i class="fas fa-city"></i>
+                </div>
+                <h5>{{ _("الخرطوم") }}</h5>
+                <small>{{ _("العاصمة") }}</small>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="destination-card" onclick="quickSearch('PZU')">
+                <div class="destination-icon bg-info">
+                    <i class="fas fa-anchor"></i>
+                </div>
+                <h5>{{ _("بورتسودان") }}</h5>
+                <small>{{ _("الميناء") }}</small>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="destination-card" onclick="quickSearch('ATB')">
+                <div class="destination-icon bg-success">
+                    <i class="fas fa-mountain"></i>
+                </div>
+                <h5>{{ _("عطبرة") }}</h5>
+                <small>{{ _("مدينة الحديد") }}</small>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="destination-card" onclick="quickSearch('EBD')">
+                <div class="destination-icon bg-warning">
+                    <i class="fas fa-tree"></i>
+                </div>
+                <h5>{{ _("الأبيض") }}</h5>
+                <small>{{ _("مدينة الصمغ") }}</small>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ======================================== -->
+<!-- ⚡ كيف يعمل؟ -->
+<!-- ======================================== -->
+<section class="how-it-works-section">
+    <div class="container py-5">
+        <div class="text-center mb-5">
+            <h2 class="fw-bold">⚡ {{ _("كيف تحجز في 3 خطوات؟") }}</h2>
+            <p class="text-muted">{{ _("بسيطة وسريعة وآمنة") }}</p>
+        </div>
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="step-card">
+                    <div class="step-number">1</div>
+                    <div class="step-icon">
+                        <i class="fas fa-search"></i>
+                    </div>
+                    <h5>{{ _("ابحث عن رحلتك") }}</h5>
+                    <p class="text-muted mb-0">{{ _("حدد محطة المغادرة والوصول والتاريخ") }}</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="step-card">
+                    <div class="step-number">2</div>
+                    <div class="step-icon">
+                        <i class="fas fa-chair"></i>
+                    </div>
+                    <h5>{{ _("اختر مقعدك") }}</h5>
+                    <p class="text-muted mb-0">{{ _("اختر المقاعد المناسبة وأدخل بياناتك") }}</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="step-card">
+                    <div class="step-number">3</div>
+                    <div class="step-icon">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <h5>{{ _("أكمل الحجز") }}</h5>
+                    <p class="text-muted mb-0">{{ _("استلم تذكرتك الإلكترونية فوراً") }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ======================================== -->
+<!-- ✨ عروض خاصة -->
+<!-- ======================================== -->
+<section class="container py-5">
+    <div class="text-center mb-5">
+        <h2 class="fw-bold">✨ {{ _("عروض خاصة") }}</h2>
+        <p class="text-muted">{{ _("استفد من أفضل العروض") }}</p>
+    </div>
+    <div class="row g-4">
+        <div class="col-md-6">
+            <div class="offer-card offer-primary">
+                <div class="offer-icon">
+                    <i class="fas fa-gift"></i>
+                </div>
+                <div class="offer-content">
+                    <h4>{{ _("خصم 20% للحجز المبكر") }}</h4>
+                    <p class="mb-3">{{ _("احجز قبل 7 أيام واحصل على خصم 20%") }}</p>
+                    <a href="/search" class="btn btn-light">{{ _("استفد الآن") }}</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="offer-card offer-success">
+                <div class="offer-icon">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="offer-content">
+                    <h4>{{ _("عرض العائلة") }}</h4>
+                    <p class="mb-3">{{ _("احجز 3 تذاكر واحصل على الرابعة مجاناً") }}</p>
+                    <a href="/search" class="btn btn-light">{{ _("استفد الآن") }}</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ======================================== -->
+<!-- 💬 لماذا نحن؟ -->
+<!-- ======================================== -->
+<section class="trust-section">
+    <div class="container py-5">
+        <div class="row text-center g-4">
+            <div class="col-md-3">
+                <div class="trust-item">
+                    <i class="fas fa-shield-alt fa-3x text-primary mb-3"></i>
+                    <h6>{{ _("حجز آمن") }}</h6>
+                    <small class="text-muted">{{ _("نظام دفع محمي") }}</small>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="trust-item">
+                    <i class="fas fa-clock fa-3x text-success mb-3"></i>
+                    <h6>{{ _("دعم 24/7") }}</h6>
+                    <small class="text-muted">{{ _("جاهزون للمساعدة") }}</small>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="trust-item">
+                    <i class="fas fa-mobile-alt fa-3x text-warning mb-3"></i>
+                    <h6>{{ _("حجز من الجوال") }}</h6>
+                    <small class="text-muted">{{ _("يعمل على جميع الأجهزة") }}</small>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="trust-item">
+                    <i class="fas fa-star fa-3x text-danger mb-3"></i>
+                    <h6>{{ _("خدمة موثوقة") }}</h6>
+                    <small class="text-muted">{{ _("آلاف الحجوزات الناجحة") }}</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+    const LANG = "{{ lang }}";
+
+    document.addEventListener('DOMContentLoaded', async function () {
+        try {
+            const stations = await BusCoreAPI.getStations();
+            const departureSelect = document.getElementById('departureStation');
+            const arrivalSelect = document.getElementById('arrivalStation');
+
+            stations.forEach(station => {
+                const displayName = (LANG === 'en' && station.name_en) ? station.name_en : station.name;
+
+                const opt1 = document.createElement('option');
+                opt1.value = station.id;
+                opt1.textContent = displayName;
+                departureSelect.appendChild(opt1);
+
+                const opt2 = document.createElement('option');
+                opt2.value = station.id;
+                opt2.textContent = displayName;
+                arrivalSelect.appendChild(opt2);
+            });
+        } catch (error) {
+            console.error('Error loading stations:', error);
+        }
+
+        document.getElementById('searchForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+            const departure = document.getElementById('departureStation').value;
+            const arrival = document.getElementById('arrivalStation').value;
+            const date = document.getElementById('travelDate').value;
+
+            if (!departure || !arrival || !date) {
+                alert('الرجاء ملء جميع الحقول');
+                return;
+            }
+
+            window.location.href = `/search?departure=${departure}&arrival=${arrival}&date=${date}`;
+        });
+
+        const today = new Date();
+        today.setDate(today.getDate() + 1);
+        const year = today.getFullYear();
+        const month = String(today.getMonth() + 1).padStart(2, '0');
+        const day = String(today.getDate()).padStart(2, '0');
+        document.getElementById('travelDate').value = `${year}-${month}-${day}`;
+
+    // ✅ منع اختيار تاريخ في الماضي
+    const travelDateInput = document.getElementById('travelDate');
+    const todayStr = new Date().toISOString().split('T')[0];
+    travelDateInput.setAttribute('min', todayStr);
+
+    travelDateInput.addEventListener('change', function() {
+        if (this.value < todayStr) {
+            alert('{{ _("لا يمكن اختيار تاريخ في الماضي") }}');
+            this.value = `${year}-${month}-${day}`;
+        }
+    });
+    });
+
+    function quickSearch(cityCode) {
+        window.location.href = '/search';
+    }
+</script>
+{% endblock %}

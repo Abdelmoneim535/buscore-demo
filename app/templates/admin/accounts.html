@@ -1,0 +1,688 @@
+{% extends "admin/base_admin.html" %}
+
+{% block title %}{{ _("شجرة الحسابات") }} - BusCore{% endblock %}
+{% block page_title %}{{ _("شجرة الحسابات") }}{% endblock %}
+
+{% block content %}
+
+<!--  -->
+<!-- Stats Cards -->
+<!--  -->
+<div class="row g-3 mb-3">
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm" style="border-{% if lang == 'ar' %}right{% else %}left{% endif %}: 4px solid #0d6efd;">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <small class="text-muted">{{ _("إجمالي الحسابات") }}</small>
+                        <h3 class="mb-0 fw-bold" id="totalAccounts">0</h3>
+                    </div>
+                    <i class="fas fa-list fa-2x text-primary" style="opacity: 0.3;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm" style="border-{% if lang == 'ar' %}right{% else %}left{% endif %}: 4px solid #198754;">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <small class="text-muted">{{ _("حسابات نشطة") }}</small>
+                        <h3 class="mb-0 fw-bold text-success" id="activeAccounts">0</h3>
+                    </div>
+                    <i class="fas fa-check-circle fa-2x text-success" style="opacity: 0.3;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm" style="border-{% if lang == 'ar' %}right{% else %}left{% endif %}: 4px solid #ffc107;">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <small class="text-muted">{{ _("حسابات نظامية") }}</small>
+                        <h3 class="mb-0 fw-bold text-warning" id="systemAccounts">0</h3>
+                    </div>
+                    <i class="fas fa-lock fa-2x text-warning" style="opacity: 0.3;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm" style="border-{% if lang == 'ar' %}right{% else %}left{% endif %}: 4px solid #0dcaf0;">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <small class="text-muted">{{ _("حسابات مخصصة") }}</small>
+                        <h3 class="mb-0 fw-bold text-info" id="customAccounts">0</h3>
+                    </div>
+                    <i class="fas fa-star fa-2x text-info" style="opacity: 0.3;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!--  -->
+<!-- Toolbar -->
+<!--  -->
+<div class="card border-0 shadow-sm mb-3">
+    <div class="card-body">
+        <div class="row g-2 align-items-center mb-2">
+            <div class="col-md-4">
+                <div class="input-group">
+                    <span class="input-group-text bg-light"><i class="fas fa-search"></i></span>
+                    <input type="text" id="searchInput" class="form-control"
+                        placeholder="{{ _('بحث بالكود أو الاسم...') }}" oninput="filterAccounts()">
+                </div>
+            </div>
+            <div class="col-md-2">
+                <select id="typeFilter" class="form-select" onchange="filterAccounts()">
+                    <option value="">{{ _("جميع الأنواع") }}</option>
+                    <option value="asset">{{ _("أصول") }}</option>
+                    <option value="liability">{{ _("خصوم") }}</option>
+                    <option value="equity">{{ _("حقوق ملكية") }}</option>
+                    <option value="revenue">{{ _("إيرادات") }}</option>
+                    <option value="expense">{{ _("مصروفات") }}</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <select id="statusFilter" class="form-select" onchange="filterAccounts()">
+                    <option value="">{{ _("جميع الحالات") }}</option>
+                    <option value="active">{{ _("نشط") }}</option>
+                    <option value="inactive">{{ _("معطّل") }}</option>
+                </select>
+            </div>
+            <div class="col-md-4 text-end">
+                <button class="btn btn-primary" onclick="openAddModal()">
+                    <i class="fas fa-plus me-1"></i>{{ _("إضافة حساب") }}
+                </button>
+                <button class="btn btn-outline-secondary" onclick="loadAccounts()">
+                    <i class="fas fa-sync-alt"></i>
+                </button>
+            </div>
+        </div>
+        <div class="d-flex justify-content-between align-items-center">
+            <div class="btn-group btn-group-sm" role="group">
+                <button type="button" class="btn btn-outline-primary active" id="viewTable" onclick="switchView('table')">
+                    <i class="fas fa-list me-1"></i>{{ _("جدول") }}
+                </button>
+                <button type="button" class="btn btn-outline-primary" id="viewTree" onclick="switchView('tree')">
+                    <i class="fas fa-sitemap me-1"></i>{{ _("شجرة") }}
+                </button>
+            </div>
+            <small class="text-muted" id="resultsCount"></small>
+        </div>
+    </div>
+</div>
+
+<!--  -->
+<!-- Container -->
+<!--  -->
+<div id="accountsContainer">
+    <div class="text-center py-5">
+        <div class="spinner-border text-primary"></div>
+        <p class="mt-2 text-muted">{{ _("جاري التحميل...") }}</p>
+    </div>
+</div>
+
+<!--  -->
+<!-- Modal: Add/Edit Account -->
+<!--  -->
+<div class="modal fade" id="accountModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="accountModalTitle">
+                    <i class="fas fa-plus me-2"></i>{{ _("إضافة حساب") }}
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="accountForm">
+                    <input type="hidden" id="accountId">
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label">{{ _("الكود") }} *</label>
+                            <input type="text" id="accountCode" class="form-control" placeholder="6100" required>
+                        </div>
+                        <div class="col-md-8">
+                            <label class="form-label">{{ _("الاسم (عربي)") }} *</label>
+                            <input type="text" id="accountName" class="form-control" required>
+                        </div>
+                        <div class="col-md-12">
+                            <label class="form-label">{{ _("الاسم (إنجليزي)") }}</label>
+                            <input type="text" id="accountNameEn" class="form-control" dir="ltr">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">{{ _("النوع") }} *</label>
+                            <select id="accountType" class="form-select" required>
+                                <option value="asset">{{ _("أصول") }}</option>
+                                <option value="liability">{{ _("خصوم") }}</option>
+                                <option value="equity">{{ _("حقوق ملكية") }}</option>
+                                <option value="revenue">{{ _("إيرادات") }}</option>
+                                <option value="expense">{{ _("مصروفات") }}</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">{{ _("الحساب الأب") }}</label>
+                            <select id="accountParent" class="form-select">
+                                <option value="">{{ _("بدون (حساب رئيسي)") }}</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">{{ _("الطبيعة") }}</label>
+                            <select id="accountNature" class="form-select">
+                                <option value="debit">{{ _("مدين") }}</option>
+                                <option value="credit">{{ _("دائن") }}</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">{{ _("العملة") }}</label>
+                            <select id="accountCurrency" class="form-select">
+                                <option value="SDG">SDG</option>
+                                <option value="SAR">SAR</option>
+                                <option value="USD">USD</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">{{ _("الرصيد الافتتاحي") }}</label>
+                            <input type="number" id="accountOpeningBalance" class="form-control" step="0.01" value="0">
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-check form-switch mt-4">
+                                <input class="form-check-input" type="checkbox" id="accountActive" checked>
+                                <label class="form-check-label" for="accountActive">{{ _("نشط") }}</label>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">{{ _("ملاحظات") }}</label>
+                            <textarea id="accountNotes" class="form-control" rows="2"></textarea>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ _("إلغاء") }}</button>
+                <button type="button" class="btn btn-primary" onclick="saveAccount()">
+                    <i class="fas fa-save me-1"></i>{{ _("حفظ") }}
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+/*  */
+/* Tree Styles */
+/*  */
+.account-tree {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+}
+.account-node {
+    margin-bottom: 4px;
+}
+.account-node-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    border-{% if lang == 'ar' %}right{% else %}left{% endif %}: 3px solid transparent;
+}
+.account-node-header:hover {
+    background: #e7f1ff;
+    border-{% if lang == 'ar' %}right{% else %}left{% endif %}-color: #0d6efd;
+}
+.account-node-header.expanded {
+    background: #e7f1ff;
+    border-{% if lang == 'ar' %}right{% else %}left{% endif %}-color: #0d6efd;
+}
+.account-node-toggle {
+    color: #0d6efd;
+    width: 16px;
+    transition: transform 0.2s;
+    font-size: 0.8rem;
+}
+.account-node-header.expanded .account-node-toggle {
+    transform: rotate(90deg);
+}
+.account-node-code {
+    font-family: 'Courier New', monospace;
+    font-weight: 800;
+    background: #e7f1ff;
+    color: #0a58ca;
+    padding: 2px 8px;
+    border-radius: 5px;
+    font-size: 0.75rem;
+    min-width: 55px;
+    text-align: center;
+}
+.account-node-name {
+    flex: 1;
+    font-weight: 700;
+    font-size: 0.9rem;
+}
+.account-node-type {
+    font-size: 0.7rem;
+    padding: 2px 8px;
+    border-radius: 50px;
+    font-weight: 700;
+}
+.type-asset { background: #d1e7dd; color: #0f5132; }
+.type-liability { background: #f8d7da; color: #842029; }
+.type-equity { background: #cfe2ff; color: #084298; }
+.type-revenue { background: #d1e7dd; color: #0f5132; }
+.type-expense { background: #fff3cd; color: #664d03; }
+.account-node-children {
+    padding-{% if lang == 'ar' %}right{% else %}left{% endif %}: 30px;
+    margin-top: 4px;
+    display: none;
+}
+.account-node-children.expanded {
+    display: block;
+}
+</style>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+const LANG = "{{ lang }}";
+let accountModal;
+let allAccounts = [];
+let filteredAccounts = [];
+let currentView = 'table';
+let treeData = [];
+
+document.addEventListener('DOMContentLoaded', async function() {
+    accountModal = new bootstrap.Modal(document.getElementById('accountModal'));
+    await loadAccounts();
+    await loadTree();
+});
+
+async function loadAccounts() {
+    try {
+        const res = await fetch('/accounts/');
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        allAccounts = await res.json();
+        updateStats();
+        filterAccounts();
+        populateParentSelect();
+    } catch (e) {
+        console.error(e);
+        document.getElementById('accountsContainer').innerHTML =
+            `<div class="alert alert-danger m-3">{{ _("فشل تحميل الحسابات") }}: ${e.message}</div>`;
+    }
+}
+
+async function loadTree() {
+    try {
+        const res = await fetch('/accounts/tree');
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        treeData = await res.json();
+    } catch (e) {
+        console.error(e);
+    }
+}
+
+function updateStats() {
+    const total = allAccounts.length;
+    const active = allAccounts.filter(a => a.is_active).length;
+    const system = allAccounts.filter(a => a.is_system).length;
+    const custom = total - system;
+
+    document.getElementById('totalAccounts').textContent = total;
+    document.getElementById('activeAccounts').textContent = active;
+    document.getElementById('systemAccounts').textContent = system;
+    document.getElementById('customAccounts').textContent = custom;
+}
+
+function populateParentSelect() {
+    const select = document.getElementById('accountParent');
+    select.innerHTML = '<option value="">{{ _("بدون (حساب رئيسي)") }}</option>';
+
+    // فقط الحسابات الرئيسية والمستوى 2
+    const parents = allAccounts.filter(a => a.level <= 2);
+    parents.forEach(a => {
+        const name = LANG === 'ar' ? a.name : (a.name_en || a.name);
+        select.innerHTML += `<option value="${a.id}">${a.code} - ${name}</option>`;
+    });
+}
+
+function filterAccounts() {
+    const search = document.getElementById('searchInput').value.toLowerCase().trim();
+    const type = document.getElementById('typeFilter').value;
+    const status = document.getElementById('statusFilter').value;
+
+    filteredAccounts = allAccounts.filter(a => {
+        if (search) {
+            const code = (a.code || '').toLowerCase();
+            const name = (a.name || '').toLowerCase();
+            const nameEn = (a.name_en || '').toLowerCase();
+            if (!code.includes(search) && !name.includes(search) && !nameEn.includes(search)) return false;
+        }
+        if (type && a.account_type !== type) return false;
+        if (status === 'active' && !a.is_active) return false;
+        if (status === 'inactive' && a.is_active) return false;
+        return true;
+    });
+
+    document.getElementById('resultsCount').textContent = `${filteredAccounts.length} {{ _("حساب") }}`;
+    renderCurrentView();
+}
+
+function switchView(view) {
+    currentView = view;
+    document.getElementById('viewTable').classList.toggle('active', view === 'table');
+    document.getElementById('viewTree').classList.toggle('active', view === 'tree');
+    renderCurrentView();
+}
+
+function renderCurrentView() {
+    if (currentView === 'table') {
+        renderTable();
+    } else {
+        renderTree();
+    }
+}
+
+function renderTable() {
+    const container = document.getElementById('accountsContainer');
+
+    if (filteredAccounts.length === 0) {
+        container.innerHTML = `
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center py-5">
+                    <i class="fas fa-list fa-4x text-muted mb-3"></i>
+                    <h5>{{ _("لا توجد حسابات") }}</h5>
+                </div>
+            </div>`;
+        return;
+    }
+
+    let html = '<div class="card border-0 shadow-sm">';
+    html += '<div class="table-responsive">';
+    html += '<table class="table table-hover align-middle mb-0">';
+    html += `
+        <thead class="table-light">
+            <tr>
+                <th width="100">{{ _("الكود") }}</th>
+                <th>{{ _("الاسم") }}</th>
+                <th width="120">{{ _("النوع") }}</th>
+                <th width="80">{{ _("الطبيعة") }}</th>
+                <th width="100">{{ _("المستوى") }}</th>
+                <th width="90">{{ _("الحالة") }}</th>
+                <th width="150">{{ _("الإجراءات") }}</th>
+            </tr>
+        </thead>
+        <tbody>`;
+
+    filteredAccounts.forEach(a => {
+        const typeNames = {
+            asset: '{{ _("أصول") }}',
+            liability: '{{ _("خصوم") }}',
+            equity: '{{ _("حقوق ملكية") }}',
+            revenue: '{{ _("إيرادات") }}',
+            expense: '{{ _("مصروفات") }}',
+        };
+        const natureNames = {
+            debit: '{{ _("مدين") }}',
+            credit: '{{ _("دائن") }}',
+        };
+
+        const name = LANG === 'ar' ? a.name : (a.name_en || a.name);
+
+        html += `
+        <tr>
+            <td><span class="badge bg-primary" style="font-family: 'Courier New', monospace;">${a.code}</span></td>
+            <td>
+                <strong>${name}</strong>
+                ${a.is_system ? '<span class="badge bg-warning text-dark ms-1" style="font-size:0.6rem;">{{ _("نظامي") }}</span>' : ''}
+                ${a.is_locked ? '<i class="fas fa-lock text-danger ms-1" style="font-size:0.7rem;"></i>' : ''}
+            </td>
+            <td><span class="badge type-${a.account_type}">${typeNames[a.account_type] || a.account_type}</span></td>
+            <td><small>${natureNames[a.nature] || a.nature}</small></td>
+            <td><span class="badge bg-light text-dark">L${a.level}</span></td>
+            <td>
+                ${a.is_active
+                    ? '<span class="badge bg-success">{{ _("نشط") }}</span>'
+                    : '<span class="badge bg-secondary">{{ _("معطّل") }}</span>'}
+            </td>
+            <td>
+                <div class="d-flex gap-1">
+                    <button class="btn btn-sm btn-outline-primary" onclick="openEditModal(${a.id})" title="{{ _('تعديل') }}">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-warning" onclick="viewBalance(${a.id})" title="{{ _('الرصيد') }}">
+                        <i class="fas fa-coins"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-info" onclick="toggleAccount(${a.id})" title="{{ _('تفعيل/تعطيل') }}">
+                        <i class="fas fa-toggle-on"></i>
+                    </button>
+                </div>
+            </td>
+        </tr>`;
+    });
+
+    html += '</tbody></table></div></div>';
+    container.innerHTML = html;
+}
+
+function renderTree() {
+    const container = document.getElementById('accountsContainer');
+
+    if (treeData.length === 0) {
+        container.innerHTML = `<div class="alert alert-info m-3">{{ _("لا توجد شجرة") }}</div>`;
+        return;
+    }
+
+    const search = document.getElementById('searchInput').value.toLowerCase().trim();
+
+    let html = '<div class="account-tree">';
+    treeData.forEach(node => {
+        html += renderTreeNode(node, search);
+    });
+    html += '</div>';
+    container.innerHTML = html;
+}
+
+function renderTreeNode(node, search) {
+    const name = LANG === 'ar' ? node.name : (node.name_en || node.name);
+
+    // فلترة البحث
+    const matchesSearch = !search ||
+        node.code.toLowerCase().includes(search) ||
+        node.name.toLowerCase().includes(search) ||
+        (node.name_en && node.name_en.toLowerCase().includes(search));
+
+    const hasMatchingChildren = node.children && node.children.some(c =>
+        c.code.toLowerCase().includes(search) ||
+        c.name.toLowerCase().includes(search) ||
+        (c.children && c.children.length > 0)
+    );
+
+    if (search && !matchesSearch && !hasMatchingChildren) {
+        return '';
+    }
+
+    const hasChildren = node.children && node.children.length > 0;
+    const nodeId = `node-${node.id}`;
+
+    let html = `
+    <div class="account-node">
+        <div class="account-node-header ${search ? 'expanded' : ''}" onclick="toggleNode('${nodeId}', this)">
+            ${hasChildren ? `<i class="fas fa-chevron-{% if lang == 'ar' %}left{% else %}right{% endif %} account-node-toggle"></i>` : '<span style="width:16px;"></span>'}
+            <span class="account-node-code">${node.code}</span>
+            <span class="account-node-name">${name}</span>
+            <span class="account-node-type type-${node.account_type}">
+                ${node.account_type === 'asset' ? '{{ _("أصول") }}' :
+                  node.account_type === 'liability' ? '{{ _("خصوم") }}' :
+                  node.account_type === 'equity' ? '{{ _("حقوق ملكية") }}' :
+                  node.account_type === 'revenue' ? '{{ _("إيرادات") }}' :
+                  '{{ _("مصروفات") }}'}
+            </span>
+        </div>`;
+
+    if (hasChildren) {
+        html += `<div class="account-node-children ${search ? 'expanded' : ''}" id="${nodeId}">`;
+        node.children.forEach(child => {
+            html += renderTreeNode(child, search);
+        });
+        html += '</div>';
+    }
+
+    html += '</div>';
+    return html;
+}
+
+function toggleNode(nodeId, headerEl) {
+    const el = document.getElementById(nodeId);
+    if (el) {
+        el.classList.toggle('expanded');
+        headerEl.classList.toggle('expanded');
+    }
+}
+
+function openAddModal() {
+    document.getElementById('accountModalTitle').innerHTML =
+        '<i class="fas fa-plus me-2"></i>{{ _("إضافة حساب") }}';
+    document.getElementById('accountForm').reset();
+    document.getElementById('accountId').value = '';
+    document.getElementById('accountActive').checked = true;
+    document.getElementById('accountParent').value = '';
+    document.getElementById('accountCurrency').value = 'SDG';
+    document.getElementById('accountOpeningBalance').value = '0';
+    accountModal.show();
+}
+
+function openEditModal(id) {
+    const a = allAccounts.find(x => x.id === id);
+    if (!a) return;
+
+    document.getElementById('accountModalTitle').innerHTML =
+        '<i class="fas fa-edit me-2"></i>{{ _("تعديل حساب") }}';
+    document.getElementById('accountId').value = a.id;
+    document.getElementById('accountCode').value = a.code;
+    document.getElementById('accountName').value = a.name;
+    document.getElementById('accountNameEn').value = a.name_en || '';
+    document.getElementById('accountType').value = a.account_type;
+    document.getElementById('accountParent').value = a.parent_id || '';
+    document.getElementById('accountNature').value = a.nature;
+    document.getElementById('accountCurrency').value = a.currency || 'SDG';
+    document.getElementById('accountOpeningBalance').value = a.opening_balance || 0;
+    document.getElementById('accountActive').checked = a.is_active;
+    document.getElementById('accountNotes').value = a.description || '';
+
+    // تعطيل الكود في التعديل
+    document.getElementById('accountCode').disabled = true;
+
+    accountModal.show();
+}
+
+async function saveAccount() {
+    const id = document.getElementById('accountId').value;
+    const data = {
+        code: document.getElementById('accountCode').value.trim(),
+        name: document.getElementById('accountName').value.trim(),
+        name_en: document.getElementById('accountNameEn').value.trim() || null,
+        account_type: document.getElementById('accountType').value,
+        parent_id: document.getElementById('accountParent').value ? parseInt(document.getElementById('accountParent').value) : null,
+        nature: document.getElementById('accountNature').value,
+        currency: document.getElementById('accountCurrency').value,
+        opening_balance: parseFloat(document.getElementById('accountOpeningBalance').value) || 0,
+        is_active: document.getElementById('accountActive').checked,
+        description: document.getElementById('accountNotes').value.trim() || null,
+    };
+
+    if (!data.code || !data.name) {
+        alert('{{ _("الرجاء إدخال الكود والاسم") }}');
+        return;
+    }
+
+    try {
+        let res;
+        if (id) {
+            res = await fetch(`/accounts/${id}`, {
+                method: 'PUT',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    name: data.name,
+                    name_en: data.name_en,
+                    opening_balance: data.opening_balance,
+                    is_active: data.is_active,
+                    description: data.description,
+                }),
+            });
+        } else {
+            res = await fetch('/accounts/', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(data),
+            });
+        }
+
+        if (!res.ok) {
+            const err = await res.json();
+            throw new Error(err.detail || '{{ _("خطأ في الحفظ") }}');
+        }
+
+        accountModal.hide();
+        document.getElementById('accountCode').disabled = false;
+        await loadAccounts();
+        await loadTree();
+    } catch (e) {
+        alert(' ' + e.message);
+    }
+}
+
+async function toggleAccount(id) {
+    try {
+        const res = await fetch(`/accounts/${id}/toggle`, {method: 'PUT'});
+        if (!res.ok) {
+            const err = await res.json();
+            throw new Error(err.detail || 'خطأ');
+        }
+        await loadAccounts();
+        await loadTree();
+    } catch (e) {
+        alert(' ' + e.message);
+    }
+}
+
+async function viewBalance(id) {
+    try {
+        const res = await fetch(`/accounts/${id}/balance`);
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const b = await res.json();
+
+        alert(`
+${b.name} (${b.code})
+
+{{ _("الرصيد الافتتاحي") }}: ${b.opening_balance.toLocaleString()} SDG
+{{ _("إجمالي المدين") }}:    ${b.total_debit.toLocaleString()} SDG
+{{ _("إجمالي الدائن") }}:    ${b.total_credit.toLocaleString()} SDG
+
+{{ _("الرصيد") }}:           ${b.balance.toLocaleString()} SDG
+        `);
+    } catch (e) {
+        alert(' ' + e.message);
+    }
+}
+
+window.filterAccounts = filterAccounts;
+window.switchView = switchView;
+window.toggleNode = toggleNode;
+window.openAddModal = openAddModal;
+window.openEditModal = openEditModal;
+window.saveAccount = saveAccount;
+window.toggleAccount = toggleAccount;
+window.viewBalance = viewBalance;
+window.loadAccounts = loadAccounts;
+</script>
+{% endblock %}

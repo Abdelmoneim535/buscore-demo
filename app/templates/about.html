@@ -1,0 +1,364 @@
+{% extends "base.html" %}
+
+{% block title %}BusCore - {{ _("عن المالك") }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+
+    <!-- Header -->
+    <div class="card border-0 shadow-sm mb-4 overflow-hidden">
+        <div class="card-body p-0">
+            <div style="background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%); padding: 40px 30px;">
+                <div class="row align-items-center g-4">
+                    <div class="col-md-auto text-center">
+                        <div style="width: 130px; height: 130px; background: rgba(255,255,255,0.15); border: 4px solid rgba(255,255,255,0.3); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto;">
+                            <i class="fas fa-user-graduate" style="font-size: 4rem; color: white;"></i>
+                        </div>
+                    </div>
+                    <div class="col-md">
+                        <h1 class="text-white fw-bold mb-2" style="font-size: 2rem;">
+                            {{ _("الدكتور عبدالمنعم علي محمد") }}
+                        </h1>
+                        <p class="text-white-50 mb-3" style="font-size: 1.1rem;">
+                            {{ _("أستاذ جامعي | رياضيات وإحصاء وتحليل بيانات وتطوير برمجيات") }}
+                        </p>
+                        <div class="d-flex flex-wrap gap-2">
+                            <span class="badge bg-light text-dark">
+                                 {{ _("السودان") }}
+                            </span>
+                            <span class="badge bg-light text-dark">
+                                 {{ _("المملكة العربية السعودية") }}
+                            </span>
+                            <span class="badge bg-warning text-dark">
+                                 {{ _("دكتوراه في الإحصاء") }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- نبذة مختصرة -->
+    <div class="card border-0 shadow-sm mb-4" style="border-{% if lang == 'ar' %}right{% else %}left{% endif %}: 5px solid #0d6efd !important;">
+        <div class="card-header bg-white">
+            <h4 class="mb-0 fw-bold">
+                <i class="fas fa-user-circle me-2 text-primary"></i>
+                {{ _("نبذة مختصرة") }}
+            </h4>
+        </div>
+        <div class="card-body">
+            <p class="lead mb-3" style="line-height: 2;">
+                {{ _("الدكتور عبدالمنعم علي محمد أستاذ جامعي بخبرة أكاديمية وبحثية ممتدة في السودان والمملكة العربية السعودية، متخصص في الرياضيات والإحصاء وتحليل البيانات ومهتم بتطوير البرمجيات.") }}
+            </p>
+            <p class="mb-0" style="line-height: 2;">
+                {{ _("صمّم برنامج BusCore ليكون حلاً ذكياً وعملياً يلبي احتياجات كل من المسافر وشركات النقل؛ حيث يوفر على المسافر عناء الذهاب للشركات عبر إتاحة حجز التذاكر والدفع الإلكتروني المباشر من خلال تطبيق سهل، كما يُعفي الشركة من ضرورة التواجد الدائم للموظفين بالفروع واستقبال الزبائن. يمنح البرنامج إدارة الشركة تحكماً كاملاً للإطلاع على حركة الحجوزات عبر كل الفروع ومتابعة رحلات الحافلات لحظياً من شاشة موحدة، فضلاً عن تقليل الاعتماد على الوسطاء وتوفير نظام محاسبي آلي مرتبط بالنظام لضمان الإدارة المالية الدقيقة والفعالة.") }}
+            </p>
+        </div>
+    </div>
+
+    <!-- المؤهلات العلمية -->
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-white">
+            <h4 class="mb-0 fw-bold">
+                <i class="fas fa-award me-2 text-primary"></i>
+                {{ _("المؤهلات العلمية") }}
+            </h4>
+        </div>
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <div class="card border-0 h-100" style="background: linear-gradient(135deg, #e7f1ff, #f0f7ff); border-radius: 12px; border-top: 3px solid #0d6efd;">
+                        <div class="card-body text-center py-4">
+                            <div style="font-size: 2.5rem; color: #0d6efd;" class="mb-2">
+                                <i class="fas fa-user-graduate"></i>
+                            </div>
+                            <h6 class="fw-bold mb-1">{{ _("بكالوريوس") }}</h6>
+                            <p class="mb-0 text-muted small">{{ _("الرياضيات") }}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card border-0 h-100" style="background: linear-gradient(135deg, #d1e7dd, #e7f5ec); border-radius: 12px; border-top: 3px solid #198754;">
+                        <div class="card-body text-center py-4">
+                            <div style="font-size: 2.5rem; color: #198754;" class="mb-2">
+                                <i class="fas fa-user-graduate"></i>
+                            </div>
+                            <h6 class="fw-bold mb-1">{{ _("ماجستير") }}</h6>
+                            <p class="mb-0 text-muted small">{{ _("الرياضيات") }}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card border-0 h-100" style="background: linear-gradient(135deg, #fff3cd, #fff9e6); border-radius: 12px; border-top: 3px solid #ffc107;">
+                        <div class="card-body text-center py-4">
+                            <div style="font-size: 2.5rem; color: #ffc107;" class="mb-2">
+                                <i class="fas fa-user-graduate"></i>
+                            </div>
+                            <h6 class="fw-bold mb-1">{{ _("دكتوراه") }}</h6>
+                            <p class="mb-0 text-muted small">{{ _("الإحصاء") }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- الخبرة الجامعية -->
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-white">
+            <h4 class="mb-0 fw-bold">
+                <i class="fas fa-university me-2 text-primary"></i>
+                {{ _("الخبرة الجامعية") }}
+            </h4>
+        </div>
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <div class="card border-0 h-100" style="background: linear-gradient(135deg, #fff5f5, #ffe7e7); border-radius: 12px; border-{% if lang == 'ar' %}right{% else %}left{% endif %}: 4px solid #dc3545;">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center gap-3">
+                                <div style="font-size: 2.5rem;"></div>
+                                <div>
+                                    <h5 class="fw-bold mb-1">{{ _("السودان") }}</h5>
+                                    <p class="mb-0 text-muted">{{ _("أستاذ جامعي") }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card border-0 h-100" style="background: linear-gradient(135deg, #f0f9f0, #e0f0e0); border-radius: 12px; border-{% if lang == 'ar' %}right{% else %}left{% endif %}: 4px solid #198754;">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center gap-3">
+                                <div style="font-size: 2.5rem;"></div>
+                                <div>
+                                    <h5 class="fw-bold mb-1">{{ _("المملكة العربية السعودية") }}</h5>
+                                    <p class="mb-0 text-muted">{{ _("أستاذ جامعي") }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- الاهتمامات البحثية -->
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-white">
+            <h4 class="mb-0 fw-bold">
+                <i class="fas fa-flask me-2 text-primary"></i>
+                {{ _("الاهتمامات البحثية") }}
+            </h4>
+        </div>
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <div class="card border-0 h-100" style="background: linear-gradient(135deg, #e7f1ff, #f0f7ff); border-radius: 12px;">
+                        <div class="card-body text-center py-4">
+                            <div style="font-size: 2.5rem; color: #0d6efd;" class="mb-3">
+                                <i class="fas fa-chart-bar"></i>
+                            </div>
+                            <h6 class="fw-bold mb-2">{{ _("التحليل الإحصائي") }}</h6>
+                            <p class="mb-0 text-muted small">{{ _("النمذجة والاستدلال الإحصائي") }}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card border-0 h-100" style="background: linear-gradient(135deg, #d1e7dd, #e7f5ec); border-radius: 12px;">
+                        <div class="card-body text-center py-4">
+                            <div style="font-size: 2.5rem; color: #198754;" class="mb-3">
+                                <i class="fas fa-microscope"></i>
+                            </div>
+                            <h6 class="fw-bold mb-2">{{ _("تحليل البيانات") }}</h6>
+                            <p class="mb-0 text-muted small">{{ _("استخلاص الرؤى واتخاذ القرارات") }}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card border-0 h-100" style="background: linear-gradient(135deg, #fff3cd, #fff9e6); border-radius: 12px;">
+                        <div class="card-body text-center py-4">
+                            <div style="font-size: 2.5rem; color: #ffc107;" class="mb-3">
+                                <i class="fas fa-code"></i>
+                            </div>
+                            <h6 class="fw-bold mb-2">{{ _("تطوير البرمجيات") }}</h6>
+                            <p class="mb-0 text-muted small">{{ _("تصميم وبناء تطبيقات متكاملة") }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- لماذا BusCore؟ -->
+    <div class="card border-0 shadow-sm mb-4" style="background: linear-gradient(135deg, #f8f9fa, #ffffff);">
+        <div class="card-body py-5">
+            <div class="text-center mb-4">
+                <i class="fas fa-lightbulb text-warning" style="font-size: 3rem;"></i>
+                <h3 class="fw-bold mb-2 mt-3">{{ _("لماذا BusCore؟") }}</h3>
+                <p class="text-muted mb-0">{{ _("حل ذكي وعملي للمسافر وشركات النقل") }}</p>
+            </div>
+
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <div class="card border-0 h-100" style="background: white; border-radius: 12px; border-{% if lang == 'ar' %}right{% else %}left{% endif %}: 4px solid #0d6efd;">
+                        <div class="card-body">
+                            <h6 class="fw-bold mb-2">
+                                <i class="fas fa-user me-2 text-primary"></i>
+                                {{ _("للمسافر") }}
+                            </h6>
+                            <ul class="mb-0 small" style="padding-{% if lang == 'ar' %}right{% else %}left{% endif %}: 18px;">
+                                <li>{{ _("حجز التذاكر إلكترونياً") }}</li>
+                                <li>{{ _("الدفع الإلكتروني المباشر") }}</li>
+                                <li>{{ _("توفير عناء الذهاب للشركات") }}</li>
+                                <li>{{ _("تجربة سهلة وبسيطة") }}</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card border-0 h-100" style="background: white; border-radius: 12px; border-{% if lang == 'ar' %}right{% else %}left{% endif %}: 4px solid #198754;">
+                        <div class="card-body">
+                            <h6 class="fw-bold mb-2">
+                                <i class="fas fa-building me-2 text-success"></i>
+                                {{ _("لشركة النقل") }}
+                            </h6>
+                            <ul class="mb-0 small" style="padding-{% if lang == 'ar' %}right{% else %}left{% endif %}: 18px;">
+                                <li>{{ _("تحكم كامل بحركة الحجوزات") }}</li>
+                                <li>{{ _("متابعة الرحلات لحظياً") }}</li>
+                                <li>{{ _("تقليل الاعتماد على الوسطاء") }}</li>
+                                <li>{{ _("نظام محاسبي آلي متكامل") }}</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="alert alert-info mt-4 mb-0" style="border-radius: 12px;">
+                <i class="fas fa-check-circle me-2"></i>
+                <strong>{{ _("النتيجة:") }}</strong>
+                {{ _("إدارة مالية دقيقة وفعّالة، وإعفاء الشركة من التواجد الدائم للموظفين بالفروع، مع شاشة موحدة لكل الفروع.") }}
+            </div>
+        </div>
+    </div>
+
+    <!-- التواصل -->
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-white">
+            <h4 class="mb-0 fw-bold">
+                <i class="fas fa-address-book me-2 text-primary"></i>
+                {{ _("التواصل") }}
+            </h4>
+        </div>
+        <div class="card-body">
+
+            <!-- الاتصال الهاتفي -->
+            <h6 class="fw-bold mb-3 text-muted">
+                <i class="fas fa-phone me-2"></i>{{ _("الاتصال الهاتفي") }}
+            </h6>
+            <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                    <div class="card border-0 h-100" style="background: linear-gradient(135deg, #f0f9f0, #e0f0e0); border-radius: 12px;">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center gap-2 mb-2">
+                                <span style="font-size: 1.8rem;"></span>
+                                <div>
+                                    <div class="small text-muted">{{ _("السعودية") }}</div>
+                                    <strong dir="ltr" style="font-family: 'Courier New', monospace; font-size: 1.05rem;">00966535408171</strong>
+                                </div>
+                            </div>
+                            <div class="d-flex gap-2">
+                                <a href="tel:00966535408171" class="btn btn-sm btn-success flex-fill">
+                                    <i class="fas fa-phone me-1"></i>{{ _("اتصال") }}
+                                </a>
+                                <a href="https://wa.me/966535408171" target="_blank" class="btn btn-sm text-white flex-fill" style="background: #25D366;">
+                                    <i class="fab fa-whatsapp me-1"></i>WhatsApp
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card border-0 h-100" style="background: linear-gradient(135deg, #fff5f5, #ffe7e7); border-radius: 12px;">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center gap-2 mb-2">
+                                <span style="font-size: 1.8rem;"></span>
+                                <div>
+                                    <div class="small text-muted">{{ _("السودان") }}</div>
+                                    <strong dir="ltr" style="font-family: 'Courier New', monospace; font-size: 1.05rem;">00249917764577</strong>
+                                </div>
+                            </div>
+                            <div class="d-flex gap-2">
+                                <a href="tel:00249917764577" class="btn btn-sm btn-danger flex-fill">
+                                    <i class="fas fa-phone me-1"></i>{{ _("اتصال") }}
+                                </a>
+                                <a href="https://wa.me/249917764577" target="_blank" class="btn btn-sm text-white flex-fill" style="background: #25D366;">
+                                    <i class="fab fa-whatsapp me-1"></i>WhatsApp
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- البريد الإلكتروني -->
+            <h6 class="fw-bold mb-3 text-muted">
+                <i class="fas fa-envelope me-2"></i>{{ _("البريد الإلكتروني") }}
+            </h6>
+            <div class="card border-0" style="background: linear-gradient(135deg, #e7f1ff, #f0f7ff); border-radius: 12px;">
+                <div class="card-body">
+                    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+                        <div class="d-flex align-items-center gap-2">
+                            <i class="fas fa-envelope-open-text" style="font-size: 1.8rem; color: #0d6efd;"></i>
+                            <div>
+                                <div class="small text-muted">{{ _("راسلني مباشرة") }}</div>
+                                <strong dir="ltr" style="font-family: 'Courier New', monospace;">mon1906@yahoo.com</strong>
+                            </div>
+                        </div>
+                        <a href="mailto:mon1906@yahoo.com" class="btn btn-sm btn-primary">
+                            <i class="fas fa-paper-plane me-1"></i>{{ _("راسلني") }}
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- حقوق النشر -->
+    <div class="card border-0 shadow-sm mb-4" style="border-{% if lang == 'ar' %}right{% else %}left{% endif %}: 5px solid #dc3545 !important;">
+        <div class="card-header bg-white">
+            <h4 class="mb-0 fw-bold text-danger">
+                <i class="fas fa-copyright me-2"></i>
+                {{ _("حقوق النشر والملكية الفكرية") }}
+            </h4>
+        </div>
+        <div class="card-body">
+            <div class="alert alert-danger mb-0" style="font-size: 1rem; line-height: 1.9;">
+                <p class="mb-3"><strong>{{ _("صُمّم هذا البرنامج بواسطة الدكتور عبدالمنعم علي محمد.") }}</strong></p>
+                <p class="mb-3">{{ _("جميع الحقوق محفوظة  2026.") }}</p>
+                <hr>
+                <p class="mb-2"><strong> {{ _("تنبيه قانوني:") }}</strong></p>
+                <ul class="mb-0" style="padding-{% if lang == 'ar' %}right{% else %}left{% endif %}: 20px;">
+                    <li>{{ _("لا يحق لأي جهة أو فرد استخدام هذا البرنامج أو نسخه أو توزيعه أو تعديله.") }}</li>
+                    <li>{{ _("لا يُسمح باستخدامه إلا بموافقة كتابية مسبقة من المالك.") }}</li>
+                    <li>{{ _("الاستخدام غير المصرح به يُعرّض صاحبه للمساءلة القانونية.") }}</li>
+                    <li>{{ _("جميع العلامات التجارية والأسماء التجارية محمية بموجب القوانين المعمول بها.") }}</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- أزرار -->
+    <div class="d-flex gap-2 justify-content-center flex-wrap mb-4">
+        <a href="/" class="btn btn-primary btn-lg">
+            <i class="fas fa-home me-2"></i>{{ _("العودة للرئيسية") }}
+        </a>
+        <a href="/booking" class="btn btn-outline-primary btn-lg">
+            <i class="fas fa-ticket-alt me-2"></i>{{ _("احجز رحلتك") }}
+        </a>
+    </div>
+
+</div>
+{% endblock %}

@@ -1,0 +1,555 @@
+{% extends "base.html" %}
+
+{% block title %}{{ _("أسطولنا - البصات") }}{% endblock %}
+
+{% block content %}
+
+<!-- البانر الرئيسي -->
+<section class="hero-buses">
+    <div class="container">
+        <div class="text-center text-white">
+            <h1 class="display-4 fw-bold mb-3">🚌 {{ _("أسطولنا من البصات الحديثة") }}</h1>
+            <p class="lead mb-0">{{ _("سافر بأمان وراحة مع أحدث البصات المجهزة") }}</p>
+        </div>
+    </div>
+</section>
+
+<!-- قائمة البصات -->
+<section class="container py-5">
+    <div class="text-center mb-5">
+        <h2 class="fw-bold">✨ {{ _("تعرف على أسطولنا") }}</h2>
+        <p class="text-muted">{{ _("بصات حديثة مجهزة بأحدث وسائل الراحة") }}</p>
+    </div>
+
+    <div id="busesShowcase" class="row g-4">
+        <div class="text-center py-5">
+            <div class="spinner-border text-primary"></div>
+            <p class="mt-2 text-muted">{{ _("جاري التحميل...") }}</p>
+        </div>
+    </div>
+</section>
+
+<!-- لماذا تسافر معنا؟ -->
+<section class="features-section" style="margin-top: 80px; clear: both;">
+    <div class="container py-5">
+        <h2 class="text-center fw-bold mb-5">{{ _("لماذا تختار السفر معنا؟") }}</h2>
+        <div class="row g-4">
+            <div class="col-md-3">
+                <div class="feature-card">
+                    <i class="fas fa-shield-alt fa-3x text-primary mb-3"></i>
+                    <h5>{{ _("أمان تام") }}</h5>
+                    <p class="text-muted small">{{ _("بصات حديثة + سائقون مدربون") }}</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="feature-card">
+                    <i class="fas fa-snowflake fa-3x text-info mb-3"></i>
+                    <h5>{{ _("تكييف مركزي") }}</h5>
+                    <p class="text-muted small">{{ _("راحة تامة في جميع الأوقات") }}</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="feature-card">
+                    <i class="fas fa-wifi fa-3x text-success mb-3"></i>
+                    <h5>{{ _("واي فاي مجاني") }}</h5>
+                    <p class="text-muted small">{{ _("ابقَ متصلاً خلال رحلتك") }}</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="feature-card">
+                    <i class="fas fa-chair fa-3x text-warning mb-3"></i>
+                    <h5>{{ _("مقاعد مريحة") }}</h5>
+                    <p class="text-muted small">{{ _("مقاعد واسعة وقابلة للاستلقاء") }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Modal: الفيديو -->
+<div id="videoModal" class="video-modal" onclick="if(event.target===this) closeVideo()">
+    <div class="video-modal-content">
+        <div class="video-modal-header">
+            <h5 class="mb-0">
+                <i class="fas fa-video me-2"></i>
+                <span id="videoTitle">{{ _("فيديو الباص") }}</span>
+            </h5>
+            <button class="btn-close btn-close-white" onclick="closeVideo()"></button>
+        </div>
+        <div class="video-modal-body" id="videoContainer"></div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<style>
+    .hero-buses {
+        background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 50%, #084298 100%);
+        padding: 80px 0 60px;
+        border-radius: 0 0 50px 50px;
+        margin-bottom: 40px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .hero-buses::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -10%;
+        width: 600px;
+        height: 600px;
+        background: radial-gradient(circle, rgba(255, 255, 255, 0.1), transparent 70%);
+        border-radius: 50%;
+    }
+
+    .bus-card {
+        background: white;
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        height: 100%;
+        position: relative;
+    }
+
+    .bus-card:hover {
+        transform: translateY(-12px);
+        box-shadow: 0 20px 48px rgba(0, 0, 0, 0.2);
+    }
+
+    .bus-image-container {
+        width: 100%;
+        aspect-ratio: 16 / 10;
+        background: #f0f7ff;
+        position: relative;
+        overflow: hidden;
+        border-radius: 20px 20px 0 0;
+        display: block;
+        line-height: 0;
+    }
+
+    .bus-image-container .bus-image {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: center;
+        transition: transform 0.5s ease;
+        display: block;
+    }
+
+    .bus-card:hover .bus-image {
+        transform: scale(1.08);
+    }
+
+    .bus-svg-wrapper {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, #f0f7ff, #dbeafe);
+    }
+
+    .bus-svg {
+        width: 90%;
+        height: auto;
+        max-height: 220px;
+        filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.15));
+        transition: transform 0.5s ease;
+    }
+
+    .bus-card:hover .bus-svg {
+        transform: scale(1.05);
+    }
+
+    .bus-status-badge {
+        position: absolute;
+        top: 16px;
+        {% if lang == 'ar' %}right{% else %}left{% endif %}: 16px;
+        padding: 6px 16px;
+        border-radius: 50px;
+        font-weight: 700;
+        font-size: 0.75rem;
+        z-index: 5;
+    }
+
+    .bus-status-badge.active {
+        background: linear-gradient(135deg, #198754, #157347);
+        color: white;
+        box-shadow: 0 4px 12px rgba(25, 135, 84, 0.4);
+    }
+
+    .bus-card-body {
+        padding: 20px 16px;
+        text-align: center;
+    }
+
+    .bus-plate {
+        display: inline-block;
+        background: linear-gradient(135deg, #212529, #000);
+        color: white;
+        padding: 6px 16px;
+        border-radius: 8px;
+        font-family: 'Courier New', monospace;
+        font-weight: 800;
+        font-size: 1.1rem;
+        letter-spacing: 1px;
+        margin-bottom: 12px;
+    }
+
+    .bus-model {
+        font-size: 1.3rem;
+        font-weight: 800;
+        color: #212529;
+        margin: 8px 0;
+        font-family: 'Tajawal', sans-serif;
+    }
+
+    .bus-info-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+        margin-top: 16px;
+        padding-top: 16px;
+        border-top: 1px solid #e9ecef;
+    }
+
+    .bus-info-item {
+        text-align: center;
+    }
+
+    .bus-info-item .icon {
+        font-size: 1.4rem;
+        color: #0d6efd;
+        margin-bottom: 4px;
+    }
+
+    .bus-info-item .value {
+        font-weight: 800;
+        color: #212529;
+        font-size: 1rem;
+    }
+
+    .bus-info-item .label {
+        font-size: 0.7rem;
+        color: #6c757d;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .bus-colors {
+        display: flex;
+        gap: 8px;
+        margin-top: 12px;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .color-dot {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        border: 3px solid white;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        display: inline-block;
+    }
+
+    .features-section {
+        background: linear-gradient(180deg, #f8f9fa 0%, #ffffff 100%);
+    }
+
+    .feature-card {
+        background: white;
+        padding: 32px 24px;
+        border-radius: 16px;
+        text-align: center;
+        transition: all 0.3s ease;
+        border: 2px solid transparent;
+        height: 100%;
+    }
+
+    .feature-card:hover {
+        transform: translateY(-8px);
+        border-color: #0d6efd;
+        box-shadow: 0 12px 32px rgba(13, 110, 253, 0.15);
+    }
+
+    .video-btn {
+        position: absolute;
+        bottom: 16px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(220, 53, 69, 0.95);
+        color: white;
+        border: none;
+        padding: 10px 24px;
+        border-radius: 50px;
+        font-weight: 700;
+        font-size: 0.9rem;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        box-shadow: 0 8px 24px rgba(220, 53, 69, 0.4);
+        transition: all 0.3s ease;
+        z-index: 3;
+    }
+
+    .video-btn:hover {
+        background: rgba(220, 53, 69, 1);
+        transform: translateX(-50%) scale(1.05);
+        box-shadow: 0 12px 32px rgba(220, 53, 69, 0.6);
+    }
+
+    .video-btn i {
+        font-size: 1.1rem;
+        animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.15); }
+    }
+
+    .video-modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.85);
+        z-index: 9999;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+    }
+
+    .video-modal-content {
+        background: #000;
+        border-radius: 16px;
+        overflow: hidden;
+        max-width: 900px;
+        width: 100%;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+        animation: modalFade 0.3s ease;
+    }
+
+    @keyframes modalFade {
+        from { opacity: 0; transform: scale(0.9); }
+        to { opacity: 1; transform: scale(1); }
+    }
+
+    .video-modal-header {
+        background: linear-gradient(135deg, #0d6efd, #0a58ca);
+        color: white;
+        padding: 16px 24px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .video-modal-body {
+        background: #000;
+        min-height: 400px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    @media (max-width: 768px) {
+        .hero-buses {
+            padding: 40px 0 30px;
+            border-radius: 0 0 30px 30px;
+        }
+
+        .bus-image-container {
+            height: 200px;
+        }
+    }
+</style>
+
+<script>
+    const LANG = "{{ lang }}";
+    let COMPANY_NAME = '{{ _("شركة النقل") }}';
+    let COMPANY_NAME_EN = 'Transport Co.';
+
+    document.addEventListener('DOMContentLoaded', async function () {
+        try {
+            const sRes = await fetch('/settings/');
+            const settings = await sRes.json();
+            COMPANY_NAME = LANG === 'ar' ? (settings.company_name || COMPANY_NAME) : (settings.company_name_en || COMPANY_NAME);
+            COMPANY_NAME_EN = LANG === 'ar' ? (settings.company_name_en || COMPANY_NAME_EN) : (settings.company_name || COMPANY_NAME_EN);
+        } catch (e) { }
+
+        try {
+            const res = await fetch('/buses/');
+            const buses = await res.json();
+            const container = document.getElementById('busesShowcase');
+
+            const activeBuses = buses.filter(b => b.is_active);
+
+            if (activeBuses.length === 0) {
+                container.innerHTML = `
+                <div class="col-12 text-center py-5">
+                    <i class="fas fa-bus fa-4x text-muted mb-3"></i>
+                    <h5>{{ _("لا توجد بصات متاحة حالياً") }}</h5>
+                </div>
+            `;
+                return;
+            }
+
+            const colorMap = {
+                'أبيض': '#ffffff', 'white': '#ffffff',
+                'أزرق': '#0d6efd', 'blue': '#0d6efd',
+                'أحمر': '#dc3545', 'red': '#dc3545',
+                'أسود': '#212529', 'black': '#212529',
+                'فضي': '#adb5bd', 'silver': '#adb5bd',
+                'أصفر': '#ffc107', 'yellow': '#ffc107',
+                'أخضر': '#198754', 'green': '#198754',
+                'رمادي': '#6c757d', 'gray': '#6c757d',
+                'بني': '#8b4513', 'brown': '#8b4513',
+                'ذهبي': '#ffc107', 'gold': '#ffc107'
+            };
+
+            let html = '';
+            activeBuses.forEach((bus) => {
+                const displayColor = (LANG === 'en' && bus.color_en) ? bus.color_en : (bus.color || '');
+                const colorHex = colorMap[displayColor] || colorMap[displayColor?.toLowerCase()] || '#0d6efd';
+
+                const imageHTML = (bus.image_url && bus.image_url.trim() !== '')
+                    ? `<img src="${bus.image_url}" alt="${bus.model}" class="bus-image" onerror="this.style.display='none'; this.parentElement.innerHTML='<div class=\\'bus-svg-wrapper\\'>'+getBusSVG(COMPANY_NAME, COMPANY_NAME_EN)+'</div>';">`
+                    : `<div class="bus-svg-wrapper">${getBusSVG(COMPANY_NAME, COMPANY_NAME_EN)}</div>`;
+
+                const videoButton = bus.video_url
+                    ? `<button class="video-btn" onclick="openVideo('${bus.video_url}', '${bus.model}')">
+                       <i class="fas fa-play"></i>
+                       <span>{{ _("شاهد الفيديو") }}</span>
+                   </button>`
+                    : '';
+
+                html += `
+                <div class="col-md-6 col-lg-4">
+                    <div class="bus-card">
+                        <div class="bus-image-container">
+                            <span class="bus-status-badge active">
+                                <i class="fas fa-check-circle me-1"></i>{{ _("نشط") }}
+                            </span>
+                            ${imageHTML}
+                            ${videoButton}
+                        </div>
+                        <div class="bus-card-body">
+                            <div class="text-center">
+                                <div class="bus-plate">${bus.plate_number}</div>
+                                <div class="bus-model">${bus.model}</div>
+                                ${displayColor ? `
+                                    <div class="bus-colors">
+                                        <span class="color-dot" style="background: ${colorHex};" title="${displayColor}"></span>
+                                        <span style="font-size: 0.85rem; color: #6c757d;">${displayColor}</span>
+                                    </div>
+                                ` : ''}
+                            </div>
+                            <div class="bus-info-grid">
+                                <div class="bus-info-item">
+                                    <div class="icon"><i class="fas fa-chair"></i></div>
+                                    <div class="value">${bus.total_seats}</div>
+                                    <div class="label">{{ _("مقعد") }}</div>
+                                </div>
+                                <div class="bus-info-item">
+                                    <div class="icon"><i class="fas fa-calendar"></i></div>
+                                    <div class="value">${bus.year || '-'}</div>
+                                    <div class="label">{{ _("السنة") }}</div>
+                                </div>
+                                <div class="bus-info-item">
+                                    <div class="icon"><i class="fas fa-snowflake"></i></div>
+                                    <div class="value">✓</div>
+                                    <div class="label">{{ _("مكيف") }}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            });
+            container.innerHTML = html;
+
+        } catch (e) {
+            console.error('Error:', e);
+            document.getElementById('busesShowcase').innerHTML = `
+            <div class="alert alert-danger">{{ _("فشل تحميل البصات") }}: ${e.message}</div>
+        `;
+        }
+    });
+
+    function getBusSVG(companyName, companyNameEn) {
+        const shortName = companyName.length > 25 ? companyName.substring(0, 25) + '...' : companyName;
+        const shortNameEn = companyNameEn.length > 25 ? companyNameEn.substring(0, 25) : companyNameEn;
+
+        return `
+        <svg class="bus-svg" viewBox="0 0 400 200" xmlns="http://www.w3.org/2000/svg">
+            <ellipse cx="200" cy="185" rx="150" ry="8" fill="rgba(0,0,0,0.15)"/>
+            <rect x="30" y="50" width="340" height="110" rx="15" fill="#0d6efd"/>
+            <rect x="30" y="50" width="340" height="110" rx="15" fill="url(#busGradient)"/>
+            <defs>
+                <linearGradient id="busGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                    <stop offset="0%" stop-color="#0d6efd"/>
+                    <stop offset="100%" stop-color="#0a58ca"/>
+                </linearGradient>
+                <linearGradient id="windowGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                    <stop offset="0%" stop-color="#b8e0ff"/>
+                    <stop offset="100%" stop-color="#7cc4ff"/>
+                </linearGradient>
+            </defs>
+            <rect x="50" y="65" width="55" height="40" rx="5" fill="url(#windowGradient)"/>
+            <rect x="115" y="65" width="55" height="40" rx="5" fill="url(#windowGradient)"/>
+            <rect x="180" y="65" width="55" height="40" rx="5" fill="url(#windowGradient)"/>
+            <rect x="245" y="65" width="55" height="40" rx="5" fill="url(#windowGradient)"/>
+            <rect x="310" y="65" width="45" height="40" rx="5" fill="url(#windowGradient)"/>
+            <rect x="30" y="115" width="340" height="3" fill="#ffc107"/>
+            <text x="200" y="137" text-anchor="middle" font-family="Tajawal, Cairo, Arial" font-weight="900" font-size="16" fill="white" direction="rtl">${shortName}</text>
+            <text x="200" y="152" text-anchor="middle" font-family="Almarai, Arial" font-weight="700" font-size="9" fill="#ffc107" letter-spacing="2">${shortNameEn.toUpperCase()}</text>
+            <circle cx="90" cy="165" r="18" fill="#212529"/>
+            <circle cx="90" cy="165" r="9" fill="#6c757d"/>
+            <circle cx="310" cy="165" r="18" fill="#212529"/>
+            <circle cx="310" cy="165" r="9" fill="#6c757d"/>
+        </svg>
+    `;
+    }
+
+    function openVideo(url, modelName) {
+        const modal = document.getElementById('videoModal');
+        const container = document.getElementById('videoContainer');
+        document.getElementById('videoTitle').textContent = modelName;
+
+        if (url.includes('youtube.com') || url.includes('youtu.be')) {
+            let videoId = '';
+            if (url.includes('youtu.be/')) {
+                videoId = url.split('youtu.be/')[1].split('?')[0];
+            } else {
+                videoId = url.split('v=')[1]?.split('&')[0];
+            }
+            container.innerHTML = `<iframe width="100%" height="450" src="https://www.youtube.com/embed/${videoId}?autoplay=1" frameborder="0" allowfullscreen></iframe>`;
+        } else if (url.endsWith('.mp4')) {
+            container.innerHTML = `<video width="100%" height="450" controls autoplay><source src="${url}" type="video/mp4"></video>`;
+        }
+        modal.style.display = 'flex';
+    }
+
+    function closeVideo() {
+        const modal = document.getElementById('videoModal');
+        document.getElementById('videoContainer').innerHTML = '';
+        modal.style.display = 'none';
+    }
+
+    window.openVideo = openVideo;
+    window.closeVideo = closeVideo;
+</script>
+{% endblock %}

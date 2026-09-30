@@ -1,0 +1,1546 @@
+{% extends "admin/base_admin.html" %}
+
+{% block title %}{{ _("إدارة الحجوزات") }} - BusCore{% endblock %}
+{% block page_title %}{{ _("إدارة الحجوزات") }}{% endblock %}
+
+{% block content %}
+
+<!-- بطاقات إحصائية -->
+<div class="row g-3 mb-3">
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm"
+            style="border-{% if lang == 'ar' %}right{% else %}left{% endif %}: 4px solid #0d6efd;">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <small class="text-muted">{{ _("إجمالي الحجوزات") }}</small>
+                        <h3 class="mb-0 fw-bold" id="totalBookings">0</h3>
+                    </div>
+                    <i class="fas fa-ticket-alt fa-2x text-primary" style="opacity: 0.3;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm"
+            style="border-{% if lang == 'ar' %}right{% else %}left{% endif %}: 4px solid #198754;">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <small class="text-muted">{{ _("حجوزات مؤكدة") }}</small>
+                        <h3 class="mb-0 fw-bold text-success" id="confirmedBookings">0</h3>
+                    </div>
+                    <i class="fas fa-check-circle fa-2x text-success" style="opacity: 0.3;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm"
+            style="border-{% if lang == 'ar' %}right{% else %}left{% endif %}: 4px solid #ffc107;">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <small class="text-muted">{{ _("قيد الانتظار") }}</small>
+                        <h3 class="mb-0 fw-bold text-warning" id="pendingBookings">0</h3>
+                    </div>
+                    <i class="fas fa-clock fa-2x text-warning" style="opacity: 0.3;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm"
+            style="border-{% if lang == 'ar' %}right{% else %}left{% endif %}: 4px solid #dc3545;">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <small class="text-muted">{{ _("إجمالي الإيرادات") }}</small>
+                        <h3 class="mb-0 fw-bold text-danger" id="totalRevenue">0</h3>
+                    </div>
+                    <i class="fas fa-money-bill-wave fa-2x text-danger" style="opacity: 0.3;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!--  -->
+<!-- فلاتر سريعة + toggle العرض -->
+<!--  -->
+<div class="card border-0 shadow-sm mb-3">
+    <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+            <div class="btn-group" role="group" id="quickFilters">
+                <button type="button" class="btn btn-outline-primary" data-range="today">
+                    <i class="fas fa-calendar-day me-1"></i>{{ _("اليوم") }}
+                </button>
+                <button type="button" class="btn btn-outline-primary" data-range="week">
+                    <i class="fas fa-calendar-week me-1"></i>{{ _("هذا الأسبوع") }}
+                </button>
+                <button type="button" class="btn btn-outline-primary" data-range="month">
+                    <i class="fas fa-calendar-alt me-1"></i>{{ _("هذا الشهر") }}
+                </button>
+                <button type="button" class="btn btn-outline-primary active" data-range="all">
+                    <i class="fas fa-list me-1"></i>{{ _("الكل") }}
+                </button>
+            </div>
+            <div class="btn-group btn-group-sm" role="group">
+                <button type="button" class="btn btn-outline-secondary active" id="viewGrouped" onclick="switchView('grouped')">
+                    <i class="fas fa-layer-group me-1"></i>{{ _("حسب الرحلة") }}
+                </button>
+                <button type="button" class="btn btn-outline-secondary" id="viewFlat" onclick="switchView('flat')">
+                    <i class="fas fa-list me-1"></i>{{ _("قائمة") }}
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- أدوات الفلترة والبحث -->
+<div class="card border-0 shadow-sm mb-3">
+    <div class="card-body">
+        <div class="row g-2 align-items-center">
+            <div class="col-md-4">
+                <div class="input-group">
+                    <span class="input-group-text bg-light"><i class="fas fa-search"></i></span>
+                    <input type="text" id="searchInput" class="form-control"
+                        placeholder="{{ _('بحث برقم الحجز أو الاسم أو الهاتف...') }}" oninput="filterBookings()">
+                </div>
+            </div>
+            <div class="col-md-2">
+                <select id="statusFilter" class="form-select" onchange="filterBookings()">
+                    <option value="">{{ _("جميع الحالات") }}</option>
+                    <option value="pending">{{ _("قيد الانتظار") }}</option>
+                    <option value="confirmed">{{ _("مؤكد") }}</option>
+                    <option value="cancelled">{{ _("ملغي") }}</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <input type="date" id="dateFilter" class="form-control" onchange="filterBookings()">
+            </div>
+            <div class="col-md-4 text-end">
+                <button class="btn btn-outline-dark me-1" onclick="openManifestModal()">
+                    <i class="fas fa-clipboard-list me-1"></i>{{ _("كشف الركاب") }}
+                </button>
+                <button class="btn btn-outline-success me-1" onclick="exportBookings()">
+                    <i class="fas fa-file-excel me-1"></i>{{ _("تصدير Excel") }}
+                </button>
+                <button class="btn btn-outline-primary" onclick="window.print()">
+                    <i class="fas fa-print me-1"></i>{{ _("طباعة") }}
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- جدول الحجوزات -->
+<div class="card border-0 shadow-sm">
+    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+        <h5 class="mb-0 fw-bold"><i class="fas fa-list me-2 text-primary"></i>{{ _("قائمة الحجوزات") }}</h5>
+        <span class="badge bg-primary" id="filteredCount">0</span>
+    </div>
+    <div class="card-body">
+        <div id="bookingsTableContainer">
+            <div class="text-center py-4">
+                <div class="spinner-border text-primary"></div>
+                <p class="mt-2 text-muted">{{ _("جاري التحميل...") }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: تفاصيل الحجز -->
+<div class="modal fade" id="detailsModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-info text-white">
+                <h5 class="modal-title"><i class="fas fa-info-circle me-2"></i>{{ _("تفاصيل الحجز") }}</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="detailsContent"></div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" onclick="printTicket()">
+                    <i class="fas fa-print me-2"></i>{{ _("طباعة التذكرة") }}
+                </button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ _("إغلاق") }}</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: تأكيد الحجز -->
+<div class="modal fade" id="confirmModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title"><i class="fas fa-check-circle me-2"></i>{{ _("تأكيد الحجز") }}</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>{{ _("هل تريد تأكيد الحجز") }} <strong id="confirmBookingRef"></strong>؟</p>
+                <input type="hidden" id="confirmBookingId">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ _("إلغاء") }}</button>
+                <button type="button" class="btn btn-success" onclick="confirmBooking()">
+                    <i class="fas fa-check me-2"></i>{{ _("تأكيد") }}
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: إلغاء الحجز -->
+<div class="modal fade" id="cancelModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title"><i class="fas fa-times-circle me-2"></i>{{ _("إلغاء الحجز") }}</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>{{ _("هل أنت متأكد من إلغاء الحجز") }} <strong id="cancelBookingRef"></strong>؟</p>
+                <div class="mb-3">
+                    <label class="form-label">{{ _("سبب الإلغاء (اختياري)") }}</label>
+                    <textarea id="cancelReason" class="form-control" rows="2"
+                        placeholder="{{ _('مثال: طلب العميل') }}"></textarea>
+                </div>
+                <input type="hidden" id="cancelBookingId">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ _("تراجع") }}</button>
+                <button type="button" class="btn btn-danger" onclick="cancelBooking()">
+                    <i class="fas fa-times me-2"></i>{{ _("إلغاء الحجز") }}
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: كشف الركاب (المنفستو) -->
+<div class="modal fade" id="manifestModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-xl">
+        <div class="modal-content">
+            <div class="modal-header bg-dark text-white">
+                <h5 class="modal-title"><i class="fas fa-clipboard-list me-2"></i>{{ _("كشف الركاب (المنفستو)") }}
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label fw-bold">{{ _("اختر الرحلة") }}</label>
+                    <select id="manifestTripSelect" class="form-select" onchange="loadManifest()">
+                        <option value="">{{ _("اختر الرحلة") }}</option>
+                    </select>
+                </div>
+                <div id="manifestContent">
+                    <p class="text-muted text-center py-3">{{ _("اختر رحلة لعرض كشف الركاب") }}</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" onclick="printManifest()">
+                    <i class="fas fa-print me-2"></i>{{ _("طباعة المنفستو") }}
+                </button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ _("إغلاق") }}</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<style>
+    .manifest-document {
+        background: white;
+        padding: 20px;
+        border-radius: 12px;
+        font-family: 'Cairo', sans-serif;
+    }
+
+    .manifest-header {
+        border: 3px solid #0d6efd;
+        border-radius: 12px;
+        overflow: hidden;
+        margin-bottom: 16px;
+    }
+
+    .manifest-header-top {
+        background: linear-gradient(135deg, #0d6efd, #0a58ca);
+        color: white;
+        padding: 14px 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+
+    .manifest-brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .manifest-logo {
+        height: 50px;
+        background: white;
+        padding: 4px;
+        border-radius: 10px;
+    }
+
+    .manifest-logo-icon {
+        width: 50px;
+        height: 50px;
+        background: rgba(255, 255, 255, 0.15);
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.6rem;
+    }
+
+    .manifest-company-name {
+        margin: 0;
+        font-weight: 800;
+        font-size: 1.2rem;
+    }
+
+    .manifest-company-en {
+        margin: 0;
+        opacity: 0.85;
+        font-size: 0.8rem;
+    }
+
+    .manifest-doc-info {
+        text-align: left;
+        direction: ltr;
+    }
+
+    .manifest-doc-title {
+        font-size: 1rem;
+        font-weight: 800;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .manifest-doc-sub {
+        font-size: 0.65rem;
+        opacity: 0.8;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+    }
+
+    .manifest-header-bottom {
+        background: #f8f9fa;
+        padding: 8px 20px;
+        display: flex;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 10px;
+        font-size: 0.8rem;
+    }
+
+    .manifest-info-item .label {
+        color: #6c757d;
+        margin-left: 6px;
+    }
+
+    .manifest-info-item .value {
+        color: #212529;
+        font-family: 'Courier New', monospace;
+    }
+
+    .manifest-trip-info {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 10px;
+        margin-bottom: 16px;
+        padding: 12px;
+        background: #f8f9fa;
+        border-radius: 12px;
+        border: 1px solid #e9ecef;
+    }
+
+    .manifest-trip-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .manifest-trip-item .icon {
+        width: 36px;
+        height: 36px;
+        background: white;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #0d6efd;
+        font-size: 1rem;
+        flex-shrink: 0;
+    }
+
+    .manifest-trip-item .label {
+        font-size: 0.65rem;
+        color: #6c757d;
+        text-transform: uppercase;
+    }
+
+    .manifest-trip-item .value {
+        font-weight: 700;
+        color: #212529;
+        font-size: 0.85rem;
+    }
+
+    .manifest-stats {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 10px;
+        margin-bottom: 16px;
+    }
+
+    .manifest-stat {
+        padding: 12px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        color: white;
+    }
+
+    .stat-primary {
+        background: linear-gradient(135deg, #0d6efd, #0a58ca);
+    }
+
+    .stat-warning {
+        background: linear-gradient(135deg, #ffc107, #ffb300);
+        color: #212529;
+    }
+
+    .stat-success {
+        background: linear-gradient(135deg, #198754, #157347);
+    }
+
+    .stat-info {
+        background: linear-gradient(135deg, #0dcaf0, #0aa2c0);
+        color: #212529;
+    }
+
+    .manifest-stat .stat-icon {
+        font-size: 1.6rem;
+        opacity: 0.9;
+    }
+
+    .manifest-stat .stat-value {
+        font-size: 1.4rem;
+        font-weight: 800;
+        line-height: 1;
+    }
+
+    .manifest-stat .stat-label {
+        font-size: 0.7rem;
+        opacity: 0.9;
+    }
+
+    .manifest-section {
+        margin-bottom: 16px;
+    }
+
+    .manifest-section-title {
+        background: linear-gradient(135deg, #0d6efd, #0a58ca);
+        color: white;
+        padding: 8px 16px;
+        border-radius: 10px 10px 0 0;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.9rem;
+    }
+
+    .manifest-section-title.section-infant {
+        background: linear-gradient(135deg, #ffc107, #ffb300);
+        color: #212529;
+    }
+
+    .badge-count {
+        margin-right: auto;
+        background: rgba(255, 255, 255, 0.25);
+        padding: 2px 10px;
+        border-radius: 50px;
+        font-size: 0.75rem;
+    }
+
+    .badge-count.badge-warning {
+        background: rgba(0, 0, 0, 0.15);
+    }
+
+    .manifest-table {
+        width: 100%;
+        border-collapse: collapse;
+        border: 1px solid #dee2e6;
+        border-top: none;
+        font-size: 0.82rem;
+    }
+
+    .manifest-table thead {
+        background: #e7f1ff;
+    }
+
+    .manifest-table thead th {
+        padding: 8px 6px;
+
+        text-align: {% if lang == 'ar' %}right{% else %}left{% endif %};
+        font-weight: 700;
+        color: #084298;
+        font-size: 0.75rem;
+        border-bottom: 2px solid #0d6efd;
+    }
+
+    .manifest-table tbody tr {
+        border-bottom: 1px solid #e9ecef;
+    }
+
+    .manifest-table tbody tr:hover {
+        background: #f8f9fa;
+    }
+
+    .manifest-table tbody tr:nth-child(even) {
+        background: #fafbfc;
+    }
+
+    .manifest-table tbody td {
+        padding: 8px 6px;
+        vertical-align: middle;
+    }
+
+    .badge-ref { 
+    font-family: 'Courier New', monospace; 
+    font-weight: 700; 
+    color: #0d6efd; 
+    background: #e7f1ff; 
+    padding: 3px 8px; 
+    border-radius: 6px; 
+    font-size: 0.7rem; 
+    white-space: nowrap;
+    display: inline-block;
+    letter-spacing: 0.3px;
+}
+
+    .seat-badge {
+        background: #0d6efd;
+        color: white;
+        padding: 3px 10px;
+        border-radius: 50px;
+        font-weight: 700;
+        font-size: 0.8rem;
+    }
+
+    .status-badge {
+        padding: 2px 8px;
+        border-radius: 50px;
+        font-size: 0.7rem;
+        font-weight: 700;
+    }
+
+    .status-confirmed {
+        background: #d1e7dd;
+        color: #0f5132;
+    }
+
+    .status-pending {
+        background: #fff3cd;
+        color: #664d03;
+    }
+
+    .table-infant thead {
+        background: #fff9e6;
+    }
+
+    .table-infant thead th {
+        color: #856404;
+        border-bottom-color: #ffc107;
+    }
+
+    .manifest-notes {
+        background: #f0f7ff;
+
+        border-{% if lang == 'ar' %}right{% else %}left{% endif %}: 4px solid #0d6efd;
+        padding: 12px 16px;
+        border-radius: 10px;
+        margin-bottom: 16px;
+    }
+
+    .manifest-note-title {
+        font-weight: 800;
+        color: #084298;
+        margin-bottom: 6px;
+        font-size: 0.85rem;
+    }
+
+    .manifest-notes ul {
+        margin: 0;
+
+        padding-{% if lang == 'ar' %}right{% else %}left{% endif %}: 18px;
+        font-size: 0.78rem;
+        color: #212529;
+        line-height: 1.7;
+    }
+
+    .manifest-signatures {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 30px;
+        margin: 24px 0 16px;
+    }
+
+    .signature-box {
+        text-align: center;
+    }
+
+    .signature-label {
+        font-weight: 700;
+        color: #212529;
+        margin-bottom: 30px;
+        font-size: 0.85rem;
+    }
+
+    .signature-line {
+        border-bottom: 2px dotted #212529;
+        margin-bottom: 4px;
+    }
+
+    .signature-name {
+        font-size: 0.72rem;
+        color: #6c757d;
+    }
+
+    .manifest-footer {
+        background: #212529;
+        color: rgba(255, 255, 255, 0.85);
+        padding: 10px 16px;
+        border-radius: 10px 10px 0 0;
+        display: flex;
+        justify-content: center;
+        gap: 24px;
+        flex-wrap: wrap;
+        font-size: 0.75rem;
+    }
+
+    .manifest-footer-item i {
+        color: #ffc107;
+        margin-left: 4px;
+    }
+
+    .manifest-footer-bottom {
+        background: #0d6efd;
+        color: white;
+        text-align: center;
+        padding: 6px;
+        border-radius: 0 0 10px 10px;
+        font-size: 0.7rem;
+        font-weight: 600;
+    }
+
+    /*  */
+    /* Ticket Number Cell */
+    /*  */
+    .ticket-number {
+        font-family: 'Courier New', monospace;
+        font-weight: 800;
+        color: #0d6efd;
+        font-size: 0.72rem;
+        letter-spacing: 0.2px;
+        white-space: nowrap;
+        display: inline-block;
+    }
+    /* منع كسر أرقام PNR والتذاكر على أسطر متعددة */
+    .table td strong,
+    .table td .text-primary {
+        white-space: nowrap;
+    }
+
+    /*  */
+    /* Trip Group Styles (Professional) */
+
+    @media print {
+        .manifest-document {
+            padding: 0 !important;
+        }
+
+        .manifest-document * {
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+
+        .manifest-section {
+            page-break-inside: avoid;
+        }
+    }
+</style>
+
+<script>
+    const LANG = "{{ lang }}";
+
+    function formatDateTime(dateString) {
+        if (!dateString) return '-';
+        const d = new Date(dateString);
+        const months_ar = ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'];
+        if (LANG === 'ar') {
+            const h = d.getHours();
+            const ampm = h >= 12 ? 'م' : 'ص';
+            const hour12 = h % 12 || 12;
+            return `${d.getDate()} ${months_ar[d.getMonth()]} ${d.getFullYear()} - ${hour12}:${String(d.getMinutes()).padStart(2, '0')} ${ampm}`;
+        }
+        return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+    }
+
+    function formatShortDate(dateString) {
+        if (!dateString) return '-';
+        const d = new Date(dateString);
+        return `${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()}`;
+    }
+
+    function formatCurrency(amount) {
+        if (!amount && amount !== 0) return '0 SDG';
+        const locale = LANG === 'ar' ? 'ar-SD' : 'en-SD';
+        return new Intl.NumberFormat(locale, { style: 'currency', currency: 'SDG', minimumFractionDigits: 0 }).format(amount);
+    }
+
+    let detailsModal, confirmModal, cancelModal, manifestModal;
+    let allBookings = [];
+    let allTrips = [];
+    let allRoutes = [];
+    let allStations = [];
+    let currentBooking = null;
+    let currentRange = 'all';
+    let currentView = 'grouped';
+
+    document.addEventListener('DOMContentLoaded', async function () {
+        detailsModal = new bootstrap.Modal(document.getElementById('detailsModal'));
+        confirmModal = new bootstrap.Modal(document.getElementById('confirmModal'));
+        cancelModal = new bootstrap.Modal(document.getElementById('cancelModal'));
+        manifestModal = new bootstrap.Modal(document.getElementById('manifestModal'));
+
+        //  ربط الفلاتر السريعة
+        document.querySelectorAll('#quickFilters [data-range]').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('#quickFilters [data-range]').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                currentRange = this.dataset.range;
+                filterBookings();
+            });
+        });
+
+        await Promise.all([loadStations(), loadRoutes(), loadTrips()]);
+        await loadBookings();
+    });
+
+    async function loadStations() {
+        try { const res = await fetch('/stations/'); allStations = await res.json(); } catch (e) { console.error(e); }
+    }
+
+    async function loadRoutes() {
+        try { const res = await fetch('/trips/routes'); allRoutes = await res.json(); } catch (e) { console.error(e); }
+    }
+
+    async function loadTrips() {
+        try {
+            const res = await fetch('/trips/');
+            allTrips = await res.json();
+            const select = document.getElementById('manifestTripSelect');
+            select.innerHTML = '<option value="">{{ _("اختر الرحلة") }}</option>';
+            allTrips.forEach(trip => {
+                const route = allRoutes.find(r => r.id == trip.route_id);
+                const routeText = route ? `${getStationName(route.departure_station_id)} → ${getStationName(route.arrival_station_id)}` : '-';
+                select.innerHTML += `<option value="${trip.id}">${routeText} - ${formatDateTime(trip.departure_time)}</option>`;
+            });
+        } catch (e) { console.error(e); }
+    }
+
+    function getStationName(id) {
+        const station = allStations.find(s => s.id == id);
+        if (!station) return `{{ _("محطة") }} #${id}`;
+        return (LANG === 'en' && station.name_en) ? station.name_en : station.name;
+    }
+
+    async function loadBookings() {
+        try {
+            const res = await fetch('/bookings/');
+            allBookings = await res.json();
+            updateStats();
+            renderBookings(allBookings);
+        } catch (e) {
+            console.error(e);
+            document.getElementById('bookingsTableContainer').innerHTML = `<div class="alert alert-danger">{{ _("فشل تحميل الحجوزات") }}: ${e.message}</div>`;
+        }
+    }
+
+    function updateStats() {
+        const total = allBookings.length;
+        const confirmed = allBookings.filter(b => b.status === 'confirmed').length;
+        const pending = allBookings.filter(b => b.status === 'pending').length;
+        const revenue = allBookings.filter(b => b.status === 'confirmed').reduce((sum, b) => sum + parseFloat(b.total_price || 0), 0);
+
+        document.getElementById('totalBookings').textContent = total;
+        document.getElementById('confirmedBookings').textContent = confirmed;
+        document.getElementById('pendingBookings').textContent = pending;
+        document.getElementById('totalRevenue').textContent = formatCurrency(revenue);
+    }
+
+    function renderBookings(bookings) {
+        const container = document.getElementById('bookingsTableContainer');
+        document.getElementById('filteredCount').textContent = bookings.length;
+
+        if (bookings.length === 0) {
+            container.innerHTML = `
+            <div class="text-center py-5">
+                <i class="fas fa-ticket-alt fa-4x text-muted mb-3"></i>
+                <h5>{{ _("لا توجد حجوزات") }}</h5>
+                <p class="text-muted">{{ _("لم يتم العثور على أي حجوزات") }}</p>
+            </div>`;
+            return;
+        }
+
+        //  عرض مجمّع حسب الرحلة
+        if (currentView === 'grouped') {
+            const groups = {};
+            bookings.forEach(b => {
+                const tid = b.trip_id || 'no_trip';
+                if (!groups[tid]) groups[tid] = [];
+                groups[tid].push(b);
+            });
+
+            // ترتيب المجموعات حسب وقت الرحلة (تنازلي)
+            const sortedTripIds = Object.keys(groups).sort((a, b) => {
+                const tripA = allTrips.find(t => t.id == a);
+                const tripB = allTrips.find(t => t.id == b);
+                const dateA = tripA ? new Date(tripA.departure_time) : new Date(0);
+                const dateB = tripB ? new Date(tripB.departure_time) : new Date(0);
+                return dateB - dateA;
+            });
+
+            let groupedHtml = '<div class="trip-groups-wrapper">';
+            sortedTripIds.forEach(tid => {
+                groupedHtml += renderTripGroup(tid, groups[tid]);
+            });
+            groupedHtml += '</div>';
+            container.innerHTML = groupedHtml;
+            return;
+        }
+
+        //  العرض المسطّح (كما كان)
+        let html = '<div class="table-responsive"><table class="table table-hover align-middle">';
+        html += `
+        <thead class="table-light">
+            <tr>
+                <th width="50">#</th>
+                <th width="140">{{ _("رقم الحجز") }}</th>
+                <th width="130">{{ _("رقم التذكرة") }}</th>
+                <th>{{ _("الراكب") }}</th>
+                <th>{{ _("الهاتف") }}</th>
+                <th width="70">{{ _("المقاعد") }}</th>
+                <th width="100">{{ _("المبلغ") }}</th>
+                <th width="90">{{ _("الحالة") }}</th>
+                <th width="110">{{ _("تاريخ الحجز") }}</th>
+                <th width="180">{{ _("الإجراءات") }}</th>
+            </tr>
+        </thead>
+        <tbody>`;
+
+        const sorted = [...bookings].sort((a, b) => new Date(b.booked_at) - new Date(a.booked_at));
+
+        sorted.forEach((b, index) => {
+            const statusMap = {
+                'pending': { class: 'warning', text: '{{ _("قيد الانتظار") }}' },
+                'confirmed': { class: 'success', text: '{{ _("مؤكد") }}' },
+                'cancelled': { class: 'danger', text: '{{ _("ملغي") }}' },
+                'expired': { class: 'secondary', text: '{{ _("منتهي") }}' }
+            };
+            const status = statusMap[b.status] || { class: 'secondary', text: b.status };
+
+            const isPending = b.status === 'pending';
+            const isCancelled = b.status === 'cancelled';
+
+            html += `
+            <tr>
+                <td>${index + 1}</td>
+                <td><strong class="text-primary" style="font-family: 'Courier New', monospace; font-size: 0.82rem;">${b.pnr_reference || b.booking_reference || '-'}</strong></td>
+                <td><small style="font-family: 'Courier New', monospace;">${b.ticket_number || '-'}</small></td>
+                <td>${b.passenger?.full_name || '-'}</td>
+                <td><small>${b.passenger?.phone || '-'}</small></td>
+                <td><span class="badge bg-info">${b.seat_numbers?.length || 0}</span></td>
+                <td><strong class="text-success">${formatCurrency(b.total_price)}</strong></td>
+                <td><span class="badge bg-${status.class}">${status.text}</span></td>
+                <td><small>${formatShortDate(b.booked_at)}</small></td>
+                <td>
+                    <div class="d-flex gap-1 flex-nowrap justify-content-center">
+                        <button class="btn btn-sm btn-outline-info" onclick="showDetails(${b.id})" title="{{ _('تفاصيل') }}">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                        ${isPending ? `
+                            <button class="btn btn-sm btn-outline-success" onclick="openConfirmModal(${b.id})" title="{{ _('تأكيد') }}">
+                                <i class="fas fa-check"></i>
+                            </button>
+                        ` : ''}
+                        ${!isCancelled ? `
+                            <button class="btn btn-sm btn-outline-danger" onclick="openCancelModal(${b.id})" title="{{ _('إلغاء') }}">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        ` : ''}
+                    </div>
+                </td>
+            </tr>`;
+        });
+
+        html += '</tbody></table></div>';
+        container.innerHTML = html;
+    }
+
+    function filterBookings() {
+        const search = document.getElementById('searchInput').value.toLowerCase().trim();
+        const status = document.getElementById('statusFilter').value;
+        const date = document.getElementById('dateFilter').value;
+
+        //  فلترة سريعة حسب الفترة
+        const now = new Date();
+        let rangeStart = null;
+        let rangeEnd = null;
+
+        if (currentRange === 'today') {
+            rangeStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            rangeEnd = new Date(rangeStart.getTime() + 86400000);
+        } else if (currentRange === 'week') {
+            rangeStart = new Date(now.getTime() - 7 * 86400000);
+        } else if (currentRange === 'month') {
+            rangeStart = new Date(now.getFullYear(), now.getMonth(), 1);
+        }
+
+        const filtered = allBookings.filter(b => {
+            // الفترة
+            if (rangeStart) {
+                const booked = new Date(b.booked_at);
+                if (booked < rangeStart) return false;
+                if (rangeEnd && booked >= rangeEnd) return false;
+            }
+
+            // البحث
+            if (search) {
+                const ref = (b.booking_reference || '').toLowerCase();
+                const pnr = (b.pnr_reference || '').toLowerCase();
+                const name = (b.passenger?.full_name || '').toLowerCase();
+                const phone = (b.passenger?.phone || '').toLowerCase();
+                if (!ref.includes(search) && !pnr.includes(search) && !name.includes(search) && !phone.includes(search)) return false;
+            }
+
+            // الحالة
+            if (status && b.status !== status) return false;
+
+            // التاريخ
+            if (date) {
+                const bookingDate = new Date(b.booked_at).toISOString().slice(0, 10);
+                if (bookingDate !== date) return false;
+            }
+
+            return true;
+        });
+
+        renderBookings(filtered);
+    }
+
+    // 
+    // صيغة المفرد/الجمع (عربي/إنجليزي)
+    // 
+    function pluralize(count, singularKey, pluralKey) {
+        const singular = SINGULARS[singularKey] || singularKey;
+        const plural = SINGULARS[pluralKey] || pluralKey;
+        return count === 1 ? `${count} ${singular}` : `${count} ${plural}`;
+    }
+
+    // قاموس المفرد/الجمع
+    const SINGULARS = {
+        'حجز': LANG === 'ar' ? 'حجز' : 'Booking',
+        'حجوزات': LANG === 'ar' ? 'حجوزات' : 'Bookings',
+        'مقعد': LANG === 'ar' ? 'مقعد' : 'Seat',
+        'مقاعد': LANG === 'ar' ? 'مقاعد' : 'Seats',
+        'معلق': LANG === 'ar' ? 'معلق' : 'Pending',
+        'مؤكد': LANG === 'ar' ? 'مؤكد' : 'Confirmed',
+    };
+
+    // 
+    // التبديل بين Grouped / Flat
+    // 
+    function switchView(view) {
+        currentView = view;
+        document.getElementById('viewGrouped').classList.toggle('active', view === 'grouped');
+        document.getElementById('viewFlat').classList.toggle('active', view === 'flat');
+        filterBookings();
+    }
+
+    // 
+    // عرض مجموعة رحلة واحدة
+    // 
+    function renderTripGroup(tripId, tripBookings) {
+        const trip = allTrips.find(t => t.id == tripId);
+        const route = trip ? allRoutes.find(r => r.id == trip.route_id) : null;
+        const fromName = route ? getStationName(route.departure_station_id) : '?';
+        const toName = route ? getStationName(route.arrival_station_id) : '?';
+        const tripTime = trip ? formatShortDate(trip.departure_time) : '-';
+        const tripTimeOnly = trip ? new Date(trip.departure_time).toLocaleTimeString(LANG === 'ar' ? 'ar-SA' : 'en-GB', { hour: '2-digit', minute: '2-digit' }) : '-';
+
+        const confirmedCount = tripBookings.filter(b => b.status === 'confirmed').length;
+        const pendingCount = tripBookings.filter(b => b.status === 'pending').length;
+        const revenue = tripBookings.filter(b => b.status === 'confirmed').reduce((s, b) => s + parseFloat(b.total_price || 0), 0);
+        const seats = tripBookings.reduce((s, b) => s + (b.seat_numbers?.length || 0), 0);
+
+        const groupId = `trip-group-${tripId}`;
+
+        let rowsHtml = '';
+        const sorted = [...tripBookings].sort((a, b) => new Date(b.booked_at) - new Date(a.booked_at));
+        sorted.forEach((b, idx) => {
+            const statusMap = {
+                'pending': { class: 'warning', text: '{{ _("قيد الانتظار") }}' },
+                'confirmed': { class: 'success', text: '{{ _("مؤكد") }}' },
+                'cancelled': { class: 'danger', text: '{{ _("ملغي") }}' },
+                'expired': { class: 'secondary', text: '{{ _("منتهي") }}' }
+            };
+            const status = statusMap[b.status] || { class: 'secondary', text: b.status };
+            const isPending = b.status === 'pending';
+            const isCancelled = b.status === 'cancelled';
+
+            rowsHtml += `
+            <tr>
+                <td>${idx + 1}</td>
+                <td><strong class="text-primary" style="font-family: 'Courier New', monospace; font-size: 0.82rem;">${b.pnr_reference || b.booking_reference || '-'}</strong></td>
+                <td><small style="font-family: 'Courier New', monospace;">${b.ticket_number || '-'}</small></td>
+                <td>${b.passenger?.full_name || '-'}</td>
+                <td><small>${b.passenger?.phone || '-'}</small></td>
+                <td><span class="badge bg-info">${b.seat_numbers?.join('، ') || '-'}</span></td>
+                <td><strong class="text-success">${formatCurrency(b.total_price)}</strong></td>
+                <td><span class="badge bg-${status.class}">${status.text}</span></td>
+                <td><small>${formatShortDate(b.booked_at)}</small></td>
+                <td>
+                    <div class="d-flex gap-1 flex-nowrap justify-content-center">
+                        <button class="btn btn-sm btn-outline-info" onclick="showDetails(${b.id})" title="{{ _('تفاصيل') }}">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                        ${isPending ? `
+                            <button class="btn btn-sm btn-outline-success" onclick="openConfirmModal(${b.id})" title="{{ _('تأكيد') }}">
+                                <i class="fas fa-check"></i>
+                            </button>
+                        ` : ''}
+                        ${!isCancelled ? `
+                            <button class="btn btn-sm btn-outline-danger" onclick="openCancelModal(${b.id})" title="{{ _('إلغاء') }}">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        ` : ''}
+                    </div>
+                </td>
+            </tr>`;
+        });
+
+        //  badge ذكي: يُعرض فقط إذا كانت القيمة > 0
+        const confirmedBadge = confirmedCount > 0
+            ? `<span class="tg-badge tg-badge-success"><i class="fas fa-check-circle"></i>${pluralize(confirmedCount, 'مؤكد', 'مؤكد')}</span>`
+            : '';
+        const pendingBadge = pendingCount > 0
+            ? `<span class="tg-badge tg-badge-warning"><i class="fas fa-clock"></i>${pluralize(pendingCount, 'معلق', 'معلق')}</span>`
+            : '';
+        const revenueBadge = revenue > 0
+            ? `<span class="tg-badge tg-badge-danger"><i class="fas fa-money-bill-wave"></i>${formatCurrency(revenue)}</span>`
+            : '';
+
+        return `
+        <div class="trip-group">
+            <div class="trip-group-header" data-bs-toggle="collapse" data-bs-target="#${groupId}" role="button">
+                <i class="fas fa-chevron-down toggle-icon"></i>
+                <div class="trip-group-route">
+                    <div class="d-flex align-items-center gap-2 flex-wrap">
+                        <span class="trip-code-badge">${trip?.code || trip?.trip_code || '#' + tripId}</span>
+                        <span class="trip-route-text">
+                            ${fromName}
+                            <i class="fas fa-arrow-{% if lang == 'ar' %}left{% else %}right{% endif %} route-arrow"></i>
+                            ${toName}
+                        </span>
+                    </div>
+                    <div class="trip-meta">
+                        <span class="trip-meta-item">
+                            <i class="fas fa-clock"></i>${tripTimeOnly}
+                        </span>
+                        <span class="trip-meta-item">
+                            <i class="fas fa-calendar-alt"></i>${tripTime}
+                        </span>
+                    </div>
+                </div>
+                <div class="trip-group-stats">
+                    <span class="tg-badge tg-badge-primary">
+                        <i class="fas fa-ticket-alt"></i>${pluralize(tripBookings.length, 'حجز', 'حجوزات')}
+                    </span>
+                    ${confirmedBadge}
+                    ${pendingBadge}
+                    <span class="tg-badge tg-badge-info">
+                        <i class="fas fa-chair"></i>${pluralize(seats, 'مقعد', 'مقاعد')}
+                    </span>
+                    ${revenueBadge}
+                </div>
+            </div>
+            <div class="collapse show trip-group-body" id="${groupId}">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th width="40">#</th>
+                                <th width="130">{{ _("رقم الحجز") }}</th>
+                                <th width="120">{{ _("رقم التذكرة") }}</th>
+                                <th>{{ _("الراكب") }}</th>
+                                <th>{{ _("الهاتف") }}</th>
+                                <th width="90">{{ _("المقاعد") }}</th>
+                                <th width="100">{{ _("المبلغ") }}</th>
+                                <th width="90">{{ _("الحالة") }}</th>
+                                <th width="100">{{ _("تاريخ الحجز") }}</th>
+                                <th width="150">{{ _("الإجراءات") }}</th>
+                            </tr>
+                        </thead>
+                        <tbody>${rowsHtml}</tbody>
+                    </table>
+                </div>
+            </div>
+        </div>`;
+    }
+
+    function showDetails(id) {
+        const b = allBookings.find(x => x.id === id);
+        if (!b) return;
+        currentBooking = b;
+
+        const trip = allTrips.find(t => t.id == b.trip_id);
+        const route = trip ? allRoutes.find(r => r.id == trip.route_id) : null;
+        const fromStation = route ? getStationName(route.departure_station_id) : '-';
+        const toStation = route ? getStationName(route.arrival_station_id) : '-';
+
+        const statusMap = {
+            'pending': '<span class="badge bg-warning fs-6">{{ _("قيد الانتظار") }}</span>',
+            'confirmed': '<span class="badge bg-success fs-6">{{ _("مؤكد") }}</span>',
+            'cancelled': '<span class="badge bg-danger fs-6">{{ _("ملغي") }}</span>'
+        };
+
+        document.getElementById('detailsContent').innerHTML = `
+        <div class="row g-3">
+            <div class="col-md-6"><div class="card border-0 bg-light"><div class="card-body">
+                <small class="text-muted">{{ _("رقم الحجز") }}</small>
+                <h5 class="mb-0 text-primary" style="font-family: 'Courier New', monospace;">${b.pnr_reference || b.booking_reference}</h5>
+            </div></div></div>
+            <div class="col-md-6"><div class="card border-0 bg-light"><div class="card-body">
+                <small class="text-muted">{{ _("رقم التذكرة") }}</small>
+                <h5 class="mb-0 text-dark" style="font-family: 'Courier New', monospace;">${b.ticket_number || '-'}</h5>
+            </div></div></div>
+            <div class="col-md-6"><div class="card border-0 bg-light"><div class="card-body">
+                <small class="text-muted">{{ _("الحالة") }}</small>
+                <div class="mt-1">${statusMap[b.status] || b.status}</div>
+            </div></div></div>
+            <div class="col-md-6"><div class="card border-0 bg-light"><div class="card-body">
+                <small class="text-muted">{{ _("الراكب") }}</small>
+                <h6 class="mb-0">${b.passenger?.full_name || '-'}</h6>
+                <small class="text-muted">${b.passenger?.phone || '-'}</small>
+            </div></div></div>
+            <div class="col-md-6"><div class="card border-0 bg-light"><div class="card-body">
+                <small class="text-muted">{{ _("الإثبات") }}</small>
+                <h6 class="mb-0">${b.passenger?.id_number || '{{ _("لا يوجد") }}'}</h6>
+            </div></div></div>
+            <div class="col-md-6"><div class="card border-0 bg-light"><div class="card-body">
+                <small class="text-muted">{{ _("من") }}</small>
+                <h6 class="mb-0">${fromStation}</h6>
+            </div></div></div>
+            <div class="col-md-6"><div class="card border-0 bg-light"><div class="card-body">
+                <small class="text-muted">{{ _("إلى") }}</small>
+                <h6 class="mb-0">${toStation}</h6>
+            </div></div></div>
+            <div class="col-md-4"><div class="card border-0 bg-light text-center"><div class="card-body">
+                <small class="text-muted">{{ _("المقاعد") }}</small>
+                <h4 class="mb-0 text-info">${b.seat_numbers?.join('، ') || '-'}</h4>
+            </div></div></div>
+            <div class="col-md-4"><div class="card border-0 bg-light text-center"><div class="card-body">
+                <small class="text-muted">{{ _("المبلغ") }}</small>
+                <h4 class="mb-0 text-success">${formatCurrency(b.total_price)}</h4>
+            </div></div></div>
+            <div class="col-md-4"><div class="card border-0 bg-light text-center"><div class="card-body">
+                <small class="text-muted">{{ _("نوع الحجز") }}</small>
+                <h4 class="mb-0">${b.booking_type === 'online' ? '🌐 {{ _("أونلاين") }}' : '🏢 {{ _("مكتب") }}'}</h4>
+            </div></div></div>
+            ${b.luggage_items && b.luggage_items.length > 0 ? `
+                <div class="col-12"><div class="card border-0 bg-light"><div class="card-body">
+                    <small class="text-muted">{{ _("الأمتعة الإضافية") }}</small>
+                    <ul class="mb-0 mt-2">
+                        ${b.luggage_items.map(i => `<li>${i.luggage_type === 'free' ? '🎁 {{ _("شنطة مجانية") }}' : i.luggage_type === 'small' ? '{{ _("شنطة صغيرة") }}' : i.luggage_type === 'medium' ? '{{ _("شنطة متوسطة") }}' : '{{ _("صندوق كبير") }}'} - ${i.weight_kg || ''} {{ _("كجم") }}</li>`).join('')}
+                    </ul>
+                </div></div></div>
+            ` : ''}
+        </div>`;
+
+        detailsModal.show();
+    }
+
+    function openConfirmModal(id) {
+        const b = allBookings.find(x => x.id === id);
+        if (!b) return;
+        document.getElementById('confirmBookingId').value = b.id;
+        document.getElementById('confirmBookingRef').textContent = b.booking_reference;
+        confirmModal.show();
+    }
+
+    async function confirmBooking() {
+        const id = document.getElementById('confirmBookingId').value;
+        try {
+            const res = await fetch(`/bookings/${id}/confirm`, { method: 'POST' });
+            if (!res.ok) throw new Error('{{ _("فشل التأكيد") }}');
+            confirmModal.hide();
+            await loadBookings();
+        } catch (e) { alert('❌ ' + e.message); }
+    }
+
+    function openCancelModal(id) {
+        const b = allBookings.find(x => x.id === id);
+        if (!b) return;
+        document.getElementById('cancelBookingId').value = b.id;
+        document.getElementById('cancelBookingRef').textContent = b.booking_reference;
+        document.getElementById('cancelReason').value = '';
+        cancelModal.show();
+    }
+
+    async function cancelBooking() {
+        const id = document.getElementById('cancelBookingId').value;
+        try {
+            const res = await fetch(`/bookings/${id}`, { method: 'DELETE' });
+            if (!res.ok) throw new Error('{{ _("فشل الإلغاء") }}');
+            cancelModal.hide();
+            await loadBookings();
+        } catch (e) { alert('❌ ' + e.message); }
+    }
+
+    function openManifestModal() { manifestModal.show(); }
+
+    async function loadManifest() {
+        const tripId = document.getElementById('manifestTripSelect').value;
+        const content = document.getElementById('manifestContent');
+
+        if (!tripId) {
+            content.innerHTML = '<p class="text-muted text-center py-3">{{ _("اختر رحلة لعرض كشف الركاب") }}</p>';
+            return;
+        }
+
+        try {
+            content.innerHTML = '<div class="text-center py-3"><div class="spinner-border text-primary"></div></div>';
+
+            const trip = allTrips.find(t => t.id == tripId);
+            const route = trip ? allRoutes.find(r => r.id == trip.route_id) : null;
+
+            const bookingsRes = await fetch(`/bookings/trip/${tripId}`);
+            const bookings = await bookingsRes.json();
+
+            const settingsRes = await fetch('/settings/');
+            const settings = await settingsRes.json();
+
+            let bus = null;
+            if (trip && trip.bus_id) {
+                try {
+                    const busRes = await fetch(`/buses/${trip.bus_id}`);
+                    bus = await busRes.json();
+                } catch (e) { }
+            }
+
+            const confirmed = bookings.filter(b => b.status !== 'cancelled');
+            const adults = confirmed.filter(b => !b.passenger?.is_infant);
+            const infants = confirmed.filter(b => b.passenger?.is_infant);
+
+            if (confirmed.length === 0) {
+                content.innerHTML = '<div class="alert alert-warning text-center">{{ _("لا توجد حجوزات على هذه الرحلة") }}</div>';
+                return;
+            }
+
+            const manifestRef = `MAN-${new Date(trip.departure_time).toISOString().slice(0, 10).replace(/-/g, '')}-${String(trip.id).padStart(3, '0')}`;
+            const manifestDate = new Date().toLocaleDateString(LANG === 'ar' ? 'ar-SA' : 'en-GB');
+            const manifestTime = new Date().toLocaleTimeString(LANG === 'ar' ? 'ar-SA' : 'en-GB', { hour: '2-digit', minute: '2-digit' });
+            const totalSeats = adults.reduce((sum, b) => sum + (b.seat_numbers?.length || 0), 0);
+
+            let html = `
+        <div class="manifest-document">
+            <div class="manifest-header">
+                <div class="manifest-header-top">
+                    <div class="manifest-brand">
+                        ${settings.company_logo ? `<img src="${settings.company_logo}" alt="Logo" class="manifest-logo">` : `<div class="manifest-logo-icon"><i class="fas fa-bus"></i></div>`}
+                        <div>
+                            <h2 class="manifest-company-name">${LANG === 'ar' ? (settings.company_name || 'BusCore') : (settings.company_name_en || settings.company_name || 'BusCore')}</h2>
+                            <p class="manifest-company-en">${LANG === 'ar' ? (settings.company_name_en || '') : (settings.company_name || '')}</p>
+                        </div>
+                    </div>
+                    <div class="manifest-doc-info">
+                        <div class="manifest-doc-title">
+                            <i class="fas fa-clipboard-list"></i>
+                            <span>{{ _("كشف ركاب الحافلة") }}</span>
+                        </div>
+                        <div class="manifest-doc-sub">PASSENGER MANIFEST</div>
+                    </div>
+                </div>
+                <div class="manifest-header-bottom">
+                    <div class="manifest-info-item">
+                        <span class="label">{{ _("رقم الكشف:") }}</span>
+                        <strong class="value">${manifestRef}</strong>
+                    </div>
+                    ${bookings.length > 0 && bookings[0].pnr_reference ? `
+                    <div class="manifest-info-item" style="white-space: nowrap;">
+                        <span class="label">{{ _("رقم الحجز (PNR):") }}</span>
+                        <strong class="value" style="color: #0d6efd; font-size: 0.75rem; letter-spacing: 0;">${bookings[0].pnr_reference}</strong>
+                    </div>
+                    ` : ''}
+                    <div class="manifest-info-item">
+                        <span class="label">{{ _("تاريخ الإصدار:") }}</span>
+                        <strong class="value">${manifestDate} - ${manifestTime}</strong>
+                    </div>
+                </div>
+            </div>
+
+            <div class="manifest-trip-info">
+                <div class="manifest-trip-item"><div class="icon"><i class="fas fa-route"></i></div>
+                    <div><div class="label">{{ _("المسار") }}</div>
+                    <div class="value">${route ? getStationName(route.departure_station_id) + ' → ' + getStationName(route.arrival_station_id) : '-'}</div></div>
+                </div>
+                <div class="manifest-trip-item"><div class="icon"><i class="fas fa-calendar-alt"></i></div>
+                    <div><div class="label">{{ _("التاريخ والوقت") }}</div>
+                    <div class="value">${formatDateTime(trip.departure_time)}</div></div>
+                </div>
+                <div class="manifest-trip-item"><div class="icon"><i class="fas fa-bus"></i></div>
+                    <div><div class="label">{{ _("رقم الحافلة") }}</div>
+                    <div class="value">${bus ? bus.plate_number : `{{ _("حافلة") }} #${trip.bus_id}`}</div></div>
+                </div>
+                <div class="manifest-trip-item"><div class="icon"><i class="fas fa-users"></i></div>
+                    <div><div class="label">{{ _("السعة الكلية") }}</div>
+                    <div class="value">${trip.total_seats} {{ _("مقعد") }}</div></div>
+                </div>
+            </div>
+
+            <div class="manifest-stats">
+                <div class="manifest-stat stat-primary"><div class="stat-icon"><i class="fas fa-user"></i></div>
+                    <div><div class="stat-value">${adults.length}</div><div class="stat-label">{{ _("راكب بالغ") }}</div></div>
+                </div>
+                <div class="manifest-stat stat-warning"><div class="stat-icon"><i class="fas fa-baby"></i></div>
+                    <div><div class="stat-value">${infants.length}</div><div class="stat-label">{{ _("طفل رضيع") }}</div></div>
+                </div>
+                <div class="manifest-stat stat-success"><div class="stat-icon"><i class="fas fa-chair"></i></div>
+                    <div><div class="stat-value">${totalSeats}</div><div class="stat-label">{{ _("مقعد محجوز") }}</div></div>
+                </div>
+                <div class="manifest-stat stat-info"><div class="stat-icon"><i class="fas fa-chair"></i></div>
+                    <div><div class="stat-value">${trip.total_seats - totalSeats}</div><div class="stat-label">{{ _("مقعد متاح") }}</div></div>
+                </div>
+            </div>
+
+            <div class="manifest-section">
+                <div class="manifest-section-title">
+                    <i class="fas fa-users"></i>
+                    <span>{{ _("الركاب البالغون") }}</span>
+                    <span class="badge-count">${adults.length}</span>
+                </div>
+                <table class="manifest-table">
+                    <thead>
+                        <tr>
+                            <th width="40">#</th>
+                            <th width="160">{{ _("رقم الحجز") }}</th>
+                            <th>{{ _("اسم الراكب") }}</th>
+                            <th width="140">{{ _("رقم الهاتف") }}</th>
+                            <th width="60">{{ _("المقعد") }}</th>
+                            <th width="120">{{ _("الإثبات") }}</th>
+                            <th width="90">{{ _("الحالة") }}</th>
+                            <th width="80">{{ _("التوقيع") }}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${adults.length === 0 ? `<tr><td colspan="8" class="text-center text-muted py-3">{{ _("لا يوجد ركاب بالغون") }}</td></tr>`
+                    : adults.sort((a, b) => (a.seat_numbers?.[0] || 0) - (b.seat_numbers?.[0] || 0)).map((b, i) => `
+                            <tr>
+                                <td class="text-center"><strong>${i + 1}</strong></td>
+                                <td><span class="badge-ref" style="font-size: 0.68rem;">${b.ticket_number || b.booking_reference || '-'}</span></td>
+                                <td><strong>${b.passenger?.full_name || '-'}</strong></td>
+                                <td dir="ltr">${b.passenger?.phone || '-'}</td>
+                                <td class="text-center"><span class="seat-badge">${b.seat_numbers?.join('، ') || '-'}</span></td>
+                                <td><small>${b.passenger?.id_number || '-'}</small></td>
+                                <td class="text-center"><span class="status-badge ${b.status === 'confirmed' ? 'status-confirmed' : 'status-pending'}">
+                                    ${b.status === 'confirmed' ? '✅ {{ _("مؤكد") }}' : '⏳ {{ _("معلق") }}'}
+                                </span></td>
+                                <td></td>
+                            </tr>`).join('')}
+                    </tbody>
+                </table>
+            </div>
+
+            ${infants.length > 0 ? `
+            <div class="manifest-section">
+                <div class="manifest-section-title section-infant">
+                    <i class="fas fa-baby"></i>
+                    <span>{{ _("الأطفال الرضع (مجاناً - بدون مقعد)") }}</span>
+                    <span class="badge-count badge-warning">${infants.length}</span>
+                </div>
+                <table class="manifest-table table-infant">
+                    <thead>
+                        <tr>
+                            <th width="40">#</th>
+                            <th width="160">{{ _("رقم الحجز") }}</th>
+                            <th>{{ _("اسم الطفل") }}</th>
+                            <th width="140">{{ _("هاتف المرافق") }}</th>
+                            <th width="100">{{ _("العمر") }}</th>
+                            <th width="90">{{ _("الحالة") }}</th>
+                            <th width="80">{{ _("التوقيع") }}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${infants.map((b, i) => `
+                            <tr>
+                                <td class="text-center"><strong>${i + 1}</strong></td>
+                                <td><span class="badge-ref" style="font-size: 0.68rem;">${b.ticket_number || b.booking_reference || '-'}</span></td>
+                                <td><strong>👶 ${b.passenger?.full_name || '-'}</strong></td>
+                                <td dir="ltr">${b.passenger?.phone || '-'}</td>
+                                <td class="text-center"><small>{{ _("أقل من سنتين") }}</small></td>
+                                <td class="text-center"><span class="status-badge ${b.status === 'confirmed' ? 'status-confirmed' : 'status-pending'}">
+                                    ${b.status === 'confirmed' ? '✅ {{ _("مؤكد") }}' : '⏳ {{ _("معلق") }}'}
+                                </span></td>
+                                <td></td>
+                            </tr>`).join('')}
+                    </tbody>
+                </table>
+            </div>` : ''}
+
+            <div class="manifest-notes">
+                <div class="manifest-note-title"><i class="fas fa-info-circle"></i> {{ _("ملاحظات هامة:") }}</div>
+                <ul>
+                    <li>{{ _("على قائد الحافلة التحقق من هوية كل راكب قبل الصعود.") }}</li>
+                    <li>{{ _("الأطفال الرضع يسافرون مجاناً بدون مقعد ويجب أن يكونوا برفقة أحد الوالدين.") }}</li>
+                    <li>{{ _("يجب التأكد من عدد الركاب الفعلي ومطابقته مع الكشف قبل الانطلاق.") }}</li>
+                    <li>{{ _("في حالة وجود راكب غير مسجل، يتم إبلاغ الإدارة فوراً.") }}</li>
+                </ul>
+            </div>
+
+            <div class="manifest-signatures">
+                <div class="signature-box">
+                    <div class="signature-label">{{ _("توقيع قائد الحافلة") }}</div>
+                    <div class="signature-line"></div>
+                    <div class="signature-name">{{ _("الاسم:") }} ________________________</div>
+                </div>
+                <div class="signature-box">
+                    <div class="signature-label">{{ _("توقيع المشرف / المدير") }}</div>
+                    <div class="signature-line"></div>
+                    <div class="signature-name">{{ _("الاسم:") }} ________________________</div>
+                </div>
+            </div>
+
+                <div class="manifest-footer">
+                ${settings.company_phone ? `<div class="manifest-footer-item"><i class="fas fa-phone"></i> ${settings.company_phone}</div>` : ''}
+                ${settings.company_email ? `<div class="manifest-footer-item"><i class="fas fa-envelope"></i> ${settings.company_email}</div>` : ''}
+                ${(LANG === 'ar' ? settings.company_address : (settings.company_address_en || settings.company_address)) ? `<div class="manifest-footer-item"><i class="fas fa-map-marker-alt"></i> ${LANG === 'ar' ? settings.company_address : (settings.company_address_en || settings.company_address)}</div>` : ''}
+            </div>
+            <div class="manifest-footer-bottom">
+                ${LANG === 'ar' ? (settings.company_name || 'BusCore') : (settings.company_name_en || settings.company_name || 'BusCore')} — {{ _("جميع الحقوق محفوظة") }} © ${new Date().getFullYear()}
+            </div>
+        </div>`;
+
+            content.innerHTML = html;
+        } catch (e) {
+            console.error(e);
+            content.innerHTML = `<div class="alert alert-danger">{{ _("فشل تحميل المنفستو") }}: ${e.message}</div>`;
+        }
+    }
+
+    function printManifest() {
+        const content = document.getElementById('manifestContent').innerHTML;
+        const printWindow = window.open('', '_blank');
+        printWindow.document.write(`
+        <html lang="{{ lang }}" dir="{{ dir }}"><head>
+        <title>{{ _("كشف الركاب") }}</title>
+        {% if lang == 'ar' %}
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+        {% else %}
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+        {% endif %}
+        <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+        <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+        <link href="/static/css/style.css" rel="stylesheet">
+        <style>
+            @page { size: A4 portrait; margin: 10mm; }
+            body { font-family: 'Cairo', sans-serif; padding: 10px; }
+            .manifest-document * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        </style>
+        </head><body>${content}</body></html>`);
+        printWindow.document.close();
+        setTimeout(() => printWindow.print(), 800);
+    }
+
+    async function printTicket() {
+        if (!currentBooking) return;
+        const b = currentBooking;
+        const trip = allTrips.find(t => t.id == b.trip_id);
+        const route = trip ? allRoutes.find(r => r.id == trip.route_id) : null;
+
+        let settings = {};
+        try {
+            const res = await fetch('/settings/');
+            settings = await res.json();
+        } catch (e) { }
+
+        const printWindow = window.open('', '_blank');
+        printWindow.document.write(`
+        <html lang="{{ lang }}" dir="{{ dir }}"><head><title>{{ _("تذكرة") }} ${b.booking_reference}</title>
+        {% if lang == 'ar' %}
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+        {% else %}
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+        {% endif %}
+        <style>body{font-family:'Cairo',sans-serif;padding:20px}</style>
+        </head><body>
+        <div style="max-width:600px;margin:auto;border:2px solid #0d6efd;border-radius:15px;padding:20px">
+            <div class="text-center mb-3">
+                <h3 class="text-primary">🚌 BusCore</h3>
+                <small>{{ _("تذكرة سفر") }}</small>
+            </div>
+            <hr>
+            <p><strong>{{ _("رقم التذكرة:") }}</strong> ${b.booking_reference}</p>
+            <p><strong>{{ _("الراكب:") }}</strong> ${b.passenger?.full_name || '-'}</p>
+            <p><strong>{{ _("الهاتف:") }}</strong> ${b.passenger?.phone || '-'}</p>
+            <p><strong>{{ _("المسار:") }}</strong> ${route ? getStationName(route.departure_station_id) + ' → ' + getStationName(route.arrival_station_id) : '-'}</p>
+            <p><strong>{{ _("التاريخ:") }}</strong> ${formatDateTime(trip?.departure_time)}</p>
+            <p><strong>{{ _("المقاعد:") }}</strong> ${b.seat_numbers?.join('، ')}</p>
+            <p><strong>{{ _("المبلغ:") }}</strong> ${formatCurrency(b.total_price)}</p>
+            <hr>
+            <p class="text-center text-muted">${LANG === 'ar' ? (settings.ticket_footer_text || 'شكراً لثقتكم بنا') : (settings.ticket_footer_text_en || settings.ticket_footer_text || 'Thank you for your trust')}</p>
+        </div>
+        </body></html>`);
+        printWindow.document.close();
+        setTimeout(() => printWindow.print(), 500);
+    }
+
+    function exportBookings() {
+        let csv = '{{ _("رقم الحجز") }},{{ _("الاسم") }},{{ _("الهاتف") }},{{ _("المقاعد") }},{{ _("المبلغ") }},{{ _("الحالة") }},{{ _("التاريخ") }}\n';
+        allBookings.forEach(b => {
+            csv += `"${b.booking_reference}","${b.passenger?.full_name || ''}","${b.passenger?.phone || ''}","${b.seat_numbers?.join(' ') || ''}","${b.total_price || 0}","${b.status || ''}","${formatShortDate(b.booked_at)}"\n`;
+        });
+
+        const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = `bookings_${new Date().toISOString().slice(0, 10)}.csv`;
+        link.click();
+    }
+
+    window.filterBookings = filterBookings;
+    window.showDetails = showDetails;
+    window.openConfirmModal = openConfirmModal;
+    window.openCancelModal = openCancelModal;
+    window.confirmBooking = confirmBooking;
+    window.cancelBooking = cancelBooking;
+    window.loadManifest = loadManifest;
+    window.printManifest = printManifest;
+    window.printTicket = printTicket;
+    window.exportBookings = exportBookings;
+    window.openManifestModal = openManifestModal;
+    window.switchView = switchView;
+</script>
+{% endblock %}

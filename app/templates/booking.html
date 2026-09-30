@@ -1,0 +1,605 @@
+{% extends "base.html" %}
+
+{% block title %}BusCore - {{ _("حجز التذكرة") }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-lg-7">
+            <h3><i class="fas fa-ticket-alt text-primary me-2"></i>{{ _("حجز التذكرة") }}</h3>
+
+            <div class="card mb-4" id="tripDetails">
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6"><small class="text-muted d-block">{{ _("المسار") }}</small><strong id="tripRoute">-</strong></div>
+                        <div class="col-md-6"><small class="text-muted d-block">{{ _("تاريخ المغادرة") }}</small><strong id="tripDeparture">-</strong></div>
+                        <div class="col-md-6"><small class="text-muted d-block">{{ _("رقم الحافلة") }}</small><strong id="tripBusNumber">-</strong></div>
+                        <div class="col-md-6"><small class="text-muted d-block">{{ _("سعر التذكرة") }}</small><strong id="tripPrice" class="text-success">-</strong></div>
+                        <div class="col-md-12"><small class="text-muted d-block">{{ _("المقاعد المتاحة") }}</small><strong id="availableSeats">-</strong></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white"><i class="fas fa-users me-2"></i>{{ _("عدد المسافرين") }}</div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">{{ _("البالغين") }} <span class="text-danger">*</span></label>
+                            <input type="number" id="passengerCount" class="form-control" min="1" max="10" value="1" onchange="updatePassengerFields()">
+                            <small class="text-muted">{{ _("كل بالغ يحتاج مقعداً") }}</small>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">{{ _("الأطفال الرضع") }}</label>
+                            <input type="number" id="infantCount" class="form-control" min="0" max="5" value="0" onchange="updateInfantFields()">
+                            <small class="text-success"><i class="fas fa-gift me-1"></i>{{ _("مجاناً - بدون مقعد (أقل من سنتين)") }}</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <span><i class="fas fa-chair me-2"></i>{{ _("اختر مقاعد البالغين") }}</span>
+                    <span class="badge bg-primary" id="selectedSeatsCount">0</span>
+                </div>
+                <div class="card-body">
+                    <div id="seatsContainer"><div class="text-center py-3"><div class="loading-spinner"></div><p class="mt-2 text-muted">{{ _("جاري التحميل...") }}</p></div></div>
+                    <div class="d-flex justify-content-center gap-4 mt-3 flex-wrap">
+                        <span><span class="badge bg-success">{{ _("متاح") }}</span></span>
+                        <span><span class="badge bg-primary">{{ _("مختار") }}</span></span>
+                        <span><span class="badge bg-danger">{{ _("محجوز") }}</span></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-header"><i class="fas fa-user me-2"></i>{{ _("بيانات البالغين") }}</div>
+                <div class="card-body" id="passengersContainer"></div>
+            </div>
+
+            <div class="card mb-4" id="infantsCard" style="display: none;">
+                <div class="card-header bg-warning text-dark">
+                    <i class="fas fa-baby me-2"></i>{{ _("بيانات الأطفال الرضع") }}
+                    <span class="badge bg-dark ms-2">{{ _("مجاناً بدون مقعد") }}</span>
+                </div>
+                <div class="card-body" id="infantsContainer"></div>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-header bg-success text-white">
+                    <i class="fas fa-suitcase me-2"></i>{{ _("الأمتعة") }}
+                    <span class="badge bg-light text-success ms-2">{{ _("شنطة مجانية 40 كجم") }}</span>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-success">
+                        <i class="fas fa-gift me-2"></i>
+                        <strong>✅ {{ _("شنطة مجانية:") }}</strong> {{ _("تشمل كل تذكرة شنطة واحدة بوزن يصل إلى") }} <strong>40 {{ _("كجم") }}</strong>
+                    </div>
+                    <h6 class="mt-3 fw-bold">{{ _("أمتعة إضافية (اختيارية)") }}</h6>
+                    <div id="luggageOptions">
+                        <div class="text-center py-3"><div class="loading-spinner"></div><p class="mt-2 text-muted">{{ _("جاري التحميل...") }}</p></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-5">
+            <div class="card sticky-top" style="top: 90px;">
+                <div class="card-header bg-primary text-white"><i class="fas fa-receipt me-2"></i>{{ _("ملخص الحجز") }}</div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between mb-2"><span>{{ _("عدد البالغين") }}</span><strong id="ticketCount">0</strong></div>
+                    <div class="d-flex justify-content-between mb-2"><span>{{ _("عدد المقاعد") }}</span><strong id="ticketCountDisplay">0</strong></div>
+                    <div class="d-flex justify-content-between mb-2"><span>{{ _("الأطفال الرضع") }}</span><strong id="infantCountDisplay" class="text-warning">0</strong></div>
+                    <div class="d-flex justify-content-between mb-2"><span>{{ _("سعر التذكرة") }}</span><strong id="ticketPrice">0 SDG</strong></div>
+                    <div class="d-flex justify-content-between mb-2"><span>{{ _("الأمتعة الإضافية") }}</span><strong id="luggageTotal">0 SDG</strong></div>
+                    <hr>
+                    <div class="d-flex justify-content-between mb-3"><h5>{{ _("الإجمالي") }}</h5><h5 class="text-primary" id="totalPrice">0 SDG</h5></div>
+                    <button id="confirmBookingBtn" class="btn btn-success w-100 py-2" disabled><i class="fas fa-check me-2"></i>{{ _("تأكيد الحجز") }}</button>
+                    <div id="bookingMessage" class="mt-3"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const LANG = "{{ lang }}";
+let selectedSeats = [];
+let tripData = null;
+let totalSeats = 0;
+let passengerCount = 1;
+let infantCount = 0;
+let isProcessing = false;
+
+function formatDate(dateString) {
+    if (!dateString) return '-';
+    const date = new Date(dateString);
+    if (LANG === 'ar') {
+        const months = ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+        const h = date.getHours();
+        const ampm = h >= 12 ? 'مساءً' : 'صباحاً';
+        return `${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear()}، ${h % 12 || 12}:${String(date.getMinutes()).padStart(2, '0')} ${ampm}`;
+    }
+    return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+}
+
+function formatCurrency(amount) {
+    if (!amount && amount !== 0) return '0 SDG';
+    const locale = LANG === 'ar' ? 'ar-SD' : 'en-SD';
+    return new Intl.NumberFormat(locale, { style: 'currency', currency: 'SDG', minimumFractionDigits: 0 }).format(amount);
+}
+
+document.addEventListener('DOMContentLoaded', async function() {
+    const savedTrip = localStorage.getItem('selected_trip');
+    if (!savedTrip) { window.location.href = '/'; return; }
+    tripData = JSON.parse(savedTrip);
+
+    document.getElementById('tripRoute').textContent = (LANG === 'en' && tripData.route_en) ? tripData.route_en : (tripData.route || '{{ _("غير محدد") }}');
+    document.getElementById('tripDeparture').textContent = formatDate(tripData.departure_time);
+    document.getElementById('tripBusNumber').textContent = tripData.bus_number || '{{ _("غير محدد") }}';
+    document.getElementById('tripPrice').textContent = formatCurrency(tripData.price);
+    document.getElementById('availableSeats').textContent = tripData.available_seats || 0;
+    totalSeats = tripData.total_seats || 40;
+
+    await loadSeats(tripData.id);
+    await loadLuggageOptions();
+    updatePassengerFields();
+    updateSummary();
+
+    const confirmBtn = document.getElementById('confirmBookingBtn');
+    if (confirmBtn) {
+        confirmBtn.replaceWith(confirmBtn.cloneNode(true));
+        document.getElementById('confirmBookingBtn').addEventListener('click', confirmBooking);
+    }
+});
+
+function updatePassengerFields() {
+    const count = parseInt(document.getElementById('passengerCount').value) || 1;
+    passengerCount = count;
+    const container = document.getElementById('passengersContainer');
+    let html = '';
+    for (let i = 1; i <= count; i++) {
+        html += `
+            <div class="row g-3 passenger-fields" data-index="${i}">
+                <div class="col-12"><h6 class="text-primary">👤 {{ _("الراكب") }} ${i}</h6></div>
+                <div class="col-md-6">
+                    <label class="form-label">{{ _("الاسم الكامل") }} <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control passenger-name" placeholder="{{ _('أدخل الاسم') }}" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">{{ _("الهاتف") }} <span class="text-danger">*</span></label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light fw-bold">+249</span>
+                        <input type="tel" class="form-control passenger-phone" placeholder="912345678" maxlength="9" required oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 9)">
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">{{ _("العمر (سنة)") }}</label>
+                    <input type="number" class="form-control passenger-age" placeholder="{{ _('مثال: 30') }}" min="2" max="120">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">{{ _("نوع الإثبات") }}</label>
+                    <select class="form-select passenger-id-type">
+                        <option value="">{{ _("اختر") }}</option>
+                        <option value="جواز سفر">{{ _("جواز سفر") }}</option>
+                        <option value="بطاقة شخصية">{{ _("بطاقة شخصية") }}</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">{{ _("رقم الإثبات") }}</label>
+                    <input type="text" class="form-control passenger-id-number" placeholder="{{ _('الرقم') }}">
+                </div>
+                <div class="col-12">
+                    <label class="form-label">{{ _("البريد الإلكتروني (اختياري)") }}</label>
+                    <input type="email" class="form-control passenger-email" placeholder="example@email.com">
+                </div>
+                ${i < count ? '<hr>' : ''}
+            </div>
+        `;
+    }
+    container.innerHTML = html;
+    updateSummary();
+}
+
+function updateInfantFields() {
+    const count = parseInt(document.getElementById('infantCount').value) || 0;
+    infantCount = count;
+    const card = document.getElementById('infantsCard');
+    const container = document.getElementById('infantsContainer');
+
+    if (count === 0) {
+        card.style.display = 'none';
+        container.innerHTML = '';
+        updateSummary();
+        return;
+    }
+
+    card.style.display = 'block';
+    let html = '';
+    for (let i = 1; i <= count; i++) {
+        html += `
+            <div class="row g-3 infant-fields" data-index="${i}">
+                <div class="col-12"><h6 class="text-warning">👶 {{ _("الطفل الرضيع") }} ${i}</h6></div>
+                <div class="col-md-6">
+                    <label class="form-label">{{ _("اسم الطفل") }} <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control infant-name" placeholder="{{ _('أدخل اسم الطفل') }}" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">{{ _("العمر (بالشهور)") }} <span class="text-danger">*</span></label>
+                    <input type="number" class="form-control infant-age-months" placeholder="{{ _('مثال: 8') }}" min="0" max="23" required>
+                    <small class="text-muted">{{ _("أقل من 24 شهراً") }}</small>
+                </div>
+                ${i < count ? '<hr>' : ''}
+            </div>
+        `;
+    }
+    container.innerHTML = html;
+    updateSummary();
+}
+
+async function loadSeats(tripId) {
+    try {
+        const data = await BusCoreAPI.getAvailableSeats(tripId);
+        const bookedSeatNumbers = data.booked_seat_numbers || [];
+
+        const container = document.getElementById('seatsContainer');
+        let html = '<div class="seat-grid">';
+
+        for (let i = 1; i <= totalSeats; i++) {
+            const isBooked = bookedSeatNumbers.includes(i);
+            const isSelected = selectedSeats.includes(i);
+            let statusClass = 'available';
+            if (isBooked) statusClass = 'booked';
+            if (isSelected) statusClass = 'selected';
+
+            html += `<div class="seat ${statusClass}" data-seat="${i}" onclick="toggleSeat(${i}, ${isBooked})"><span class="seat-number">${i}</span></div>`;
+        }
+        html += '</div>';
+        container.innerHTML = html;
+    } catch (error) {
+        document.getElementById('seatsContainer').innerHTML = `<div class="alert alert-danger">{{ _("فشل تحميل المقاعد") }}: ${error.message}</div>`;
+    }
+}
+
+function toggleSeat(seatNumber, isBooked) {
+    if (isBooked) return;
+    const index = selectedSeats.indexOf(seatNumber);
+    if (index > -1) { selectedSeats.splice(index, 1); }
+    else {
+        if (selectedSeats.length < passengerCount) { selectedSeats.push(seatNumber); }
+        else { alert('{{ _("لا يمكنك اختيار أكثر من") }} ' + passengerCount + ' {{ _("مقعد") }}'); return; }
+    }
+    document.querySelectorAll('.seat').forEach(seat => {
+        const num = parseInt(seat.dataset.seat);
+        const orderIndex = selectedSeats.indexOf(num);
+        if (orderIndex > -1) {
+            seat.classList.add('selected');
+            seat.classList.remove('available');
+            seat.innerHTML = `<span class="seat-number">${num}</span><span class="seat-order">${orderIndex + 1}</span>`;
+        } else if (!seat.classList.contains('booked')) {
+            seat.classList.remove('selected');
+            seat.classList.add('available');
+            seat.innerHTML = `<span class="seat-number">${num}</span>`;
+        }
+    });
+    updateSummary();
+}
+
+async function loadLuggageOptions() {
+    try {
+        const response = await fetch('/bookings/luggage');
+        const luggage = await response.json();
+        const container = document.getElementById('luggageOptions');
+
+        if (luggage.length === 0) {
+            container.innerHTML = '<div class="alert alert-warning"><i class="fas fa-info-circle me-2"></i>{{ _("لا توجد خيارات أمتعة إضافية حالياً") }}</div>';
+            return;
+        }
+
+        //  تخزين الأمتعة عالميًا
+        window.allLuggage = luggage;
+        window.luggageQuantities = {};
+
+        let html = '<div class="row g-2">';
+        luggage.forEach((item) => {
+            if (item.is_free) return;  // نتخطى المجانية
+
+            const icon = 'fa-suitcase';
+            const weightText = item.weight_kg ? `${item.weight_kg} {{ _("كجم") }}` : '';
+            const priceText = `${parseFloat(item.price).toLocaleString()} {{ _("ج.س") }}`;
+
+            html += `
+                <div class="col-12 mb-2">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-body py-2 px-3">
+                            <div class="d-flex align-items-center gap-3" style="flex-wrap: nowrap;">
+                                <!-- أيقونة + اسم -->
+                                <div class="d-flex align-items-center gap-2" style="min-width: 130px;">
+                                    <i class="fas ${icon} text-primary fa-lg"></i>
+                                    <strong>${item.name || item.luggage_type}</strong>
+                                </div>
+
+                                <!-- الوزن -->
+                                <div class="text-muted small" style="min-width: 60px;">
+                                    ${weightText}
+                                </div>
+
+                                <!-- السعر -->
+                                <div class="text-success fw-bold ms-auto" style="min-width: 100px;">
+                                    ${priceText}
+                                </div>
+
+                                <!-- أزرار التحكم -->
+                                <div class="input-group input-group-sm" style="max-width: 170px; direction: {% if lang == 'ar' %}rtl{% else %}ltr{% endif %};">
+                                    <button class="btn btn-danger fw-bold" type="button"
+                                            onclick="changeLuggage(${item.id}, -1)"
+                                            style="min-width: 42px; font-size: 1.3rem; line-height: 1; font-weight: 900;">
+                                        &minus;
+                                    </button>
+                                    <input type="number" class="form-control text-center fw-bold"
+                                           id="lug-${item.id}" value="0" min="0" readonly
+                                           style="font-size: 1.05rem;">
+                                    <button class="btn btn-success fw-bold" type="button"
+                                            onclick="changeLuggage(${item.id}, 1)"
+                                            style="min-width: 42px; font-size: 1.3rem; line-height: 1; font-weight: 900;">
+                                        &plus;
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+
+        html += '</div>';
+        container.innerHTML = html;
+    } catch (error) {
+        document.getElementById('luggageOptions').innerHTML = `<div class="alert alert-danger">{{ _("فشل تحميل الأمتعة") }}: ${error.message}</div>`;
+    }
+}
+
+//  دوال التحكم بالأمتعة
+function changeLuggage(id, delta) {
+    const current = window.luggageQuantities[id] || 0;
+    const newVal = Math.max(0, current + delta);
+    window.luggageQuantities[id] = newVal;
+    const input = document.getElementById(`lug-${id}`);
+    if (input) input.value = newVal;
+    updateSummary();
+}
+
+
+
+function updateSummary() {
+    const ticketCount = selectedSeats.length;
+    const ticketPrice = (tripData?.price || 0) * ticketCount;
+
+    //  حساب الأمتعة الجديد
+    let luggageTotal = 0;
+    const luggageIds = [];
+    if (window.luggageQuantities && window.allLuggage) {
+        for (const [id, qty] of Object.entries(window.luggageQuantities)) {
+            if (qty > 0) {
+                const item = window.allLuggage.find(l => l.id == id);
+                if (item) {
+                    luggageTotal += parseFloat(item.price) * qty;
+                    // تكرار الـ ID بحسب الكمية
+                    for (let i = 0; i < qty; i++) {
+                        luggageIds.push(parseInt(id));
+                    }
+                }
+            }
+        }
+    }
+    //  حفظ luggageIds للاستخدام في confirmBooking
+    window.luggageIds = luggageIds;
+    window.luggageTotal = luggageTotal;
+
+    const total = ticketPrice + luggageTotal;
+
+    document.getElementById('ticketCount').textContent = passengerCount;
+    document.getElementById('ticketCountDisplay').textContent = ticketCount;
+    document.getElementById('infantCountDisplay').textContent = infantCount;
+    document.getElementById('ticketPrice').textContent = formatCurrency(ticketPrice);
+    document.getElementById('luggageTotal').textContent = formatCurrency(luggageTotal);
+    document.getElementById('totalPrice').textContent = formatCurrency(total);
+    document.getElementById('selectedSeatsCount').textContent = ticketCount;
+
+    const confirmBtn = document.getElementById('confirmBookingBtn');
+    confirmBtn.disabled = (ticketCount === 0 || ticketCount !== passengerCount);
+}
+
+async function confirmBooking() {
+    if (isProcessing) return;
+    const messageDiv = document.getElementById('bookingMessage');
+    const confirmBtn = document.getElementById('confirmBookingBtn');
+
+    // ═══════════════════════════════════════════
+    // 1) جمع بيانات البالغين
+    // ═══════════════════════════════════════════
+    const passengers = [];
+    const nameInputs = document.querySelectorAll('.passenger-name');
+    const phoneInputs = document.querySelectorAll('.passenger-phone');
+    const emailInputs = document.querySelectorAll('.passenger-email');
+    const ageInputs = document.querySelectorAll('.passenger-age');
+    const idTypeInputs = document.querySelectorAll('.passenger-id-type');
+    const idNumberInputs = document.querySelectorAll('.passenger-id-number');
+
+    for (let i = 0; i < nameInputs.length; i++) {
+        const name = nameInputs[i].value.trim();
+        const phone = phoneInputs[i].value.trim();
+        const email = emailInputs[i].value.trim();
+        const age = ageInputs[i]?.value ? parseInt(ageInputs[i].value) : null;
+        const idType = idTypeInputs[i].value;
+        const idNumber = idNumberInputs[i].value.trim();
+
+        if (!name) { messageDiv.innerHTML = `<div class="alert alert-danger">{{ _("الرجاء إدخال اسم الراكب") }} ${i+1}</div>`; return; }
+        if (!phone || phone.length !== 9) { messageDiv.innerHTML = `<div class="alert alert-danger">{{ _("الرجاء إدخال 9 أرقام للراكب") }} ${i+1}</div>`; return; }
+        if (age && age < 2) { messageDiv.innerHTML = `<div class="alert alert-danger">{{ _("الراكب") }} ${i+1}: {{ _("عمره أقل من سنتين. أضفه في قسم الأطفال الرضع") }}</div>`; return; }
+
+        let idProof = null;
+        if (idType && idNumber) idProof = `${idType}: ${idNumber}`;
+        else if (idNumber) idProof = idNumber;
+
+        passengers.push({ full_name: name, phone: `+249${phone}`, email: email || null, id_number: idProof, age: age });
+    }
+
+    // ═══════════════════════════════════════════
+    // 2) جمع بيانات الأطفال الرضع
+    // ═══════════════════════════════════════════
+    const infants = [];
+    const infantNames = document.querySelectorAll('.infant-name');
+    const infantAges = document.querySelectorAll('.infant-age-months');
+
+    for (let i = 0; i < infantNames.length; i++) {
+        const infantName = infantNames[i].value.trim();
+        const infantAgeMonths = parseInt(infantAges[i].value) || 0;
+
+        if (!infantName) { messageDiv.innerHTML = `<div class="alert alert-danger">{{ _("الرجاء إدخال اسم الطفل") }} ${i+1}</div>`; return; }
+        if (infantAgeMonths >= 24) { messageDiv.innerHTML = `<div class="alert alert-danger">{{ _("الطفل") }} ${i+1}: {{ _("عمره 24 شهراً أو أكثر. أضفه كراكب بالغ بمقعد") }}</div>`; return; }
+
+        infants.push({ full_name: infantName, phone: passengers[0]?.phone || '+249000000000', email: null, id_number: null, age: 0, is_infant: true });
+    }
+
+    if (selectedSeats.length !== passengerCount) {
+        messageDiv.innerHTML = `<div class="alert alert-warning">⚠️ {{ _("عدد المقاعد لا يطابق عدد البالغين") }}</div>`;
+        return;
+    }
+
+    // ═══════════════════════════════════════════
+    // 3) جمع الأمتعة المختارة
+    // ═══════════════════════════════════════════
+    const luggageIds = window.luggageIds || [];
+
+    try {
+        isProcessing = true;
+        confirmBtn.disabled = true;
+        confirmBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>{{ _("جاري الحجز...") }}';
+        messageDiv.innerHTML = '';
+
+        // ═══════════════════════════════════════════
+        // 4) إنشاء الركاب (كل راكب على حدة)
+        // ═══════════════════════════════════════════
+        const items = [];
+
+        // ✅ البالغون
+        // ⚠️ الأمتعة الإضافية تُضاف للراكب الأول فقط (الرأس المسؤول عن الحجز)
+        // هذا يضمن أن العائلة تدفع مرة واحدة للأمتعة الإضافية، لا مرة لكل فرد
+        for (let i = 0; i < passengers.length; i++) {
+            const p = await BusCoreAPI.createPassenger(passengers[i]);
+            items.push({
+                passenger_id: p.id,
+                seat_numbers: [selectedSeats[i]],
+                luggage_ids: (i === 0) ? (window.luggageIds || []) : []
+            });
+        }
+
+        // ✅ الأطفال الرضع (لا يحتاجون أمتعة إضافية)
+        for (let i = 0; i < infants.length; i++) {
+            const p = await BusCoreAPI.createPassenger(infants[i]);
+            items.push({
+                passenger_id: p.id,
+                seat_numbers: [],
+                luggage_ids: []
+            });
+        }
+
+        // ═══════════════════════════════════════════
+        // 5) إرسال حجز جماعي واحد (PNR)
+        // ═══════════════════════════════════════════
+        const groupPayload = {
+            trip_id: tripData.id,
+            items: items,
+            booking_type: 'online',
+            contact_name: passengers[0]?.full_name || null,
+            contact_phone: passengers[0]?.phone || null
+        };
+
+        const response = await fetch('/bookings/group', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(groupPayload)
+        });
+
+        if (!response.ok) {
+            const err = await response.json();
+
+            // ✅ التحقق من نوع الخطأ
+            let detail = err.detail;
+            if (typeof detail === 'object' && detail !== null) {
+                if (detail.error_type === 'booking_window_closed') {
+                    // ✅ نافذة الحجز مغلقة
+                    isProcessing = false;
+                    confirmBtn.disabled = false;
+                    confirmBtn.innerHTML = '<i class="fas fa-check me-2"></i>{{ _("تأكيد الحجز") }}';
+
+                    messageDiv.innerHTML = `
+                        <div class="alert alert-warning" style="border-right: 5px solid #ffc107;">
+                            <h5 class="alert-heading">
+                                <i class="fas fa-clock me-2"></i>{{ _("انتهى وقت الحجز الإلكتروني") }}
+                            </h5>
+                            <hr>
+                            <p class="mb-2">${detail.message}</p>
+                            <p class="mb-0">
+                                <strong>{{ _("يرجى التواصل مع مكتب الحجز:") }}</strong>
+                                <br>
+                                <a href="tel:+249917764577" class="btn btn-sm btn-primary mt-2">
+                                    <i class="fas fa-phone me-1"></i> 917764577
+                                </a>
+                                <a href="https://wa.me/249917764577" target="_blank" class="btn btn-sm btn-success mt-2 ms-1">
+                                    <i class="fab fa-whatsapp me-1"></i> WhatsApp
+                                </a>
+                            </p>
+                        </div>
+                    `;
+                    return;
+                }
+                detail = detail.message || '{{ _("فشل الحجز") }}';
+            }
+            throw new Error(detail || '{{ _("فشل الحجز الجماعي") }}');
+        }
+
+        const result = await response.json();
+        console.log('✅ PNR:', result.pnr_reference);
+
+        // ═══════════════════════════════════════════
+        // 6) حفظ النتيجة والانتقال لصفحة التأكيد
+        // ═══════════════════════════════════════════
+        localStorage.setItem('pnr_reference', result.pnr_reference);
+        localStorage.setItem('booking_data', JSON.stringify(result.bookings));
+
+        //  تمرير البيانات عبر URL  يعمل على كل الأجهزة
+        const urlParams = new URLSearchParams({
+            pnr: result.pnr_reference,
+            data: JSON.stringify(result.bookings),
+            trip: localStorage.getItem('selected_trip') || ''
+        });
+
+        messageDiv.innerHTML = `
+            <div class="alert alert-success">
+                ✅ {{ _("تم الحجز بنجاح!") }}
+                <br><small>{{ _("رقم الحجز:") }} <strong>${result.pnr_reference}</strong></small>
+            </div>
+        `;
+        setTimeout(() => window.location.href = '/confirmation?' + urlParams.toString(), 1800);
+
+    } catch (error) {
+        console.error(error);
+        confirmBtn.disabled = false;
+        confirmBtn.innerHTML = '<i class="fas fa-check me-2"></i>{{ _("تأكيد الحجز") }}';
+        messageDiv.innerHTML = `<div class="alert alert-danger">❌ {{ _("فشل الحجز") }}: ${error.message}</div>`;
+    } finally {
+        isProcessing = false;
+    }
+}
+
+window.updatePassengerFields = updatePassengerFields;
+window.updateInfantFields = updateInfantFields;
+window.toggleSeat = toggleSeat;
+window.confirmBooking = confirmBooking;
+</script>
+{% endblock %}

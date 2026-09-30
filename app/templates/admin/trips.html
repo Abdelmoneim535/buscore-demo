@@ -1,0 +1,1080 @@
+{% extends "admin/base_admin.html" %}
+
+{% block title %}{{ _("إدارة الرحلات") }} - BusCore{% endblock %}
+{% block page_title %}{{ _("إدارة الرحلات") }}{% endblock %}
+
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <p class="text-muted mb-0">{{ _("جدولة وإدارة رحلات الحافلات") }}</p>
+    <button class="btn btn-primary" onclick="openAddModal()">
+        <i class="fas fa-plus me-2"></i>{{ _("إضافة رحلة جديدة") }}
+    </button>
+</div>
+
+<div class="row g-3 mb-3">
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body text-center">
+                <i class="fas fa-calendar-check fa-2x text-primary mb-2"></i>
+                <h4 class="mb-0 fw-bold" id="totalTrips">0</h4>
+                <small class="text-muted">{{ _("إجمالي الرحلات") }}</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body text-center">
+                <i class="fas fa-check-circle fa-2x text-success mb-2"></i>
+                <h4 class="mb-0 fw-bold" id="activeTrips">0</h4>
+                <small class="text-muted">{{ _("رحلات نشطة") }}</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body text-center">
+                <i class="fas fa-clock fa-2x text-warning mb-2"></i>
+                <h4 class="mb-0 fw-bold" id="upcomingTrips">0</h4>
+                <small class="text-muted">{{ _("رحلات قادمة") }}</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body text-center">
+                <i class="fas fa-users fa-2x text-info mb-2"></i>
+                <h4 class="mb-0 fw-bold" id="totalBookings">0</h4>
+                <small class="text-muted">{{ _("إجمالي الحجوزات") }}</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm mb-3">
+    <div class="card-body">
+        <div class="row g-2 align-items-center">
+            <div class="col-md-6">
+                <div class="input-group">
+                    <span class="input-group-text bg-light"><i class="fas fa-search"></i></span>
+                    <input type="text" id="searchInput" class="form-control"
+                           placeholder="{{ _('بحث بكود المسار أو رقم اللوحة...') }}" oninput="filterTrips()">
+                </div>
+            </div>
+            <div class="col-md-3">
+                <select id="statusFilter" class="form-select" onchange="filterTrips()">
+                    <option value="">{{ _("جميع الحالات") }}</option>
+                    <option value="active">{{ _("نشطة فقط") }}</option>
+                    <option value="inactive">{{ _("متوقفة فقط") }}</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <select id="dateFilter" class="form-select" onchange="filterTrips()">
+                    <option value="">{{ _("جميع التواريخ") }}</option>
+                    <option value="today">{{ _("اليوم") }}</option>
+                    <option value="tomorrow">{{ _("غداً") }}</option>
+                    <option value="week">{{ _("هذا الأسبوع") }}</option>
+                    <option value="future">{{ _("القادمة") }}</option>
+                </select>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm">
+    <div class="card-header bg-white">
+        <h5 class="mb-0 fw-bold"><i class="fas fa-route me-2 text-primary"></i>{{ _("قائمة الرحلات") }}</h5>
+    </div>
+    <div class="card-body">
+        <div id="tripsTableContainer">
+            <div class="text-center py-4">
+                <div class="spinner-border text-primary"></div>
+                <p class="mt-2 text-muted">{{ _("جاري التحميل...") }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: إضافة رحلة -->
+<div class="modal fade" id="tripModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-plus me-2"></i>{{ _("إضافة رحلة جديدة") }}
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">{{ _("المسار") }} <span class="text-danger">*</span></label>
+                        <select id="tripRoute" class="form-select" required onchange="updateTripPreview()">
+                            <option value="">{{ _("اختر المسار") }}</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">{{ _("الحافلة") }} <span class="text-danger">*</span></label>
+                        <select id="tripBus" class="form-select" required onchange="updateTripPreview()">
+                            <option value="">{{ _("اختر الحافلة") }}</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">{{ _("تاريخ ووقت المغادرة") }} <span class="text-danger">*</span></label>
+                        <input type="datetime-local" id="tripDeparture" class="form-control" required onchange="checkConflicts()">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">{{ _("تاريخ ووقت الوصول (تقديري)") }}</label>
+                        <input type="datetime-local" id="tripArrival" class="form-control">
+                    </div>
+
+                    <!-- ✅ طاقم الرحلة -->
+                    <div class="col-12">
+                        <hr class="my-2">
+                        <h6 class="text-primary mb-3">
+                            <i class="fas fa-users-cog me-1"></i>{{ _("طاقم الرحلة") }}
+                        </h6>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">
+                            <i class="fas fa-user-tie text-primary me-1"></i>
+                            {{ _("السائق") }}
+                        </label>
+                        <select id="tripDriver" class="form-select" onchange="updateTripPreview()">
+                            <option value="">{{ _("اختر السائق") }}</option>
+                        </select>
+                        <small class="text-muted" id="driverStatus"></small>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">
+                            <i class="fas fa-user-friends text-success me-1"></i>
+                            {{ _("المساعد / المضيف") }}
+                        </label>
+                        <select id="tripAssistant" class="form-select" onchange="updateTripPreview()">
+                            <option value="">{{ _("اختر المساعد (اختياري)") }}</option>
+                        </select>
+                        <small class="text-muted" id="assistantStatus"></small>
+                    </div>
+                    <div class="col-12">
+                        <div id="tripPreview" class="alert alert-info d-none">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>{{ _("معاينة الرحلة:") }}</strong>
+                            <div id="previewContent" class="mt-2"></div>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div id="conflictWarning" class="alert alert-danger d-none">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            <strong>{{ _("تحذير:") }}</strong>
+                            <div id="conflictContent"></div>
+                        </div>
+                    </div>
+                </div>
+                <div id="modalMessage" class="mt-3"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ _("إلغاء") }}</button>
+                <button type="button" class="btn btn-primary" id="saveTripBtn" onclick="saveTrip()">
+                    <i class="fas fa-save me-2"></i>{{ _("حفظ الرحلة") }}
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: تفاصيل الرحلة -->
+<div class="modal fade" id="detailsModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-info text-white">
+                <h5 class="modal-title"><i class="fas fa-info-circle me-2"></i>{{ _("تفاصيل الرحلة") }}</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="detailsContent"></div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ _("إغلاق") }}</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: تأكيد الحذف -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title"><i class="fas fa-exclamation-triangle me-2"></i>{{ _("تأكيد الحذف") }}</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>{{ _("هل أنت متأكد من حذف هذه الرحلة؟") }}</p>
+                <p class="text-danger small mb-0">
+                    <i class="fas fa-info-circle me-1"></i>
+                    {{ _("لا يمكن حذف رحلة تحتوي على حجوزات.") }}
+                </p>
+                <input type="hidden" id="deleteTripId">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ _("إلغاء") }}</button>
+                <button type="button" class="btn btn-danger" onclick="confirmDelete()">
+                    <i class="fas fa-trash me-2"></i>{{ _("حذف نهائي") }}
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+const LANG = "{{ lang }}";
+
+let tripModal, detailsModal, deleteModal;
+let allTrips = [];
+let allRoutes = [];
+let allBuses = [];
+let allStations = [];
+
+document.addEventListener('DOMContentLoaded', async function() {
+    tripModal = new bootstrap.Modal(document.getElementById('tripModal'));
+    detailsModal = new bootstrap.Modal(document.getElementById('detailsModal'));
+    deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+
+    // ✅ التاريخ الافتراضي = غدًا 7:30 صباحًا
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    tomorrow.setHours(7, 30, 0, 0);
+    tomorrow.setMinutes(tomorrow.getMinutes() - tomorrow.getTimezoneOffset());
+    document.getElementById('tripDeparture').value = tomorrow.toISOString().slice(0, 16);
+
+    // ✅ منع التواريخ السابقة
+    const todayMin = new Date();
+    todayMin.setMinutes(todayMin.getMinutes() - todayMin.getTimezoneOffset());
+    document.getElementById('tripDeparture').setAttribute('min', todayMin.toISOString().slice(0, 16));
+
+    await Promise.all([loadStations(), loadRoutes(), loadBuses()]);
+    await loadTrips();
+});
+
+async function loadStations() {
+    try {
+        const response = await fetch('/stations/');
+        allStations = await response.json();
+    } catch (error) {
+        console.error('Error loading stations:', error);
+    }
+}
+
+async function loadRoutes() {
+    try {
+        const response = await fetch('/trips/routes');
+        allRoutes = await response.json();
+        const select = document.getElementById('tripRoute');
+        select.innerHTML = '<option value="">{{ _("اختر المسار") }}</option>';
+        allRoutes.forEach(r => {
+            select.innerHTML += `<option value="${r.id}">${r.code} - ${getStationName(r.departure_station_id)} → ${getStationName(r.arrival_station_id)}</option>`;
+        });
+    } catch (error) {
+        console.error('Error loading routes:', error);
+    }
+}
+
+async function loadBuses() {
+    try {
+        const response = await fetch('/buses/?active_only=true');
+        allBuses = await response.json();
+        const select = document.getElementById('tripBus');
+        select.innerHTML = '<option value="">{{ _("اختر الحافلة") }}</option>';
+        allBuses.forEach(b => {
+            select.innerHTML += `<option value="${b.id}">${b.plate_number} - ${b.model} (${b.total_seats} {{ _("مقعد") }})</option>`;
+        });
+    } catch (error) {
+        console.error('Error loading buses:', error);
+    }
+}
+
+function getStationName(id) {
+    const station = allStations.find(s => s.id == id);
+    if (!station) return `{{ _("محطة") }} #${id}`;
+    return (LANG === 'en' && station.name_en) ? station.name_en : station.name;
+}
+
+async function loadTrips() {
+    try {
+        const response = await fetch('/trips/');
+        allTrips = await response.json();
+        updateStats();
+        renderTrips(allTrips);
+    } catch (error) {
+        console.error('Error loading trips:', error);
+        document.getElementById('tripsTableContainer').innerHTML = `
+            <div class="alert alert-danger">{{ _("فشل تحميل الرحلات") }}: ${error.message}</div>
+        `;
+    }
+}
+
+function updateStats() {
+    const now = new Date();
+    document.getElementById('totalTrips').textContent = allTrips.length;
+    document.getElementById('activeTrips').textContent = allTrips.filter(t => t.is_active).length;
+    document.getElementById('upcomingTrips').textContent = allTrips.filter(t => new Date(t.departure_time) > now).length;
+    document.getElementById('totalBookings').textContent = '-';
+}
+
+function renderTrips(trips) {
+    const container = document.getElementById('tripsTableContainer');
+
+    if (trips.length === 0) {
+        container.innerHTML = `
+            <div class="text-center py-5">
+                <i class="fas fa-calendar-times fa-4x text-muted mb-3"></i>
+                <h5>{{ _("لا توجد رحلات") }}</h5>
+                <p class="text-muted">{{ _("ابدأ بإضافة رحلة جديدة") }}</p>
+            </div>
+        `;
+        return;
+    }
+
+    let html = '<div class="table-responsive"><table class="table table-hover align-middle">';
+    html += `
+        <thead class="table-light">
+            <tr>
+                <th width="60">#</th>
+                <th>{{ _("المسار") }}</th>
+                <th>{{ _("الحافلة") }}</th>
+                <th>{{ _("المغادرة") }}</th>
+                <th>{{ _("الوصول") }}</th>
+                <th width="100">{{ _("السعر") }}</th>
+                <th width="100">{{ _("المقاعد") }}</th>
+                <th width="80">{{ _("الحالة") }}</th>
+                <th width="180">{{ _("الإجراءات") }}</th>
+            </tr>
+        </thead>
+        <tbody>
+    `;
+
+    trips.forEach((trip, index) => {
+        const route = allRoutes.find(r => r.id == trip.route_id);
+        const bus = allBuses.find(b => b.id == trip.bus_id);
+        const routeText = route ? `${getStationName(route.departure_station_id)} → ${getStationName(route.arrival_station_id)}` : '-';
+        const statusBadge = trip.is_active
+            ? '<span class="badge bg-success">{{ _("نشطة") }}</span>'
+            : '<span class="badge bg-danger">{{ _("متوقفة") }}</span>';
+
+        html += `
+            <tr>
+                <td>${index + 1}</td>
+                <td><small>${routeText}</small></td>
+                <td><strong>${bus?.plate_number || '-'}</strong></td>
+                <td><small>${formatDateTime(trip.departure_time)}</small></td>
+                <td><small>${trip.arrival_time ? formatDateTime(trip.arrival_time) : '-'}</small></td>
+                <td><strong class="text-success">${formatCurrency(trip.price_at_time)}</strong></td>
+                <td><span class="badge bg-info">${trip.total_seats}</span></td>
+                <td>${statusBadge}</td>
+                <td>
+                    <button class="btn btn-sm btn-outline-info me-1"
+                            onclick="showDetails(${trip.id})" title="{{ _('تفاصيل') }}">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-warning me-1"
+                            onclick="toggleStatus(${trip.id}, ${!trip.is_active})"
+                            title="${trip.is_active ? '{{ _("إيقاف") }}' : '{{ _("تفعيل") }}'}">
+                        <i class="fas fa-${trip.is_active ? 'pause' : 'play'}"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-danger"
+                            onclick="openDeleteModal(${trip.id})" title="{{ _('حذف') }}">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </td>
+            </tr>
+        `;
+    });
+
+    html += '</tbody></table></div>';
+    container.innerHTML = html;
+}
+
+function filterTrips() {
+    const search = document.getElementById('searchInput').value.toLowerCase();
+    const status = document.getElementById('statusFilter').value;
+    const dateFilter = document.getElementById('dateFilter').value;
+    const now = new Date();
+
+    let filtered = allTrips.filter(trip => {
+        const route = allRoutes.find(r => r.id == trip.route_id);
+        const bus = allBuses.find(b => b.id == trip.bus_id);
+        const routeCode = route?.code?.toLowerCase() || '';
+        const plate = bus?.plate_number?.toLowerCase() || '';
+        if (search && !routeCode.includes(search) && !plate.includes(search)) return false;
+
+        if (status === 'active' && !trip.is_active) return false;
+        if (status === 'inactive' && trip.is_active) return false;
+
+        const tripDate = new Date(trip.departure_time);
+        if (dateFilter === 'today') {
+            if (tripDate.toDateString() !== new Date().toDateString()) return false;
+        } else if (dateFilter === 'tomorrow') {
+            const tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            if (tripDate.toDateString() !== tomorrow.toDateString()) return false;
+        } else if (dateFilter === 'week') {
+            const weekFromNow = new Date();
+            weekFromNow.setDate(weekFromNow.getDate() + 7);
+            if (tripDate < now || tripDate > weekFromNow) return false;
+        } else if (dateFilter === 'future') {
+            if (tripDate < now) return false;
+        }
+
+        return true;
+    });
+
+    renderTrips(filtered);
+}
+
+function checkConflicts() {
+    const busId = document.getElementById('tripBus').value;
+    const departure = document.getElementById('tripDeparture').value;
+    const arrival = document.getElementById('tripArrival').value;
+    const conflictDiv = document.getElementById('conflictWarning');
+    const conflictContent = document.getElementById('conflictContent');
+
+    if (!busId || !departure) {
+        conflictDiv.classList.add('d-none');
+        return;
+    }
+
+    const departureDate = new Date(departure);
+    const arrivalDate = arrival
+        ? new Date(arrival)
+        : new Date(departureDate.getTime() + 4 * 60 * 60 * 1000);
+    const busIdNum = parseInt(busId);
+
+    const conflicts = [];
+
+    allTrips.forEach(trip => {
+        if (parseInt(trip.bus_id) === busIdNum && trip.is_active) {
+            const tripDep = new Date(trip.departure_time);
+            const tripArr = trip.arrival_time
+                ? new Date(trip.arrival_time)
+                : new Date(tripDep.getTime() + 4 * 60 * 60 * 1000);
+
+            const noOverlap = (arrivalDate <= tripDep) || (departureDate >= tripArr);
+            if (!noOverlap) {
+                conflicts.push(
+                    `⚠️ {{ _("الحافلة مشغولة من") }} ${formatDateTime(trip.departure_time)} {{ _("حتى") }} ${formatDateTime(tripArr.toISOString())}`
+                );
+            }
+        }
+    });
+
+    if (conflicts.length > 0) {
+        conflictContent.innerHTML = conflicts.map(c => `<div class="mb-1">${c}</div>`).join('');
+        conflictDiv.classList.remove('d-none');
+    } else {
+        conflictDiv.classList.add('d-none');
+    }
+}
+
+function updateTripPreview() {
+    const routeId = document.getElementById('tripRoute').value;
+    const busId = document.getElementById('tripBus').value;
+    const preview = document.getElementById('tripPreview');
+    const content = document.getElementById('previewContent');
+
+    if (routeId && busId) {
+        const route = allRoutes.find(r => r.id == routeId);
+        const bus = allBuses.find(b => b.id == busId);
+        const driverSel = document.getElementById('tripDriver');
+        const assistSel = document.getElementById('tripAssistant');
+        let driverName = '-';
+        let assistName = '-';
+        if (driverSel && driverSel.value) {
+            driverName = driverSel.options[driverSel.selectedIndex].text;
+        }
+        if (assistSel && assistSel.value) {
+            assistName = assistSel.options[assistSel.selectedIndex].text;
+        }
+
+        content.innerHTML = `
+            <strong>{{ _("المسار:") }}</strong> ${getStationName(route.departure_station_id)} → ${getStationName(route.arrival_station_id)}<br>
+            <strong>{{ _("الحافلة:") }}</strong> ${bus.plate_number} (${bus.model})<br>
+            <strong>{{ _("عدد المقاعد:") }}</strong> ${bus.total_seats} {{ _("مقعد") }}<br>
+            <strong>{{ _("السائق:") }}</strong> ${driverName}<br>
+            <strong>{{ _("المساعد:") }}</strong> ${assistName}
+        `;
+        preview.classList.remove('d-none');
+        checkConflicts();
+    } else {
+        preview.classList.add('d-none');
+    }
+}
+
+function openAddModal() {
+    document.getElementById('tripRoute').value = '';
+    document.getElementById('tripBus').value = '';
+    document.getElementById('tripArrival').value = '';
+    document.getElementById('tripPreview').classList.add('d-none');
+    document.getElementById('conflictWarning').classList.add('d-none');
+    document.getElementById('modalMessage').innerHTML = '';
+
+    // ✅ التاريخ الافتراضي = غدًا 7:30 صباحًا
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    tomorrow.setHours(7, 30, 0, 0);
+    tomorrow.setMinutes(tomorrow.getMinutes() - tomorrow.getTimezoneOffset());
+    document.getElementById('tripDeparture').value = tomorrow.toISOString().slice(0, 16);
+
+    // ✅ منع التواريخ السابقة
+    const todayMin = new Date();
+    todayMin.setMinutes(todayMin.getMinutes() - todayMin.getTimezoneOffset());
+    document.getElementById('tripDeparture').setAttribute('min', todayMin.toISOString().slice(0, 16));
+
+    tripModal.show();
+}
+
+async function saveTrip() {
+    const routeId = document.getElementById('tripRoute').value;
+    const busId = document.getElementById('tripBus').value;
+    const departure = document.getElementById('tripDeparture').value;
+    const arrival = document.getElementById('tripArrival').value;
+    const messageDiv = document.getElementById('modalMessage');
+    const saveBtn = document.getElementById('saveTripBtn');
+
+    if (!routeId) {
+        messageDiv.innerHTML = '<div class="alert alert-danger">{{ _("الرجاء اختيار المسار") }}</div>';
+        return;
+    }
+    if (!busId) {
+        messageDiv.innerHTML = '<div class="alert alert-danger">{{ _("الرجاء اختيار الحافلة") }}</div>';
+        return;
+    }
+    if (!departure) {
+        messageDiv.innerHTML = '<div class="alert alert-danger">{{ _("الرجاء تحديد وقت المغادرة") }}</div>';
+        return;
+    }
+
+    const departureDate = new Date(departure);
+    const arrivalDate = arrival ? new Date(arrival) : new Date(departureDate.getTime() + 4 * 60 * 60 * 1000);
+    const busIdNum = parseInt(busId);
+
+    for (const trip of allTrips) {
+        if (parseInt(trip.bus_id) === busIdNum && trip.is_active) {
+            const tripDep = new Date(trip.departure_time);
+            const tripArr = trip.arrival_time
+                ? new Date(trip.arrival_time)
+                : new Date(tripDep.getTime() + 4 * 60 * 60 * 1000);
+
+            const noOverlap = (arrivalDate <= tripDep) || (departureDate >= tripArr);
+
+            if (!noOverlap) {
+                messageDiv.innerHTML = `
+                    <div class="alert alert-danger">
+                        ❌ <strong>{{ _("تعارض في المواعيد!") }}</strong><br>
+                        {{ _("الحافلة مشغولة في رحلة أخرى من") }}
+                        ${formatDateTime(trip.departure_time)}
+                        {{ _("حتى") }} ${formatDateTime(tripArr.toISOString())}
+                    </div>
+                `;
+                return;
+            }
+        }
+    }
+
+    try {
+        saveBtn.disabled = true;
+        saveBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>{{ _("جاري الحفظ...") }}';
+        messageDiv.innerHTML = '';
+
+        const driverId = document.getElementById('tripDriver').value;
+        const assistantId = document.getElementById('tripAssistant').value;
+
+        const payload = {
+            route_id: parseInt(routeId),
+            bus_id: parseInt(busId),
+            departure_time: new Date(departure).toISOString(),
+            arrival_time: arrival ? new Date(arrival).toISOString() : null,
+            is_active: true,
+            driver_id: driverId ? parseInt(driverId) : null,
+            assistant_id: assistantId ? parseInt(assistantId) : null,
+        };
+
+        const response = await fetch('/trips/', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.detail || '{{ _("فشل الحفظ") }}');
+        }
+
+        messageDiv.innerHTML = '<div class="alert alert-success">✅ {{ _("تم حفظ الرحلة بنجاح!") }}</div>';
+        setTimeout(async () => {
+            tripModal.hide();
+            await loadTrips();
+        }, 800);
+
+    } catch (error) {
+        messageDiv.innerHTML = `<div class="alert alert-danger">${error.message}</div>`;
+    } finally {
+        saveBtn.disabled = false;
+        saveBtn.innerHTML = '<i class="fas fa-save me-2"></i>{{ _("حفظ الرحلة") }}';
+    }
+}
+
+async function showDetails(id) {
+    const trip = allTrips.find(t => t.id === id);
+    if (!trip) return;
+
+    const route = allRoutes.find(r => r.id == trip.route_id);
+    const bus = allBuses.find(b => b.id == trip.bus_id);
+
+    let bookingsCount = 0;
+    try {
+        const res = await fetch(`/bookings/trip/${id}`);
+        const bookings = await res.json();
+        bookingsCount = bookings.length;
+    } catch (e) {}
+
+    const content = document.getElementById('detailsContent');
+    content.innerHTML = `
+        <div class="row g-3">
+            <div class="col-md-6">
+                <div class="card border-0 bg-light">
+                    <div class="card-body">
+                        <small class="text-muted">{{ _("المسار") }}</small>
+                        <h6 class="mb-0">${route ? getStationName(route.departure_station_id) + ' → ' + getStationName(route.arrival_station_id) : '-'}</h6>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card border-0 bg-light">
+                    <div class="card-body">
+                        <small class="text-muted">{{ _("كود المسار") }}</small>
+                        <h6 class="mb-0">${route?.code || '-'}</h6>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card border-0 bg-light">
+                    <div class="card-body">
+                        <small class="text-muted">{{ _("الحافلة") }}</small>
+                        <h6 class="mb-0">${bus?.plate_number || '-'} (${bus?.model || '-'})</h6>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card border-0 bg-light">
+                    <div class="card-body">
+                        <small class="text-muted">{{ _("السعر") }}</small>
+                        <h6 class="mb-0 text-success">${formatCurrency(trip.price_at_time)}</h6>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ✅ طاقم الرحلة -->
+            <div class="col-md-6">
+                <div class="card border-0 bg-light">
+                    <div class="card-body">
+                        <small class="text-muted">
+                            <i class="fas fa-user-tie text-primary me-1"></i>
+                            {{ _("السائق") }}
+                        </small>
+                        <h6 class="mb-0">${getEmployeeName(trip.driver)}</h6>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card border-0 bg-light">
+                    <div class="card-body">
+                        <small class="text-muted">
+                            <i class="fas fa-user-friends text-success me-1"></i>
+                            {{ _("المساعد / المضيف") }}
+                        </small>
+                        <h6 class="mb-0">${getEmployeeName(trip.assistant)}</h6>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card border-0 bg-light">
+                    <div class="card-body">
+                        <small class="text-muted">{{ _("المغادرة") }}</small>
+                        <h6 class="mb-0">${formatDateTime(trip.departure_time)}</h6>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card border-0 bg-light">
+                    <div class="card-body">
+                        <small class="text-muted">{{ _("الوصول المتوقع") }}</small>
+                        <h6 class="mb-0">${trip.arrival_time ? formatDateTime(trip.arrival_time) : '{{ _("غير محدد") }}'}</h6>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card border-0 bg-light text-center">
+                    <div class="card-body">
+                        <small class="text-muted">{{ _("إجمالي المقاعد") }}</small>
+                        <h4 class="mb-0 text-primary">${trip.total_seats}</h4>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card border-0 bg-light text-center">
+                    <div class="card-body">
+                        <small class="text-muted">{{ _("الحجوزات") }}</small>
+                        <h4 class="mb-0 text-success">${bookingsCount}</h4>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card border-0 bg-light text-center">
+                    <div class="card-body">
+                        <small class="text-muted">{{ _("المقاعد المتاحة") }}</small>
+                        <h4 class="mb-0 text-info">${trip.total_seats - bookingsCount}</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+
+    detailsModal.show();
+}
+
+async function toggleStatus(id, newStatus) {
+    try {
+        const response = await fetch(`/trips/${id}/status?is_active=${newStatus}`, {
+            method: 'PUT'
+        });
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.detail || '{{ _("فشل التحديث") }}');
+        }
+        await loadTrips();
+    } catch (error) {
+        alert('❌ ' + error.message);
+    }
+}
+
+function openDeleteModal(id) {
+    document.getElementById('deleteTripId').value = id;
+    deleteModal.show();
+}
+
+async function confirmDelete() {
+    const id = document.getElementById('deleteTripId').value;
+    try {
+        const response = await fetch(`/trips/${id}`, { method: 'DELETE' });
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.detail || '{{ _("فشل الحذف") }}');
+        }
+        deleteModal.hide();
+        await loadTrips();
+    } catch (error) {
+        alert('❌ ' + error.message);
+    }
+}
+
+function formatDateTime(dateString) {
+    if (!dateString) return '-';
+    const date = new Date(dateString);
+    if (LANG === 'ar') {
+        const months = ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+        const day = date.getDate();
+        const month = months[date.getMonth()];
+        const year = date.getFullYear();
+        const hours = date.getHours();
+        const minutes = String(date.getMinutes()).padStart(2, '0');
+        const ampm = hours >= 12 ? 'م' : 'ص';
+        const hour12 = hours % 12 || 12;
+        return `${day} ${month} ${year} - ${hour12}:${minutes} ${ampm}`;
+    } else {
+        return date.toLocaleDateString('en-GB', {
+            day: 'numeric', month: 'short', year: 'numeric',
+            hour: '2-digit', minute: '2-digit'
+        });
+    }
+}
+
+function formatCurrency(amount) {
+    if (!amount && amount !== 0) return '0 SDG';
+    const locale = LANG === 'ar' ? 'ar-SD' : 'en-SD';
+    return new Intl.NumberFormat(locale, {
+        style: 'currency', currency: 'SDG', minimumFractionDigits: 0
+    }).format(amount);
+}
+
+function getEmployeeName(emp) {
+    if (!emp) return '<span class="text-muted">{{ _("غير محدد") }}</span>';
+    const name = (LANG === 'en' && emp.full_name_en) ? emp.full_name_en : emp.full_name;
+    const pos = (LANG === 'en' && emp.position_en) ? emp.position_en : (emp.position || '');
+    if (pos) {
+        return `${name} <small class="text-muted">(${pos})</small>`;
+    }
+    return name;
+}
+
+// ═══════════════════════════════════════════
+// ✅ دوال إدارة طاقم الرحلة (السائق + المساعد)
+// ═══════════════════════════════════════════
+
+let currentAvailableCrew = {
+    available_drivers: [],
+    busy_drivers: [],
+    available_assistants: [],
+    busy_assistants: [],
+};
+
+async function loadAvailableDrivers() {
+    const departure = document.getElementById('tripDeparture').value;
+    const arrival = document.getElementById('tripArrival').value;
+    const currentTripId = window.currentEditingTripId || null;
+
+    if (!departure) {
+        clearDriverSelects();
+        return;
+    }
+
+    try {
+        let url = `/trips/available-drivers?departure_time=${encodeURIComponent(new Date(departure).toISOString())}`;
+        if (arrival) {
+            url += `&arrival_time=${encodeURIComponent(new Date(arrival).toISOString())}`;
+        }
+        if (currentTripId) {
+            url += `&exclude_trip_id=${currentTripId}`;
+        }
+
+        const res = await fetch(url);
+        if (!res.ok) {
+            console.error('Failed to load crew');
+            return;
+        }
+
+        currentAvailableCrew = await res.json();
+        populateDriverSelects();
+
+    } catch (e) {
+        console.error('Error loading crew:', e);
+    }
+}
+
+async function loadDefaultCrewForBus() {
+    /**
+     * عند اختيار باص: جلب آخر سائق ومساعد تم تعيينهما لهذا الباص
+     * ثم تعيينهما تلقائيًا في القائمتين.
+     */
+    const busId = document.getElementById('tripBus').value;
+    const driverSel = document.getElementById('tripDriver');
+    const assistSel = document.getElementById('tripAssistant');
+
+    if (!busId) return;
+
+    try {
+        const res = await fetch(`/trips/bus/${busId}/last-crew`);
+        if (!res.ok) return;
+
+        const data = await res.json();
+
+        // نضع القيم (إن وُجدت وكانت متاحة في القائمة)
+        if (data.driver_id) {
+            // تحقق من أن الخيار غير معطّل
+            const driverOpt = Array.from(driverSel.options).find(o => o.value == data.driver_id && !o.disabled);
+            if (driverOpt) {
+                driverSel.value = data.driver_id;
+            } else {
+                // الخيار غير متاح (مشغول)  نضيف تنبيه
+                console.log('السائق السابق مشغول في رحلة أخرى');
+            }
+        }
+
+        if (data.assistant_id) {
+            const assistOpt = Array.from(assistSel.options).find(o => o.value == data.assistant_id && !o.disabled);
+            if (assistOpt) {
+                assistSel.value = data.assistant_id;
+            }
+        }
+
+        // تطبيق منع الازدواجية
+        if (typeof applyMutualExclusion === 'function') {
+            applyMutualExclusion();
+        }
+
+        // تحديث المعاينة
+        if (typeof updateTripPreview === 'function') {
+            updateTripPreview();
+        }
+
+    } catch (e) {
+        console.error('Error loading default crew:', e);
+    }
+}
+
+function clearDriverSelects() {
+    const driverSel = document.getElementById('tripDriver');
+    const assistSel = document.getElementById('tripAssistant');
+    if (driverSel) driverSel.innerHTML = '<option value="">{{ _("اختر السائق") }}</option>';
+    if (assistSel) assistSel.innerHTML = '<option value="">{{ _("اختر المساعد (اختياري)") }}</option>';
+}
+
+function buildOptionsHtml(list, busyList, selectedId, emptyLabel) {
+    let html = `<option value="">${emptyLabel}</option>`;
+
+    list.forEach(emp => {
+        const name = (LANG === 'en' && emp.full_name_en) ? emp.full_name_en : emp.full_name;
+        const pos = (LANG === 'en' && emp.position_en) ? emp.position_en : (emp.position || '');
+        const label = `${name}${pos ? ' - ' + pos : ''}`;
+        const isSelected = selectedId && emp.id == selectedId ? 'selected' : '';
+        html += `<option value="${emp.id}" ${isSelected}>${label}</option>`;
+    });
+
+    if (busyList.length > 0) {
+        html += `<optgroup label="{{ _("مشغولون") }}">`;
+        busyList.forEach(emp => {
+            const name = (LANG === 'en' && emp.full_name_en) ? emp.full_name_en : emp.full_name;
+            const range = emp.conflict_range ? ` (${emp.conflict_range})` : '';
+            html += `<option value="${emp.id}" disabled>⛔ ${name}${range}</option>`;
+        });
+        html += `</optgroup>`;
+    }
+
+    return html;
+}
+
+function populateDriverSelects() {
+    const driverSel = document.getElementById('tripDriver');
+    const assistSel = document.getElementById('tripAssistant');
+
+    const currentDriver = driverSel.value;
+    const currentAssistant = assistSel.value;
+
+    // ───── بناء قائمة السائقين ─────
+    const driverLabel = '{{ _("اختر السائق") }}';
+    driverSel.innerHTML = buildOptionsHtml(
+        currentAvailableCrew.available_drivers,
+        currentAvailableCrew.busy_drivers,
+        currentDriver,
+        driverLabel
+    );
+
+    // ───── بناء قائمة المساعدين ─────
+    const assistantLabel = '{{ _("اختر المساعد (اختياري)") }}';
+    assistSel.innerHTML = buildOptionsHtml(
+        currentAvailableCrew.available_assistants,
+        currentAvailableCrew.busy_assistants,
+        currentAssistant,
+        assistantLabel
+    );
+
+    // ✅ منع نفس الشخص سائقًا ومساعدًا
+    applyMutualExclusion();
+
+    // ───── حالة القوائم ─────
+    const driverStatus = document.getElementById('driverStatus');
+    const assistantStatus = document.getElementById('assistantStatus');
+
+    if (driverStatus) {
+        if (currentAvailableCrew.available_drivers.length === 0) {
+            driverStatus.innerHTML = '<span class="text-danger">{{ _("لا يوجد سائقون متاحون") }}</span>';
+        } else {
+            driverStatus.textContent = currentAvailableCrew.available_drivers.length + ' {{ _("متاح") }}';
+        }
+    }
+
+    if (assistantStatus) {
+        if (currentAvailableCrew.available_assistants.length === 0) {
+            assistantStatus.innerHTML = '<span class="text-danger">{{ _("لا يوجد مساعدون متاحون") }}</span>';
+        } else {
+            assistantStatus.textContent = currentAvailableCrew.available_assistants.length + ' {{ _("متاح") }}';
+        }
+    }
+}
+
+function applyMutualExclusion() {
+    const driverSel = document.getElementById('tripDriver');
+    const assistSel = document.getElementById('tripAssistant');
+    if (!driverSel || !assistSel) return;
+
+    const driverId = driverSel.value;
+    const assistId = assistSel.value;
+
+    // في قائمة المساعدين: عطّل السائق المختار
+    Array.from(assistSel.options).forEach(opt => {
+        if (opt.value && opt.value === driverId) {
+            opt.disabled = true;
+        } else if (!opt.dataset.originallyDisabled) {
+            // إعادة التفعيل إن كان معطّلًا سابقًا
+            if (!opt.closest('optgroup') || opt.closest('optgroup').label !== '{{ _("مشغولون") }}') {
+                opt.disabled = false;
+            }
+        }
+    });
+
+    // في قائمة السائقين: عطّل المساعد المختار
+    Array.from(driverSel.options).forEach(opt => {
+        if (opt.value && opt.value === assistId) {
+            opt.disabled = true;
+        } else {
+            if (!opt.closest('optgroup') || opt.closest('optgroup').label !== '{{ _("مشغولون") }}') {
+                opt.disabled = false;
+            }
+        }
+    });
+}
+
+// ═══════════════════════════════════════════
+// تحديث checkConflicts لتشمل تحميل السائقين
+// ═══════════════════════════════════════════
+
+const originalCheckConflicts = checkConflicts;
+window.checkConflicts = function() {
+    if (originalCheckConflicts) originalCheckConflicts();
+    loadAvailableDrivers();
+};
+
+window.openAddModal = openAddModal;
+window.saveTrip = saveTrip;
+window.updateTripPreview = updateTripPreview;
+window.checkConflicts = checkConflicts;
+window.filterTrips = filterTrips;
+window.showDetails = showDetails;
+window.toggleStatus = toggleStatus;
+window.openDeleteModal = openDeleteModal;
+window.confirmDelete = confirmDelete;
+window.loadAvailableDrivers = loadAvailableDrivers;
+window.loadDefaultCrewForBus = loadDefaultCrewForBus;
+
+//  عند تغيير الباص  جلب آخر سائق/مساعد
+document.addEventListener('DOMContentLoaded', function() {
+    const busSel = document.getElementById('tripBus');
+    if (busSel) {
+        busSel.addEventListener('change', function() {
+            // انتظر قليلًا حتى تُحمَّل قوائم السائقين
+            setTimeout(() => {
+                loadDefaultCrewForBus();
+            }, 300);
+        });
+    }
+});
+
+// ✅ عند تغيير السائق أو المساعد → تطبيق منع الازدواجية
+document.addEventListener('DOMContentLoaded', function() {
+    const driverSel = document.getElementById('tripDriver');
+    const assistSel = document.getElementById('tripAssistant');
+    if (driverSel) {
+        driverSel.addEventListener('change', function() {
+            applyMutualExclusion();
+            if (typeof updateTripPreview === 'function') updateTripPreview();
+        });
+    }
+    if (assistSel) {
+        assistSel.addEventListener('change', function() {
+            applyMutualExclusion();
+            if (typeof updateTripPreview === 'function') updateTripPreview();
+        });
+    }
+});
+</script>
+{% endblock %}

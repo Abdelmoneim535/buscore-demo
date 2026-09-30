@@ -1,0 +1,592 @@
+{% extends "admin/base_admin.html" %}
+
+{% block title %}{{ _("إدارة العاملين") }} - BusCore{% endblock %}
+{% block page_title %}{{ _("إدارة العاملين") }}{% endblock %}
+
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <p class="text-muted mb-0">{{ _("إدارة الموظفين والسائقين ورواتبهم") }}</p>
+    <button class="btn btn-primary" onclick="openAddModal()">
+        <i class="fas fa-user-plus me-2"></i>{{ _("إضافة موظف جديد") }}
+    </button>
+</div>
+
+<!-- بطاقات إحصائية -->
+<div class="row g-3 mb-3">
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body text-center">
+                <i class="fas fa-users fa-2x text-primary mb-2"></i>
+                <h4 class="mb-0 fw-bold" id="totalEmployees">0</h4>
+                <small class="text-muted">{{ _("إجمالي الموظفين") }}</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body text-center">
+                <i class="fas fa-user-check fa-2x text-success mb-2"></i>
+                <h4 class="mb-0 fw-bold" id="activeEmployees">0</h4>
+                <small class="text-muted">{{ _("موظفون نشطون") }}</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body text-center">
+                <i class="fas fa-money-bill-wave fa-2x text-warning mb-2"></i>
+                <h4 class="mb-0 fw-bold" id="totalSalaries">0</h4>
+                <small class="text-muted">{{ _("إجمالي الرواتب الشهرية") }}</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body text-center">
+                <i class="fas fa-hand-holding-usd fa-2x text-danger mb-2"></i>
+                <h4 class="mb-0 fw-bold" id="totalAdvances">0</h4>
+                <small class="text-muted">{{ _("إجمالي السلف المتبقية") }}</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm page-table-card">
+    <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <h5 class="mb-0 fw-bold">
+            <i class="fas fa-list me-2 text-primary"></i>{{ _("قائمة الموظفين") }}
+            <span class="badge bg-primary ms-2" id="totalCount">0</span>
+        </h5>
+        <div class="page-table-controls">
+            <div class="input-group input-group-sm search-box">
+                <span class="input-group-text bg-light"><i class="fas fa-search"></i></span>
+                <input type="text" id="searchInput" class="form-control search-input"
+                       placeholder="{{ _('بحث...') }}">
+            </div>
+            <select id="statusFilter" class="form-select form-select-sm" style="width: auto;">
+                <option value="">{{ _("جميع الحالات") }}</option>
+                <option value="active">{{ _("النشطون فقط") }}</option>
+                <option value="inactive">{{ _("المتوقفون فقط") }}</option>
+            </select>
+            <select id="pageSize" class="form-select form-select-sm page-size-select">
+                <option value="10">10 / {{ _("صفحة") }}</option>
+                <option value="25">25 / {{ _("صفحة") }}</option>
+                <option value="50">50 / {{ _("صفحة") }}</option>
+                <option value="0">{{ _("عرض الكل") }}</option>
+            </select>
+        </div>
+    </div>
+    <div class="page-table-container" id="employeesTableContainer">
+        <div class="text-center py-5">
+            <div class="spinner-border text-primary"></div>
+            <p class="mt-2 text-muted">{{ _("جاري التحميل...") }}</p>
+        </div>
+    </div>
+    <div class="page-pagination" id="paginationContainer"></div>
+</div>
+
+<!-- Modal: إضافة/تعديل موظف -->
+<div class="modal fade" id="employeeModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="modalTitle">
+                    <i class="fas fa-user-plus me-2"></i>{{ _("إضافة موظف جديد") }}
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="employeeId">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">{{ _("الاسم الكامل (عربي)") }} <span class="text-danger">*</span></label>
+                        <input type="text" id="empName" class="form-control" dir="rtl" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">{{ _("الاسم الكامل (إنجليزي)") }}</label>
+                        <input type="text" id="empNameEn" class="form-control" dir="ltr">
+                    </div>
+
+                    <!--  قائمة الوظيفة المنسدلة (من API) -->
+                    <div class="col-md-12">
+                        <label class="form-label fw-bold">
+                            <i class="fas fa-briefcase text-primary me-1"></i>
+                            {{ _("الوظيفة") }} <span class="text-danger">*</span>
+                        </label>
+                        <select id="empPositionSelect" class="form-select" onchange="onPositionChange()" required>
+                            <option value="">{{ _("جاري التحميل...") }}</option>
+                        </select>
+                        <small class="text-muted">
+                            <i class="fas fa-info-circle me-1"></i>
+                            {{ _("لإدارة الوظائف اذهب إلى") }}
+                            <a href="/admin/positions" target="_blank">{{ _("إدارة الوظائف") }}</a>
+                        </small>
+                    </div>
+                    <!-- حقول مخفية لتخزين القيم -->
+                    <input type="hidden" id="empPosition">
+                    <input type="hidden" id="empPositionEn">
+
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">{{ _("الهاتف") }}</label>
+                        <input type="tel" id="empPhone" class="form-control" dir="ltr"
+                               oninput="this.value = this.value.replace(/[^0-9+]/g, '')">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">{{ _("رقم الهوية") }}</label>
+                        <input type="text" id="empIdNumber" class="form-control" dir="ltr">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">{{ _("تاريخ التعيين") }}</label>
+                        <input type="date" id="empHireDate" class="form-control">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">{{ _("الراتب الأساسي (ج.س)") }}</label>
+                        <input type="number" id="empBaseSalary" class="form-control"
+                               min="0" step="100" value="0">
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label fw-bold">{{ _("ملاحظات") }}</label>
+                        <textarea id="empNotes" class="form-control" rows="2"></textarea>
+                    </div>
+                    <div class="col-12">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="empIsActive" checked>
+                            <label class="form-check-label fw-bold" for="empIsActive">
+                                {{ _("الموظف نشط") }}
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div id="modalMessage" class="mt-3"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ _("إلغاء") }}</button>
+                <button type="button" class="btn btn-primary" id="saveEmpBtn" onclick="saveEmployee()">
+                    <i class="fas fa-save me-2"></i>{{ _("حفظ") }}
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: تأكيد الحذف -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title"><i class="fas fa-exclamation-triangle me-2"></i>{{ _("تأكيد الحذف") }}</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>{{ _("هل أنت متأكد من حذف الموظف") }} <strong id="deleteEmpName"></strong>؟</p>
+                <p class="text-danger small mb-0">
+                    <i class="fas fa-info-circle me-1"></i>
+                    {{ _("سيتم حذف جميع حركاته المالية (رواتب، سلف، خصومات).") }}
+                </p>
+                <input type="hidden" id="deleteEmpId">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ _("إلغاء") }}</button>
+                <button type="button" class="btn btn-danger" onclick="confirmDelete()">
+                    <i class="fas fa-trash me-2"></i>{{ _("حذف نهائي") }}
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+const LANG = "{{ lang }}";
+let employeeModal, deleteModal;
+let allEmployees = [];
+let allTransactions = [];
+let allPositions = [];
+
+// 
+// دوال الوظائف (API)
+// 
+
+async function loadPositionsFromAPI() {
+    try {
+        const res = await fetch('/positions/?active_only=true&limit=500');
+        allPositions = await res.json();
+
+        const sel = document.getElementById('empPositionSelect');
+        let html = '<option value="">{{ _("اختر الوظيفة") }}</option>';
+
+        // تجميع حسب الفئة
+        const categories = {
+            'driver':    { label: ' {{ _("سائقون") }}', items: [] },
+            'assistant': { label: ' {{ _("مساعدون") }}', items: [] },
+            'admin':     { label: ' {{ _("إداريون") }}', items: [] },
+            'other':     { label: ' {{ _("أخرى") }}', items: [] },
+        };
+
+        allPositions.forEach(p => {
+            const cat = p.category || 'other';
+            if (categories[cat]) {
+                categories[cat].items.push(p);
+            } else {
+                categories['other'].items.push(p);
+            }
+        });
+
+        Object.keys(categories).forEach(catKey => {
+            const group = categories[catKey];
+            if (group.items.length === 0) return;
+
+            html += `<optgroup label="${group.label}">`;
+            group.items.forEach(p => {
+                const displayName = (LANG === 'en' && p.name_en) ? p.name_en : p.name;
+                html += `<option value="${p.id}" data-ar="${p.name}" data-en="${p.name_en || ''}" data-category="${p.category}">
+                    ${displayName}
+                </option>`;
+            });
+            html += `</optgroup>`;
+        });
+
+        sel.innerHTML = html;
+    } catch (e) {
+        console.error('Failed to load positions:', e);
+        const sel = document.getElementById('empPositionSelect');
+        sel.innerHTML = '<option value="">{{ _("فشل تحميل الوظائف") }}</option>';
+    }
+}
+
+function onPositionChange() {
+    const sel = document.getElementById('empPositionSelect');
+    if (!sel.value) {
+        document.getElementById('empPosition').value = '';
+        document.getElementById('empPositionEn').value = '';
+        return;
+    }
+    const opt = sel.options[sel.selectedIndex];
+    document.getElementById('empPosition').value = opt.dataset.ar || '';
+    document.getElementById('empPositionEn').value = opt.dataset.en || '';
+}
+
+function setPositionFromValues(arVal, enVal) {
+    const sel = document.getElementById('empPositionSelect');
+    sel.value = '';
+
+    let matched = false;
+    for (let i = 0; i < sel.options.length; i++) {
+        const opt = sel.options[i];
+        if (opt.dataset.ar && opt.dataset.ar === arVal) {
+            sel.selectedIndex = i;
+            onPositionChange();
+            matched = true;
+            break;
+        }
+    }
+
+    if (!matched) {
+        document.getElementById('empPosition').value = arVal || '';
+        document.getElementById('empPositionEn').value = enVal || '';
+    }
+}
+
+// 
+// تحميل الموظفين
+// 
+
+document.addEventListener('DOMContentLoaded', async function() {
+    employeeModal = new bootstrap.Modal(document.getElementById('employeeModal'));
+    deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+
+    //  تحميل الوظائف أولًا
+    await loadPositionsFromAPI();
+
+    //  تهيئة TableManager
+    TableManager.init({
+        containerId: 'employeesTableContainer',
+        paginationId: 'paginationContainer',
+        totalCountId: 'totalCount',
+        emptyIcon: 'fa-users',
+        emptyTitle: '{{ _("لا يوجد موظفون") }}',
+        emptyMessage: '{{ _("ابدأ بإضافة موظف جديد") }}',
+        searchFields: ['full_name', 'full_name_en', 'position', 'position_en', 'phone', 'id_number'],
+        columns: [
+            { title: '#', width: '60', render: (item, idx) => idx },
+            { title: '{{ _("الاسم") }}', render: (item) => {
+                const name = (LANG === 'en' && item.full_name_en) ? item.full_name_en : item.full_name;
+                return `<strong>${name}</strong>`;
+            }},
+            { title: '{{ _("الوظيفة") }}', render: (item) => {
+                const pos = (LANG === 'en' && item.position_en) ? item.position_en : (item.position || '-');
+                return `<small>${pos}</small>`;
+            }},
+            { title: '{{ _("الهاتف") }}', render: (item) => `<small dir="ltr">${item.phone || '-'}</small>` },
+            { title: '{{ _("الراتب الأساسي") }}', width: '140', render: (item) =>
+                `<strong class="text-success">${formatCurrency(item.base_salary)}</strong>`
+            },
+            { title: '{{ _("الحالة") }}', width: '100', render: (item) =>
+                item.is_active
+                    ? '<span class="badge bg-success">{{ _("نشط") }}</span>'
+                    : '<span class="badge bg-danger">{{ _("متوقف") }}</span>'
+            },
+            { title: '{{ _("الإجراءات") }}', width: '220', render: (item) => `
+                <div class="d-flex gap-1 flex-nowrap justify-content-center">
+                    <a href="/admin/employees/${item.id}/statement" class="btn btn-sm btn-outline-info"
+                       title="{{ _('كشف الحساب') }}">
+                        <i class="fas fa-file-invoice"></i>
+                    </a>
+                    <button class="btn btn-sm btn-outline-success"
+                            onclick="openTransactionModal(${item.id})" title="{{ _('إضافة حركة') }}">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-primary"
+                            onclick="openEditModal(${item.id})" title="{{ _('تعديل') }}">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-danger"
+                            onclick="openDeleteModal(${item.id})" title="{{ _('حذف') }}">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            `}
+        ]
+    });
+
+    //  ربط البحث + الفلتر + حجم الصفحة
+    document.getElementById('searchInput').addEventListener('input', () => TableManager.applyFilters());
+    document.getElementById('statusFilter').addEventListener('change', () => applyStatusFilter());
+    document.getElementById('pageSize').addEventListener('change', () => {
+        TableManager.currentPage = 1;
+        TableManager.render();
+    });
+
+    await loadEmployees();
+    await loadTransactions();
+});
+
+function applyStatusFilter() {
+    const status = document.getElementById('statusFilter').value;
+    let filtered = [...allEmployees];
+
+    if (status === 'active') {
+        filtered = filtered.filter(e => e.is_active);
+    } else if (status === 'inactive') {
+        filtered = filtered.filter(e => !e.is_active);
+    }
+
+    TableManager.allItems = filtered;
+    TableManager.currentPage = 1;
+    TableManager.applyFilters();
+}
+
+async function loadEmployees() {
+    try {
+        const res = await fetch('/employees/?limit=500');
+        allEmployees = await res.json();
+
+        //  ترتيب أبجدي حسب الاسم
+        allEmployees.sort((a, b) => {
+            const nameA = (LANG === 'en' && a.full_name_en) ? a.full_name_en : a.full_name;
+            const nameB = (LANG === 'en' && b.full_name_en) ? b.full_name_en : b.full_name;
+            return nameA.localeCompare(nameB, LANG === 'ar' ? 'ar' : 'en');
+        });
+
+        updateStats();
+        TableManager.setData(allEmployees);
+    } catch (e) {
+        console.error(e);
+        document.getElementById('employeesTableContainer').innerHTML =
+            '<div class="alert alert-danger m-3">{{ _("فشل تحميل الموظفين") }}: ' + e.message + '</div>';
+    }
+}
+
+async function loadTransactions() {
+    try {
+        const res = await fetch('/employees/transactions/all');
+        allTransactions = await res.json();
+        updateStats();
+    } catch (e) {
+        console.error(e);
+    }
+}
+
+function updateStats() {
+    const total = allEmployees.length;
+    const active = allEmployees.filter(e => e.is_active).length;
+    const salaries = allEmployees.filter(e => e.is_active).reduce((sum, e) => sum + parseFloat(e.base_salary || 0), 0);
+
+    let advancesTotal = 0;
+    let deductionsTotal = 0;
+    allTransactions.forEach(t => {
+        const amt = parseFloat(t.amount || 0);
+        if (t.transaction_type === 'advance') advancesTotal += amt;
+        else if (t.transaction_type === 'deduction') deductionsTotal += amt;
+    });
+    const remaining = Math.max(0, advancesTotal - deductionsTotal);
+
+    document.getElementById('totalEmployees').textContent = total;
+    document.getElementById('activeEmployees').textContent = active;
+    document.getElementById('totalSalaries').textContent = formatCurrency(salaries);
+    document.getElementById('totalAdvances').textContent = formatCurrency(remaining);
+}
+
+function formatCurrency(amount) {
+    const num = parseFloat(amount) || 0;
+    const locale = LANG === 'ar' ? 'ar-SD' : 'en-SD';
+    return new Intl.NumberFormat(locale, {
+        style: 'currency', currency: 'SDG', minimumFractionDigits: 0
+    }).format(num);
+}
+
+function openAddModal() {
+    document.getElementById('modalTitle').innerHTML = '<i class="fas fa-user-plus me-2"></i>{{ _("إضافة موظف جديد") }}';
+    document.getElementById('employeeId').value = '';
+    document.getElementById('empName').value = '';
+    document.getElementById('empNameEn').value = '';
+    document.getElementById('empPositionSelect').value = '';
+    document.getElementById('empPosition').value = '';
+    document.getElementById('empPositionEn').value = '';
+    document.getElementById('empPhone').value = '';
+    document.getElementById('empIdNumber').value = '';
+    document.getElementById('empHireDate').value = '';
+    document.getElementById('empBaseSalary').value = '0';
+    document.getElementById('empNotes').value = '';
+    document.getElementById('empIsActive').checked = true;
+    document.getElementById('modalMessage').innerHTML = '';
+    employeeModal.show();
+}
+
+function openEditModal(id) {
+    const emp = allEmployees.find(e => e.id === id);
+    if (!emp) return;
+
+    document.getElementById('modalTitle').innerHTML = '<i class="fas fa-edit me-2"></i>{{ _("تعديل الموظف") }}';
+    document.getElementById('employeeId').value = emp.id;
+    document.getElementById('empName').value = emp.full_name || '';
+    document.getElementById('empNameEn').value = emp.full_name_en || '';
+    setPositionFromValues(emp.position || '', emp.position_en || '');
+    document.getElementById('empPhone').value = emp.phone || '';
+    document.getElementById('empIdNumber').value = emp.id_number || '';
+    document.getElementById('empHireDate').value = emp.hire_date ? emp.hire_date.slice(0, 10) : '';
+    document.getElementById('empBaseSalary').value = emp.base_salary || 0;
+    document.getElementById('empNotes').value = emp.notes || '';
+    document.getElementById('empIsActive').checked = emp.is_active;
+    document.getElementById('modalMessage').innerHTML = '';
+    employeeModal.show();
+}
+
+async function saveEmployee() {
+    const id = document.getElementById('employeeId').value;
+    const name = document.getElementById('empName').value.trim();
+    const nameEn = document.getElementById('empNameEn').value.trim() || null;
+    const position = document.getElementById('empPosition').value.trim() || null;
+    const positionEn = document.getElementById('empPositionEn').value.trim() || null;
+    const phone = document.getElementById('empPhone').value.trim() || null;
+    const idNumber = document.getElementById('empIdNumber').value.trim() || null;
+    const hireDate = document.getElementById('empHireDate').value || null;
+    const baseSalary = parseFloat(document.getElementById('empBaseSalary').value) || 0;
+    const notes = document.getElementById('empNotes').value.trim() || null;
+    const isActive = document.getElementById('empIsActive').checked;
+    const messageDiv = document.getElementById('modalMessage');
+    const saveBtn = document.getElementById('saveEmpBtn');
+
+    if (!name) {
+        messageDiv.innerHTML = '<div class="alert alert-danger">{{ _("الرجاء إدخال اسم الموظف") }}</div>';
+        return;
+    }
+
+    if (!position) {
+        messageDiv.innerHTML = '<div class="alert alert-danger">{{ _("الرجاء اختيار الوظيفة") }}</div>';
+        return;
+    }
+
+    const payload = {
+        full_name: name,
+        full_name_en: nameEn,
+        position: position,
+        position_en: positionEn,
+        phone: phone,
+        id_number: idNumber,
+        hire_date: hireDate ? new Date(hireDate).toISOString() : null,
+        base_salary: baseSalary,
+        is_active: isActive,
+        notes: notes
+    };
+
+    try {
+        saveBtn.disabled = true;
+        saveBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>{{ _("جاري الحفظ...") }}';
+        messageDiv.innerHTML = '';
+
+        let response;
+        if (id) {
+            response = await fetch(`/employees/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+        } else {
+            response = await fetch('/employees/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+        }
+
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.detail || '{{ _("فشل الحفظ") }}');
+        }
+
+        messageDiv.innerHTML = '<div class="alert alert-success"> {{ _("تم الحفظ بنجاح!") }}</div>';
+        setTimeout(async () => {
+            employeeModal.hide();
+            await loadEmployees();
+        }, 800);
+
+    } catch (error) {
+        messageDiv.innerHTML = '<div class="alert alert-danger"> ' + error.message + '</div>';
+    } finally {
+        saveBtn.disabled = false;
+        saveBtn.innerHTML = '<i class="fas fa-save me-2"></i>{{ _("حفظ") }}';
+    }
+}
+
+function openDeleteModal(id) {
+    const emp = allEmployees.find(e => e.id === id);
+    if (!emp) return;
+    document.getElementById('deleteEmpId').value = emp.id;
+    document.getElementById('deleteEmpName').textContent = emp.full_name;
+    deleteModal.show();
+}
+
+async function confirmDelete() {
+    const id = document.getElementById('deleteEmpId').value;
+    try {
+        const response = await fetch(`/employees/${id}`, { method: 'DELETE' });
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.detail || '{{ _("فشل الحذف") }}');
+        }
+        deleteModal.hide();
+        await loadEmployees();
+        await loadTransactions();
+    } catch (error) {
+        alert(' ' + error.message);
+    }
+}
+
+function openTransactionModal(employeeId) {
+    window.location.href = `/admin/employees/${employeeId}/statement`;
+}
+
+window.openAddModal = openAddModal;
+window.openEditModal = openEditModal;
+window.saveEmployee = saveEmployee;
+window.openDeleteModal = openDeleteModal;
+window.confirmDelete = confirmDelete;
+window.openTransactionModal = openTransactionModal;
+window.loadEmployees = loadEmployees;
+window.onPositionChange = onPositionChange;
+</script>
+{% endblock %}

@@ -1,0 +1,2351 @@
+/*  */
+/* BusCore  CSS Variables (White-Label) */
+/*  */
+:root {
+    --primary-color: #0d6efd;
+    --secondary-color: #6c757d;
+}
+
+/* استخدام المتغيرات في العناصر الرئيسية */
+.btn-primary {
+    background-color: var(--primary-color) !important;
+    border-color: var(--primary-color) !important;
+}
+
+.btn-primary:hover {
+    filter: brightness(0.9);
+}
+
+.btn-outline-primary {
+    color: var(--primary-color) !important;
+    border-color: var(--primary-color) !important;
+}
+
+.btn-outline-primary:hover {
+    background-color: var(--primary-color) !important;
+    color: white !important;
+}
+
+.text-primary {
+    color: var(--primary-color) !important;
+}
+
+.bg-primary {
+    background-color: var(--primary-color) !important;
+}
+
+.border-primary {
+    border-color: var(--primary-color) !important;
+}
+
+/*  */
+/* Original Style.css */
+/*  */
+
+/* ========================================
+   🚌 BusCore - التصميم المخصص
+   ======================================== */
+
+/* ---------- المتغيرات ---------- */
+:root {
+    --primary-color: #0d6efd;
+    --primary-dark: #0a58ca;
+    --secondary-color: #6c757d;
+    --success-color: #198754;
+    --danger-color: #dc3545;
+    --warning-color: #ffc107;
+    --border-radius: 16px;
+    --box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+    --box-shadow-hover: 0 12px 48px rgba(0, 0, 0, 0.15);
+    --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ---------- الأساسيات ---------- */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Cairo', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f0f2f5;
+    color: #212529;
+    padding-top: 76px;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.main-content {
+    flex: 1;
+}
+
+/* ---------- شريط التمرير ---------- */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #e9ecef;
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--primary-color);
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--primary-dark);
+}
+
+/* ---------- الهيدر والنافبار ---------- */
+.navbar {
+    box-shadow: 0 2px 20px rgba(0, 0, 0, 0.08);
+    padding: 12px 0;
+}
+
+.navbar-brand {
+    font-weight: 800;
+    font-size: 1.5rem;
+    letter-spacing: -0.5px;
+}
+
+.navbar-brand i {
+    font-size: 1.6rem;
+    margin-left: 8px;
+}
+
+.navbar .nav-link {
+    font-weight: 600;
+    padding: 8px 18px;
+    border-radius: 50px;
+    transition: var(--transition);
+}
+
+.navbar .nav-link:hover {
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.navbar .nav-link.active {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+/* ---------- البانر الرئيسي (Hero) ---------- */
+.hero-section {
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+    color: white;
+    padding: 80px 0 60px;
+    border-radius: 0 0 60px 60px;
+    margin-bottom: 40px;
+    position: relative;
+    overflow: hidden;
+}
+
+.hero-section::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -20%;
+    width: 500px;
+    height: 500px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 50%;
+    pointer-events: none;
+}
+
+.hero-section::after {
+    content: '';
+    position: absolute;
+    bottom: -30%;
+    left: -10%;
+    width: 400px;
+    height: 400px;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 50%;
+    pointer-events: none;
+}
+
+.hero-section h1 {
+    font-weight: 900;
+    font-size: 3.2rem;
+    line-height: 1.2;
+    margin-bottom: 16px;
+}
+
+.hero-section .lead {
+    font-size: 1.2rem;
+    opacity: 0.9;
+    margin-bottom: 24px;
+}
+
+.hero-section .search-box {
+    background: rgba(255, 255, 255, 0.95);
+    padding: 30px;
+    border-radius: var(--border-radius);
+    box-shadow: 0 12px 48px rgba(0, 0, 0, 0.15);
+    position: relative;
+    z-index: 1;
+}
+
+.hero-section .search-box .form-control,
+.hero-section .search-box .form-select {
+    border-radius: 12px;
+    padding: 12px 16px;
+    border: 2px solid #e9ecef;
+    transition: var(--transition);
+}
+
+.hero-section .search-box .form-control:focus,
+.hero-section .search-box .form-select:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 4px rgba(13, 110, 253, 0.15);
+}
+
+.hero-section .search-box .btn-primary {
+    padding: 12px 30px;
+    border-radius: 50px;
+    font-weight: 700;
+}
+
+/* ---------- البطاقات ---------- */
+.card {
+    border: none;
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    transition: var(--transition);
+    overflow: hidden;
+    background: white;
+}
+
+.card:hover {
+    transform: translateY(-6px);
+    box-shadow: var(--box-shadow-hover);
+}
+
+.card .card-header {
+    background: transparent;
+    padding: 18px 24px;
+    border-bottom: 2px solid var(--primary-color);
+    font-weight: 700;
+}
+
+.card .card-body {
+    padding: 24px;
+}
+
+/* ---------- الأزرار ---------- */
+.btn {
+    border-radius: 50px;
+    padding: 10px 28px;
+    font-weight: 600;
+    transition: var(--transition);
+    border: none;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, var(--primary-dark), #052c65);
+}
+
+.btn-success {
+    background: linear-gradient(135deg, #198754, #157347);
+}
+
+.btn-danger {
+    background: linear-gradient(135deg, #dc3545, #b02a37);
+}
+
+.btn-outline-primary {
+    border: 2px solid var(--primary-color);
+    color: var(--primary-color);
+    background: transparent;
+}
+
+.btn-outline-primary:hover {
+    background: var(--primary-color);
+    color: white;
+}
+
+/* ---------- المقاعد ---------- */
+.seat-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    max-width: 420px;
+    margin: 0 auto;
+}
+
+.seat {
+    padding: 14px 10px;
+    text-align: center;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: var(--transition);
+    font-weight: 700;
+    border: 2px solid transparent;
+    position: relative;
+}
+
+.seat.available {
+    background: #d4edda;
+    color: #155724;
+    border-color: #b7e4c7;
+}
+
+.seat.available:hover {
+    transform: scale(1.08);
+    box-shadow: 0 0 24px rgba(25, 135, 84, 0.3);
+}
+
+.seat.selected {
+    background: var(--primary-color);
+    color: white;
+    border-color: var(--primary-dark);
+    transform: scale(1.05);
+    box-shadow: 0 0 24px rgba(13, 110, 253, 0.3);
+}
+
+.seat.booked {
+    background: #f8d7da;
+    color: #721c24;
+    border-color: #f5c2c7;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+/* ---------- التذاكر ---------- */
+.ticket-card {
+    background: linear-gradient(135deg, #fff 0%, #f8f9fa 100%);
+    border: 2px dashed var(--primary-color);
+    border-radius: var(--border-radius);
+    padding: 32px;
+    position: relative;
+}
+
+.ticket-card .ticket-number {
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: var(--primary-color);
+    letter-spacing: 1px;
+}
+
+.ticket-card .ticket-detail {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.ticket-card .ticket-detail:last-child {
+    border-bottom: none;
+}
+
+/* ---------- النماذج ---------- */
+.form-control,
+.form-select {
+    border-radius: 12px;
+    padding: 12px 16px;
+    border: 2px solid #e9ecef;
+    transition: var(--transition);
+    font-size: 1rem;
+}
+
+.form-control:focus,
+.form-select:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 4px rgba(13, 110, 253, 0.15);
+}
+
+.form-label {
+    font-weight: 600;
+    margin-bottom: 6px;
+}
+
+/* ---------- الفوتر ---------- */
+.footer {
+    margin-top: 40px;
+    padding: 40px 0 20px;
+    background: #212529 !important;
+    color: rgba(255, 255, 255, 0.5) !important;
+}
+
+.footer a {
+    color: rgba(255, 255, 255, 0.7);
+    text-decoration: none;
+    transition: var(--transition);
+}
+
+.footer a:hover {
+    color: white;
+}
+
+/* ---------- شاشة التحميل ---------- */
+.loading-spinner {
+    display: inline-block;
+    width: 48px;
+    height: 48px;
+    border: 4px solid #e9ecef;
+    border-top: 4px solid var(--primary-color);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+/* ---------- التجاوب (Responsive) ---------- */
+@media (max-width: 992px) {
+    .hero-section h1 {
+        font-size: 2.4rem;
+    }
+
+    .hero-section .search-box {
+        margin-top: 20px;
+    }
+}
+
+@media (max-width: 768px) {
+    .hero-section {
+        padding: 40px 0 30px;
+        border-radius: 0 0 30px 30px;
+    }
+
+    .hero-section h1 {
+        font-size: 1.8rem;
+    }
+
+    .hero-section .lead {
+        font-size: 1rem;
+    }
+
+    .seat-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+    .card .card-body {
+        padding: 16px;
+    }
+
+    body {
+        padding-top: 60px;
+    }
+}
+
+@media (max-width: 576px) {
+    .hero-section {
+        padding: 24px 0 20px;
+        border-radius: 0 0 20px 20px;
+    }
+
+    .hero-section h1 {
+        font-size: 1.4rem;
+    }
+
+    .hero-section .search-box {
+        padding: 16px;
+    }
+
+    .seat-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+    }
+
+    .seat {
+        padding: 10px 6px;
+        font-size: 0.8rem;
+    }
+
+    .ticket-card {
+        padding: 16px;
+    }
+
+    .navbar-brand {
+        font-size: 1.2rem;
+    }
+}
+
+/* ---------- طباعة التذكرة ---------- */
+/* ========================================
+   🖨️ الطباعة
+   ======================================== */
+@media print {
+
+    /* إخفاء العناصر غير المطلوبة */
+    .no-print,
+    .navbar,
+    footer,
+    .text-center .display-1,
+    .d-flex.gap-3 {
+        display: none !important;
+    }
+
+    /* إعدادات عامة */
+    html,
+    body {
+        background: white !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+        color-adjust: exact !important;
+    }
+
+    .container,
+    .main-content {
+        padding: 0 !important;
+        margin: 0 !important;
+        max-width: 100% !important;
+    }
+
+    /* التذكرة */
+    .ticket-modern {
+        display: flex !important;
+        flex-direction: row !important;
+        box-shadow: none !important;
+        border: 2px solid #000 !important;
+        border-radius: 0 !important;
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+        margin: 0 0 20px 0 !important;
+        max-width: 100% !important;
+        width: 100% !important;
+    }
+
+    .ticket-main {
+        padding: 20px !important;
+    }
+
+    .ticket-stub {
+        width: 220px !important;
+        background: #f0f0f0 !important;
+        border-right: 2px dashed #000 !important;
+    }
+
+    /* إظهار الحدود بوضوح */
+    .ticket-top,
+    .ticket-route-modern,
+    .ticket-details-row {
+        border-color: #000 !important;
+    }
+
+    .ticket-route-modern {
+        background: #f8f9fa !important;
+    }
+
+    .route-circle {
+        background: #000 !important;
+        box-shadow: none !important;
+    }
+
+    /* إظهار النصوص */
+    .ticket-modern * {
+        color: #000 !important;
+    }
+
+    .text-primary,
+    .text-success {
+        color: #000 !important;
+        font-weight: bold !important;
+    }
+
+    .ticket-barcode-modern {
+        background: white !important;
+        border: 1px solid #000 !important;
+    }
+
+    /* إخفاء التذييل */
+    .footer {
+        display: none !important;
+    }
+
+    /* كل تذكرة في صفحة منفصلة */
+    #ticketsContainer>.ticket-modern {
+        page-break-after: always;
+        break-after: page;
+    }
+
+    #ticketsContainer>.ticket-modern:last-child {
+        page-break-after: auto;
+        break-after: auto;
+    }
+}
+
+/* ========================================
+   🎫 التذكرة الاحترافية
+   ======================================== */
+
+.ticket-card {
+    background: linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%);
+    border: 2px solid #0d6efd;
+    border-radius: 20px;
+    padding: 0;
+    overflow: hidden;
+    box-shadow: 0 12px 48px rgba(0, 0, 0, 0.12);
+    position: relative;
+}
+
+.ticket-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 6px;
+    background: linear-gradient(90deg, #0d6efd, #0dcaf0, #0d6efd);
+}
+
+.ticket-header {
+    padding: 30px 30px 20px;
+    text-align: center;
+    border-bottom: 2px dashed #e9ecef;
+}
+
+.ticket-logo i {
+    color: #0d6efd;
+    margin-bottom: 8px;
+}
+
+.ticket-logo h3 {
+    font-weight: 800;
+    letter-spacing: -0.5px;
+}
+
+.ticket-divider {
+    color: #0d6efd;
+    font-size: 1.2rem;
+    letter-spacing: 12px;
+    margin-top: 8px;
+}
+
+.ticket-number-box {
+    padding: 12px 30px;
+    background: rgba(13, 110, 253, 0.05);
+    border-bottom: 2px dashed #e9ecef;
+}
+
+.ticket-number-box h4 {
+    font-family: 'Courier New', monospace;
+    letter-spacing: 2px;
+}
+
+.ticket-body {
+    padding: 24px 30px;
+}
+
+.ticket-route {
+    background: rgba(13, 110, 253, 0.04);
+    border-radius: 16px;
+    padding: 16px 20px;
+    margin-bottom: 16px;
+}
+
+.ticket-route strong {
+    font-size: 1.1rem;
+}
+
+.ticket-info {
+    background: #f8f9fa;
+    border-radius: 12px;
+    padding: 12px 16px;
+    margin-bottom: 8px;
+}
+
+.ticket-info p {
+    font-size: 1.05rem;
+}
+
+.ticket-footer {
+    background: #f8f9fa;
+    padding: 16px 30px 20px;
+    border-top: 2px dashed #e9ecef;
+}
+
+.ticket-total {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+}
+
+.ticket-total span:first-child {
+    font-weight: 600;
+}
+
+.ticket-barcode {
+    border-top: 1px dashed #dee2e6;
+    padding-top: 12px;
+}
+
+/* ========================================
+   🖨️ طباعة التذكرة
+   ======================================== */
+
+@media print {
+    .no-print {
+        display: none !important;
+    }
+
+    .ticket-card {
+        border: 2px solid #000 !important;
+        box-shadow: none !important;
+        border-radius: 8px !important;
+    }
+
+    .ticket-card::before {
+        display: none !important;
+    }
+
+    body {
+        background: white !important;
+    }
+
+    .ticket-header {
+        padding: 16px 20px 12px !important;
+    }
+
+    .ticket-body {
+        padding: 16px 20px !important;
+    }
+
+    .ticket-footer {
+        padding: 12px 20px 16px !important;
+    }
+
+    .ticket-info {
+        background: #f1f3f5 !important;
+    }
+
+    .ticket-route {
+        background: #f1f3f5 !important;
+    }
+}
+
+/* ========================================
+   🧳 بطاقات الأمتعة الاحترافية
+   ======================================== */
+
+.luggage-option-card {
+    display: block;
+    cursor: pointer;
+    border: 2px solid #e9ecef;
+    border-radius: 16px;
+    padding: 16px 20px;
+    transition: all 0.3s ease;
+    background: white;
+    position: relative;
+    margin-bottom: 8px;
+}
+
+.luggage-option-card:hover {
+    border-color: #0d6efd;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(13, 110, 253, 0.15);
+}
+
+.luggage-option-card.selected {
+    border-color: #198754;
+    background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+    box-shadow: 0 4px 16px rgba(25, 135, 84, 0.2);
+}
+
+.luggage-option-card input[type="checkbox"] {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.luggage-option-content {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.luggage-icon {
+    width: 50px;
+    height: 50px;
+    background: linear-gradient(135deg, #e7f1ff, #cfe2ff);
+    color: #0d6efd;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    flex-shrink: 0;
+}
+
+.luggage-option-card.selected .luggage-icon {
+    background: linear-gradient(135deg, #198754, #157347);
+    color: white;
+}
+
+.luggage-info {
+    flex-grow: 1;
+}
+
+.luggage-info strong {
+    font-size: 1.05rem;
+    color: #212529;
+}
+
+.luggage-price {
+    flex-shrink: 0;
+}
+
+.luggage-price .badge {
+    padding: 8px 16px;
+    border-radius: 50px;
+    font-weight: 700;
+}
+
+.luggage-check-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 2px solid #dee2e6;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: transparent;
+    transition: all 0.3s ease;
+    flex-shrink: 0;
+}
+
+.luggage-option-card.selected .luggage-check-icon {
+    background: #198754;
+    border-color: #198754;
+    color: white;
+}
+
+/* للطباعة */
+@media print {
+    .luggage-option-card {
+        display: none;
+    }
+}
+
+/* ========================================
+   🧳 بطاقات الأمتعة الاحترافية
+   ======================================== */
+
+.luggage-option-card {
+    display: block;
+    cursor: pointer;
+    border: 2px solid #e9ecef;
+    border-radius: 16px;
+    padding: 16px 20px;
+    transition: all 0.3s ease;
+    background: white;
+    position: relative;
+    margin-bottom: 8px;
+}
+
+.luggage-option-card:hover {
+    border-color: #0d6efd;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(13, 110, 253, 0.15);
+}
+
+.luggage-option-card.selected {
+    border-color: #198754;
+    background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+    box-shadow: 0 4px 16px rgba(25, 135, 84, 0.2);
+}
+
+.luggage-option-card input[type="checkbox"] {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.luggage-option-content {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.luggage-icon {
+    width: 50px;
+    height: 50px;
+    background: linear-gradient(135deg, #e7f1ff, #cfe2ff);
+    color: #0d6efd;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    flex-shrink: 0;
+}
+
+.luggage-option-card.selected .luggage-icon {
+    background: linear-gradient(135deg, #198754, #157347);
+    color: white;
+}
+
+.luggage-info {
+    flex-grow: 1;
+}
+
+.luggage-info strong {
+    font-size: 1.05rem;
+    color: #212529;
+}
+
+.luggage-price {
+    flex-shrink: 0;
+}
+
+.luggage-price .badge {
+    padding: 8px 16px;
+    border-radius: 50px;
+    font-weight: 700;
+}
+
+.luggage-check-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 2px solid #dee2e6;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: transparent;
+    transition: all 0.3s ease;
+    flex-shrink: 0;
+}
+
+.luggage-option-card.selected .luggage-check-icon {
+    background: #198754;
+    border-color: #198754;
+    color: white;
+}
+
+.seat {
+    position: relative;
+}
+
+.seat .seat-order {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    background: #ffc107;
+    color: #000;
+    font-size: 0.7rem;
+    font-weight: 800;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+/* ========================================
+   🗺️ بطاقات التنقل في الصفحة الرئيسية
+   ======================================== */
+
+.section-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.4rem;
+    flex-shrink: 0;
+}
+
+.nav-card {
+    display: block;
+    background: white;
+    border-radius: 16px;
+    padding: 20px 24px;
+    text-decoration: none;
+    color: #212529;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+    border: 2px solid transparent;
+    transition: all 0.3s ease;
+    height: 100%;
+    position: relative;
+    overflow: hidden;
+}
+
+.nav-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
+    border-color: #0d6efd;
+    color: #0d6efd;
+}
+
+.nav-card-admin::after {
+    content: '🔒';
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    font-size: 1rem;
+    opacity: 0.4;
+}
+
+.nav-card-admin:hover::after {
+    opacity: 1;
+}
+
+.nav-card-quick {
+    text-align: center;
+    padding: 24px 16px;
+    background: linear-gradient(135deg, #ffffff, #f8f9fa);
+}
+
+.nav-card-quick:hover {
+    background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+    border-color: #198754;
+}
+
+.nav-card-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.3rem;
+    margin-bottom: 12px;
+}
+
+.nav-card h6 {
+    font-weight: 700;
+    margin-bottom: 4px;
+    font-size: 1.05rem;
+}
+
+.nav-card small {
+    color: #6c757d;
+    font-size: 0.85rem;
+}
+
+/* تمييز قسم الإدارة */
+.nav-card-admin {
+    border-right: 4px solid #ffc107;
+}
+
+.nav-card-admin:hover {
+    border-color: #ffc107;
+    color: #b8860b;
+}
+
+/* ========================================
+   التجاوب
+   ======================================== */
+@media (max-width: 768px) {
+    .section-icon {
+        width: 40px;
+        height: 40px;
+        font-size: 1.1rem;
+    }
+
+    .nav-card {
+        padding: 16px 18px;
+    }
+
+    .nav-card-icon {
+        width: 40px;
+        height: 40px;
+        font-size: 1.1rem;
+    }
+
+    .nav-card h6 {
+        font-size: 0.95rem;
+    }
+}
+
+/* ========================================
+   🎯 الصفحة الرئيسية الاحترافية
+   ======================================== */
+
+.hero-section-modern {
+    background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 50%, #084298 100%);
+    padding: 80px 0 60px;
+    position: relative;
+    overflow: hidden;
+    border-radius: 0 0 50px 50px;
+    margin-bottom: 30px;
+}
+
+/* ✅ إصلاح التداخل - منفصل هنا */
+.hero-section-modern h1 {
+    margin-bottom: 16px;
+}
+
+.hero-section-modern .lead,
+.hero-section-modern p {
+    margin-bottom: 30px;
+}
+
+.hero-section-modern::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -10%;
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.1), transparent 70%);
+    border-radius: 50%;
+}
+
+.hero-section-modern::after {
+    content: '';
+    position: absolute;
+    bottom: -30%;
+    left: -10%;
+    width: 500px;
+    height: 500px;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.08), transparent 70%);
+    border-radius: 50%;
+}
+
+.search-card {
+    background: white;
+    padding: 32px;
+    border-radius: 24px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+    position: relative;
+    z-index: 10;
+    margin-top: 20px;
+}
+
+.search-card .form-label {
+    font-weight: 700;
+    color: #212529;
+    margin-bottom: 8px;
+}
+
+.search-card .form-select,
+.search-card .form-control {
+    border: 2px solid #e9ecef;
+    border-radius: 12px;
+    padding: 12px 16px;
+    font-weight: 600;
+    transition: all 0.3s;
+}
+
+.search-card .form-select:focus,
+.search-card .form-control:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 4px rgba(13, 110, 253, 0.15);
+}
+
+/* الوجهات الشهيرة */
+.destination-card {
+    background: white;
+    border-radius: 20px;
+    padding: 24px 16px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+    border: 2px solid transparent;
+}
+
+.destination-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
+    border-color: #0d6efd;
+}
+
+.destination-icon {
+    width: 70px;
+    height: 70px;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 16px;
+    color: white;
+    font-size: 1.8rem;
+}
+
+.destination-card h5 {
+    font-weight: 700;
+    margin-bottom: 4px;
+    color: #212529;
+}
+
+.destination-card small {
+    color: #6c757d;
+}
+
+/* كيف يعمل */
+.how-it-works-section {
+    background: linear-gradient(180deg, #f8f9fa 0%, #ffffff 100%);
+}
+
+.step-card {
+    background: white;
+    border-radius: 20px;
+    padding: 32px 24px;
+    text-align: center;
+    position: relative;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+    transition: all 0.3s;
+    border: 2px solid transparent;
+}
+
+.step-card:hover {
+    transform: translateY(-6px);
+    border-color: #0d6efd;
+    box-shadow: 0 12px 32px rgba(13, 110, 253, 0.15);
+}
+
+.step-number {
+    position: absolute;
+    top: -16px;
+    right: 24px;
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(135deg, #0d6efd, #0a58ca);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 1.1rem;
+    box-shadow: 0 4px 12px rgba(13, 110, 253, 0.3);
+}
+
+.step-icon {
+    font-size: 3rem;
+    color: #0d6efd;
+    margin-bottom: 16px;
+}
+
+.step-card h5 {
+    font-weight: 700;
+    margin-bottom: 12px;
+}
+
+/* العروض الخاصة */
+.offer-card {
+    border-radius: 20px;
+    padding: 32px;
+    color: white;
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    transition: all 0.3s;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+    position: relative;
+    overflow: hidden;
+}
+
+.offer-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.2);
+}
+
+.offer-primary {
+    background: linear-gradient(135deg, #0d6efd, #0a58ca);
+}
+
+.offer-success {
+    background: linear-gradient(135deg, #198754, #157347);
+}
+
+.offer-icon {
+    font-size: 3rem;
+    opacity: 0.9;
+    flex-shrink: 0;
+}
+
+.offer-content h4 {
+    font-weight: 800;
+    margin-bottom: 8px;
+}
+
+.offer-content p {
+    opacity: 0.9;
+}
+
+.offer-content .btn-light {
+    border-radius: 50px;
+    padding: 8px 24px;
+    font-weight: 700;
+}
+
+/* قسم الثقة */
+.trust-section {
+    background: #f8f9fa;
+    border-radius: 30px;
+    margin: 30px 20px;
+}
+
+.trust-item {
+    padding: 20px;
+}
+
+.trust-item h6 {
+    font-weight: 700;
+    margin-top: 8px;
+}
+
+/* التجاوب */
+@media (max-width: 768px) {
+    .hero-section-modern {
+        padding: 40px 0 60px;
+        border-radius: 0 0 30px 30px;
+    }
+
+    .hero-section-modern h1 {
+        font-size: 1.8rem;
+    }
+
+    .search-card {
+        padding: 20px;
+        border-radius: 16px;
+    }
+
+    .offer-card {
+        flex-direction: column;
+        text-align: center;
+        padding: 24px;
+    }
+
+    .destination-icon {
+        width: 55px;
+        height: 55px;
+        font-size: 1.4rem;
+    }
+}
+
+/* ========================================
+   🎫 التذكرة الأفقية الاحترافية
+   ======================================== */
+
+.ticket-modern {
+    display: flex;
+    background: white;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 12px 48px rgba(0, 0, 0, 0.12);
+    max-width: 900px;
+    margin: 0 auto;
+    position: relative;
+    border: 1px solid #e9ecef;
+}
+
+/* الجزء الرئيسي */
+.ticket-main {
+    flex: 1;
+    padding: 28px 32px;
+}
+
+/* الجزء الأيمن (السعر) */
+.ticket-stub {
+    width: 240px;
+    background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+    position: relative;
+    padding: 28px 24px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+}
+
+.stub-divider {
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    border-right: 2px dashed #adb5bd;
+}
+
+.stub-divider::before,
+.stub-divider::after {
+    content: '';
+    position: absolute;
+    width: 24px;
+    height: 24px;
+    background: #f0f2f5;
+    border-radius: 50%;
+    right: -13px;
+}
+
+.stub-divider::before {
+    top: -12px;
+}
+
+.stub-divider::after {
+    bottom: -12px;
+}
+
+.stub-content {
+    width: 100%;
+}
+
+.ticket-barcode-modern {
+    background: white;
+    padding: 16px 12px;
+    border-radius: 12px;
+    margin: 16px 0;
+}
+
+.ticket-barcode-modern small {
+    font-family: 'Courier New', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 1px;
+    color: #6c757d;
+}
+
+.ticket-status {
+    margin-top: auto;
+}
+
+/* رأس التذكرة */
+.ticket-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 20px;
+    border-bottom: 2px dashed #e9ecef;
+    margin-bottom: 24px;
+    color: #0d6efd;
+}
+
+.ticket-top h5 {
+    color: #212529;
+}
+
+/* المسار */
+.ticket-route-modern {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 24px;
+    background: linear-gradient(135deg, #f0f7ff, #e7f1ff);
+    padding: 20px 24px;
+    border-radius: 16px;
+}
+
+.route-point {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    flex: 1;
+}
+
+.route-point small {
+    color: #6c757d;
+    font-size: 0.8rem;
+    display: block;
+}
+
+.route-point h5 {
+    font-weight: 700;
+    margin: 4px 0;
+    color: #212529;
+    font-size: 1rem;
+}
+
+.route-circle {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: #0d6efd;
+    box-shadow: 0 0 0 4px rgba(13, 110, 253, 0.15);
+    flex-shrink: 0;
+    margin-top: 6px;
+}
+
+.route-point:last-child .route-circle {
+    background: #198754;
+    box-shadow: 0 0 0 4px rgba(25, 135, 84, 0.15);
+}
+
+.route-line {
+    display: flex;
+    align-items: center;
+    color: #0d6efd;
+    font-size: 1.3rem;
+    position: relative;
+    flex-shrink: 0;
+}
+
+.route-line::before,
+.route-line::after {
+    content: '';
+    height: 2px;
+    background: #0d6efd;
+    width: 30px;
+    opacity: 0.3;
+}
+
+.route-line i {
+    margin: 0 8px;
+}
+
+/* صف التفاصيل */
+.ticket-details-row {
+    display: flex;
+    gap: 16px;
+    padding: 16px 0;
+    border-top: 1px solid #e9ecef;
+    border-bottom: 1px solid #e9ecef;
+    margin-bottom: 16px;
+}
+
+.ticket-detail-item {
+    flex: 1;
+    text-align: center;
+}
+
+.ticket-detail-item small {
+    display: block;
+    color: #6c757d;
+    font-size: 0.8rem;
+    margin-bottom: 4px;
+}
+
+.ticket-detail-item strong {
+    color: #212529;
+    font-size: 0.95rem;
+}
+
+/* بيانات الراكب */
+.ticket-passenger-row {
+    display: flex;
+    gap: 24px;
+    padding-top: 8px;
+}
+
+.ticket-passenger-row>div {
+    flex: 1;
+}
+
+.ticket-passenger-row h6 {
+    font-weight: 700;
+    color: #212529;
+}
+
+/* التجاوب - على الجوال */
+@media (max-width: 768px) {
+    .ticket-modern {
+        flex-direction: column;
+    }
+
+    .ticket-main {
+        padding: 20px;
+    }
+
+    .ticket-stub {
+        width: 100%;
+        padding: 20px;
+    }
+
+    .stub-divider {
+        right: 0;
+        left: 0;
+        top: 0;
+        bottom: auto;
+        width: 100%;
+        height: 2px;
+        border-right: none;
+        border-bottom: 2px dashed #adb5bd;
+    }
+
+    .stub-divider::before {
+        top: -11px;
+        left: -12px;
+    }
+
+    .stub-divider::after {
+        top: -11px;
+        right: -12px;
+        left: auto;
+    }
+
+    .ticket-route-modern {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .route-point {
+        justify-content: center;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .route-line {
+        transform: rotate(90deg);
+        margin: 8px 0;
+    }
+
+    .route-line::before,
+    .route-line::after {
+        width: 20px;
+    }
+
+    .ticket-details-row {
+        flex-wrap: wrap;
+    }
+
+    .ticket-detail-item {
+        flex: 0 0 50%;
+        margin-bottom: 8px;
+    }
+
+    .ticket-passenger-row {
+        flex-direction: column;
+        gap: 12px;
+    }
+}
+
+/* الطباعة */
+@media print {
+
+    .no-print,
+    .navbar,
+    footer {
+        display: none !important;
+    }
+
+    .ticket-modern {
+        box-shadow: none !important;
+        border: 2px solid #000 !important;
+        page-break-inside: avoid;
+    }
+
+    body {
+        background: white !important;
+    }
+}
+
+/* ========================================
+   👶 قسم الأطفال الرضع
+   ======================================== */
+
+.infant-section {
+    background: linear-gradient(135deg, #fff9e6 0%, #fff 100%);
+    border: 2px solid #ffc107;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 8px 24px rgba(255, 193, 7, 0.15);
+}
+
+.infant-header {
+    background: linear-gradient(135deg, #ffc107, #ffb300);
+    color: #212529;
+    padding: 20px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.infant-icon {
+    width: 50px;
+    height: 50px;
+    background: rgba(255, 255, 255, 0.5);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    margin-left: 16px;
+}
+
+.infant-body {
+    padding: 24px;
+}
+
+.infant-card {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    background: white;
+    padding: 16px;
+    border-radius: 12px;
+    border: 1px solid #ffe69c;
+    transition: all 0.2s;
+    position: relative;
+}
+
+.infant-card:hover {
+    border-color: #ffc107;
+    box-shadow: 0 4px 12px rgba(255, 193, 7, 0.2);
+    transform: translateY(-2px);
+}
+
+.infant-avatar {
+    width: 50px;
+    height: 50px;
+    background: linear-gradient(135deg, #fff3cd, #ffe69c);
+    color: #856404;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    flex-shrink: 0;
+}
+
+.infant-info {
+    flex: 1;
+}
+
+.infant-info h6 {
+    color: #212529;
+    margin-bottom: 4px;
+}
+
+.infant-badge {
+    flex-shrink: 0;
+}
+
+/* التجاوب */
+@media (max-width: 768px) {
+    .infant-header {
+        flex-direction: column;
+        text-align: center;
+        gap: 12px;
+    }
+
+    .infant-icon {
+        margin-left: 0;
+        margin-bottom: 8px;
+    }
+
+    .infant-card {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .infant-card .infant-badge {
+        margin-top: 8px;
+    }
+}
+
+/* الطباعة */
+@media print {
+    .infant-section {
+        page-break-inside: avoid;
+        border: 2px solid #000 !important;
+        box-shadow: none !important;
+    }
+
+    .infant-header {
+        background: #f0f0f0 !important;
+        color: #000 !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
+    .infant-card {
+        border: 1px solid #000 !important;
+    }
+}
+
+/* تعليمات التذكرة */
+.ticket-instructions {
+    margin-top: 12px;
+    padding: 10px 14px;
+    background: #f0f7ff;
+    border-right: 3px solid #0d6efd;
+    border-radius: 8px;
+}
+
+.ticket-instructions ul {
+    padding-right: 20px;
+    margin: 0;
+}
+
+/* QR Code Box */
+.ticket-qr-box {
+    background: white;
+    padding: 8px;
+    border-radius: 8px;
+    display: inline-block;
+    margin: 8px 0;
+    text-align: center;
+}
+
+.ticket-qr-box canvas,
+.ticket-qr-box img {
+    display: block;
+    margin: 0 auto;
+}
+
+/* Barcode Box */
+.ticket-barcode-box {
+    background: white;
+    padding: 4px;
+    border-radius: 6px;
+    margin: 6px 0;
+}
+
+/* Footer Text */
+.ticket-footer-text {
+    background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+    padding: 16px 24px;
+    border-radius: 12px;
+    border: 2px dashed #dee2e6;
+}
+
+/* ========================================
+   📋 المنفستو الاحترافي
+   ======================================== */
+.manifest-document {
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    font-family: 'Cairo', sans-serif;
+}
+
+.manifest-header {
+    border: 3px solid #0d6efd;
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 16px;
+}
+
+.manifest-header-top {
+    background: linear-gradient(135deg, #0d6efd, #0a58ca);
+    color: white;
+    padding: 14px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.manifest-brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.manifest-logo {
+    height: 50px;
+    background: white;
+    padding: 4px;
+    border-radius: 10px;
+}
+
+.manifest-logo-icon {
+    width: 50px;
+    height: 50px;
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.6rem;
+}
+
+.manifest-company-name {
+    margin: 0;
+    font-weight: 800;
+    font-size: 1.2rem;
+}
+
+.manifest-company-en {
+    margin: 0;
+    opacity: 0.85;
+    font-size: 0.8rem;
+}
+
+.manifest-doc-info {
+    text-align: left;
+    direction: ltr;
+}
+
+.manifest-doc-title {
+    font-size: 1rem;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.manifest-doc-sub {
+    font-size: 0.65rem;
+    opacity: 0.8;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+}
+
+.manifest-header-bottom {
+    background: #f8f9fa;
+    padding: 8px 20px;
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+    font-size: 0.8rem;
+}
+
+.manifest-info-item .label {
+    color: #6c757d;
+    margin-left: 6px;
+}
+
+.manifest-info-item .value {
+    color: #212529;
+    font-family: 'Courier New', monospace;
+}
+
+.manifest-trip-info {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin-bottom: 16px;
+    padding: 12px;
+    background: #f8f9fa;
+    border-radius: 12px;
+    border: 1px solid #e9ecef;
+}
+
+.manifest-trip-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.manifest-trip-item .icon {
+    width: 36px;
+    height: 36px;
+    background: white;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #0d6efd;
+    font-size: 1rem;
+    flex-shrink: 0;
+}
+
+.manifest-trip-item .label {
+    font-size: 0.65rem;
+    color: #6c757d;
+    text-transform: uppercase;
+}
+
+.manifest-trip-item .value {
+    font-weight: 700;
+    color: #212529;
+    font-size: 0.85rem;
+}
+
+.manifest-stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin-bottom: 16px;
+}
+
+.manifest-stat {
+    padding: 12px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: white;
+}
+
+.stat-primary {
+    background: linear-gradient(135deg, #0d6efd, #0a58ca);
+}
+
+.stat-warning {
+    background: linear-gradient(135deg, #ffc107, #ffb300);
+    color: #212529;
+}
+
+.stat-success {
+    background: linear-gradient(135deg, #198754, #157347);
+}
+
+.stat-info {
+    background: linear-gradient(135deg, #0dcaf0, #0aa2c0);
+    color: #212529;
+}
+
+.manifest-stat .stat-icon {
+    font-size: 1.6rem;
+    opacity: 0.9;
+}
+
+.manifest-stat .stat-value {
+    font-size: 1.4rem;
+    font-weight: 800;
+    line-height: 1;
+}
+
+.manifest-stat .stat-label {
+    font-size: 0.7rem;
+    opacity: 0.9;
+}
+
+.manifest-section {
+    margin-bottom: 16px;
+}
+
+.manifest-section-title {
+    background: linear-gradient(135deg, #0d6efd, #0a58ca);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 10px 10px 0 0;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.9rem;
+}
+
+.manifest-section-title.section-infant {
+    background: linear-gradient(135deg, #ffc107, #ffb300);
+    color: #212529;
+}
+
+.badge-count {
+    margin-right: auto;
+    background: rgba(255, 255, 255, 0.25);
+    padding: 2px 10px;
+    border-radius: 50px;
+    font-size: 0.75rem;
+}
+
+.badge-count.badge-warning {
+    background: rgba(0, 0, 0, 0.15);
+}
+
+.manifest-table {
+    width: 100%;
+    border-collapse: collapse;
+    border: 1px solid #dee2e6;
+    border-top: none;
+    font-size: 0.82rem;
+}
+
+.manifest-table thead {
+    background: #e7f1ff;
+}
+
+.manifest-table thead th {
+    padding: 8px 6px;
+    text-align: right;
+    font-weight: 700;
+    color: #084298;
+    font-size: 0.75rem;
+    border-bottom: 2px solid #0d6efd;
+}
+
+.manifest-table tbody tr {
+    border-bottom: 1px solid #e9ecef;
+}
+
+.manifest-table tbody tr:hover {
+    background: #f8f9fa;
+}
+
+.manifest-table tbody tr:nth-child(even) {
+    background: #fafbfc;
+}
+
+.manifest-table tbody td {
+    padding: 8px 6px;
+    vertical-align: middle;
+}
+
+.badge-ref {
+    font-family: 'Courier New', monospace;
+    font-weight: 700;
+    color: #0d6efd;
+    background: #e7f1ff;
+    padding: 2px 6px;
+    border-radius: 6px;
+    font-size: 0.7rem;
+}
+
+.seat-badge {
+    background: #0d6efd;
+    color: white;
+    padding: 3px 10px;
+    border-radius: 50px;
+    font-weight: 700;
+    font-size: 0.8rem;
+}
+
+.status-badge {
+    padding: 2px 8px;
+    border-radius: 50px;
+    font-size: 0.7rem;
+    font-weight: 700;
+}
+
+.status-confirmed {
+    background: #d1e7dd;
+    color: #0f5132;
+}
+
+.status-pending {
+    background: #fff3cd;
+    color: #664d03;
+}
+
+.table-infant thead {
+    background: #fff9e6;
+}
+
+.table-infant thead th {
+    color: #856404;
+    border-bottom-color: #ffc107;
+}
+
+.manifest-notes {
+    background: #f0f7ff;
+    border-right: 4px solid #0d6efd;
+    padding: 12px 16px;
+    border-radius: 10px;
+    margin-bottom: 16px;
+}
+
+.manifest-note-title {
+    font-weight: 800;
+    color: #084298;
+    margin-bottom: 6px;
+    font-size: 0.85rem;
+}
+
+.manifest-notes ul {
+    margin: 0;
+    padding-right: 18px;
+    font-size: 0.78rem;
+    color: #212529;
+    line-height: 1.7;
+}
+
+.manifest-signatures {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+    margin: 24px 0 16px;
+}
+
+.signature-box {
+    text-align: center;
+}
+
+.signature-label {
+    font-weight: 700;
+    color: #212529;
+    margin-bottom: 30px;
+    font-size: 0.85rem;
+}
+
+.signature-line {
+    border-bottom: 2px dotted #212529;
+    margin-bottom: 4px;
+}
+
+.signature-name {
+    font-size: 0.72rem;
+    color: #6c757d;
+}
+
+.manifest-footer {
+    background: #212529;
+    color: rgba(255, 255, 255, 0.85);
+    padding: 10px 16px;
+    border-radius: 10px 10px 0 0;
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+    flex-wrap: wrap;
+    font-size: 0.75rem;
+}
+
+.manifest-footer-item i {
+    color: #ffc107;
+    margin-left: 4px;
+}
+
+.manifest-footer-bottom {
+    background: #0d6efd;
+    color: white;
+    text-align: center;
+    padding: 6px;
+    border-radius: 0 0 10px 10px;
+    font-size: 0.7rem;
+    font-weight: 600;
+}
+
+@media print {
+    .manifest-document {
+        padding: 0 !important;
+    }
+
+    .manifest-document * {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
+    .manifest-section {
+        page-break-inside: avoid;
+    }
+}
+
+/* ========================================
+   ✨ اسم الشركة في الـ Navbar - تصميم احترافي
+   ======================================== */
+
+.navbar-brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 0;
+    font-family: 'Tajawal', 'Cairo', sans-serif;
+    transition: all 0.3s ease;
+}
+
+.navbar-brand:hover {
+    transform: scale(1.02);
+}
+
+.navbar-brand img {
+    height: 55px;
+    width: 55px;
+    object-fit: cover;
+    border-radius: 12px;
+    background: white;
+    padding: 4px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    flex-shrink: 0;
+}
+
+.navbar-brand .company-name {
+    font-family: 'Tajawal', sans-serif;
+    font-weight: 900;
+    font-size: 1.4rem;
+    letter-spacing: -0.5px;
+    line-height: 1.2;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+    background: linear-gradient(135deg, #ffffff 0%, #e3f2fd 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.navbar-brand .company-name-en {
+    font-family: 'Almarai', sans-serif;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    opacity: 0.85;
+    text-transform: uppercase;
+    display: block;
+    margin-top: 2px;
+}
+
+/* على الجوال */
+@media (max-width: 768px) {
+    .navbar-brand {
+        gap: 8px;
+    }
+
+    .navbar-brand img {
+        height: 42px;
+        width: 42px;
+        padding: 3px;
+    }
+
+    .navbar-brand .company-name {
+        font-size: 1rem;
+    }
+
+    .navbar-brand .company-name-en {
+        font-size: 0.55rem;
+        letter-spacing: 1px;
+    }
+}
+
+/* الخط الموحد للغتين */
+body,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p,
+a,
+button,
+input,
+select,
+textarea {
+    font-family: 'Cairo', 'Tajawal', sans-serif !important;
+}
+
+/* العنوان: حجم واحد ثابت للغتين */
+h1.display-4 {
+    font-size: 3.2rem !important;
+    font-weight: 800 !important;
+    line-height: 1.25 !important;
+}
+
+/* صندوق البطل (Hero): ارتفاع موحد للغتين */
+section.hero,
+.hero-section,
+header.hero {
+    min-height: 420px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    padding-top: 40px !important;
+    padding-bottom: 40px !important;
+}
+/* تكبير اسم الشركة في شريط التنقل */
+.navbar-brand {
+    padding-top: 8px !important;
+    padding-bottom: 8px !important;
+}
+
+.navbar-brand .fw-bold {
+    font-size: 1.35rem !important;
+    line-height: 1.1 !important;
+}
+
+.navbar-brand small {
+    font-size: 0.85rem !important;
+    line-height: 1.1 !important;
+    opacity: 0.9;
+}
+
+/* رفع ارتفاع الشريط قليلًا ليتنفس */
+.navbar {
+    padding-top: 10px !important;
+    padding-bottom: 10px !important;
+}

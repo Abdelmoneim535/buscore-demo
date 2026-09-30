@@ -1,0 +1,796 @@
+{% extends "admin/base_admin.html" %}
+
+{% block title %}{{ _("لوحة التحكم") }} - BusCore{% endblock %}
+{% block page_title %}{{ _("لوحة التحكم الرئيسية") }}{% endblock %}
+
+{% block content %}
+
+<!--  -->
+<!--  Toolbar علوي -->
+<!--  -->
+<div class="dash-toolbar">
+    <div class="dash-toolbar-right">
+        <div class="dash-search">
+            <i class="fas fa-search"></i>
+            <input type="text" placeholder="{{ _('بحث سريع...') }}" id="quickSearch">
+        </div>
+    </div>
+    <div class="dash-toolbar-left">
+        <div class="dash-date">
+            <i class="fas fa-calendar-day"></i>
+            <span id="todayDate">-</span>
+        </div>
+        <a href="/admin/bookings?status=pending" class="dash-notification">
+            <i class="fas fa-bell"></i>
+            <span class="badge-notification" id="pendingCount">0</span>
+        </a>
+    </div>
+</div>
+
+<!--  -->
+<!--  KPI Cards -->
+<!--  -->
+<div class="row g-3 mb-4">
+
+    <!-- Cities -->
+    <div class="col-md-3">
+        <div class="kpi-card kpi-blue">
+            <div class="kpi-header">
+                <div class="kpi-icon">
+                    <i class="fas fa-city"></i>
+                </div>
+                <div class="kpi-trend neutral" id="citiesTrend">
+                    <i class="fas fa-minus"></i>
+                    <span>0%</span>
+                </div>
+            </div>
+            <div class="kpi-body">
+                <div class="kpi-value" id="statCities">-</div>
+                <div class="kpi-label">{{ _("إجمالي المدن") }}</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stations -->
+    <div class="col-md-3">
+        <div class="kpi-card kpi-green">
+            <div class="kpi-header">
+                <div class="kpi-icon">
+                    <i class="fas fa-map-marker-alt"></i>
+                </div>
+                <div class="kpi-trend neutral" id="stationsTrend">
+                    <i class="fas fa-minus"></i>
+                    <span>0%</span>
+                </div>
+            </div>
+            <div class="kpi-body">
+                <div class="kpi-value" id="statStations">-</div>
+                <div class="kpi-label">{{ _("إجمالي المحطات") }}</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Trips -->
+    <div class="col-md-3">
+        <div class="kpi-card kpi-yellow">
+            <div class="kpi-header">
+                <div class="kpi-icon">
+                    <i class="fas fa-route"></i>
+                </div>
+                <div class="kpi-trend neutral" id="tripsTrend">
+                    <i class="fas fa-minus"></i>
+                    <span>0%</span>
+                </div>
+            </div>
+            <div class="kpi-body">
+                <div class="kpi-value" id="statTrips">-</div>
+                <div class="kpi-label">{{ _("إجمالي الرحلات") }}</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bookings -->
+    <div class="col-md-3">
+        <div class="kpi-card kpi-red">
+            <div class="kpi-header">
+                <div class="kpi-icon">
+                    <i class="fas fa-ticket-alt"></i>
+                </div>
+                <div class="kpi-trend up" id="bookingsTrend">
+                    <i class="fas fa-arrow-up"></i>
+                    <span id="bookingsTrendValue">+0%</span>
+                </div>
+            </div>
+            <div class="kpi-body">
+                <div class="kpi-value" id="statBookings">-</div>
+                <div class="kpi-label">{{ _("إجمالي الحجوزات") }}</div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!--  -->
+<!--  Live Trips Widget -->
+<!--  -->
+<div class="card border-0 shadow-sm recent-card live-trips-widget mb-4">
+    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+        <h5 class="mb-0 fw-bold">
+            <i class="fas fa-satellite-dish me-2 text-danger"></i>
+            {{ _("الرحلات المباشرة") }}
+            <span class="badge bg-danger ms-2" style="font-size: 0.65rem; animation: pulse-badge 2s infinite;">
+                <i class="fas fa-circle" style="font-size: 0.5rem;"></i> LIVE
+            </span>
+        </h5>
+        <a href="/admin/live-trips" class="btn btn-sm btn-outline-danger">
+            {{ _("عرض الكل") }}
+            <i class="fas fa-arrow-{% if lang == 'ar' %}left{% else %}right{% endif %} ms-1"></i>
+        </a>
+    </div>
+    <div class="card-body p-0" id="liveTripsWidget">
+        <div class="text-center py-4">
+            <div class="spinner-border spinner-border-sm text-primary"></div>
+            <p class="mt-2 text-muted small mb-0">{{ _("جاري التحميل...") }}</p>
+        </div>
+    </div>
+</div>
+
+<style>
+@keyframes pulse-badge {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+.live-trip-item {
+    display: flex;
+    align-items: center;
+    padding: 12px 24px;
+    border-bottom: 1px solid #f0f0f0;
+    gap: 14px;
+    transition: background 0.2s;
+}
+.live-trip-item:hover {
+    background: #fafbfc;
+}
+.live-trip-item:last-child {
+    border-bottom: none;
+}
+
+.live-trip-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+.dot-departed { background: #dc3545; }
+.dot-departing_soon { background: #ffc107; animation: pulse-badge 1.5s infinite; }
+.dot-upcoming { background: #198754; }
+.dot-later { background: #6c757d; }
+
+.live-trip-info {
+    flex: 1;
+    min-width: 0;
+}
+.live-trip-info .route {
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: #212529;
+    margin-bottom: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.live-trip-info .details {
+    font-size: 0.75rem;
+    color: #6c757d;
+}
+
+.live-trip-time {
+    text-align: center;
+    font-family: 'Courier New', monospace;
+    font-weight: 800;
+    font-size: 0.95rem;
+    color: #212529;
+    min-width: 70px;
+}
+
+.live-trip-countdown {
+    font-size: 0.7rem;
+    padding: 3px 10px;
+    border-radius: 50px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+</style>
+
+<!--  -->
+<!--  Recent Bookings -->
+<!--  -->
+<div class="card border-0 shadow-sm recent-card">
+    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+        <h5 class="mb-0 fw-bold">
+            <i class="fas fa-clock me-2 text-primary"></i>
+            {{ _("آخر الحجوزات") }}
+        </h5>
+        <a href="/admin/bookings" class="btn btn-sm btn-outline-primary">
+            {{ _("عرض الكل") }}
+            <i class="fas fa-arrow-{% if lang == 'ar' %}left{% else %}right{% endif %} ms-1"></i>
+        </a>
+    </div>
+    <div class="card-body p-0">
+        <div id="recentBookings">
+            <div class="text-center py-5">
+                <div class="spinner-border text-primary"></div>
+                <p class="mt-3 text-muted">{{ _("جاري التحميل...") }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+/*  */
+/* Toolbar */
+/*  */
+.dash-toolbar {
+    background: white;
+    border-radius: 14px;
+    padding: 12px 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.dash-toolbar-right,
+.dash-toolbar-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.dash-search {
+    position: relative;
+    width: 280px;
+}
+
+.dash-search i {
+    position: absolute;
+    {% if lang == 'ar' %}right: 14px;{% else %}left: 14px;{% endif %}
+    top: 50%;
+    transform: translateY(-50%);
+    color: #adb5bd;
+    font-size: 0.9rem;
+}
+
+.dash-search input {
+    width: 100%;
+    padding: 9px 14px;
+    {% if lang == 'ar' %}padding-right: 38px;{% else %}padding-left: 38px;{% endif %}
+    border: 1px solid #e9ecef;
+    border-radius: 10px;
+    background: #f8f9fa;
+    font-size: 0.9rem;
+    transition: all 0.2s;
+}
+
+.dash-search input:focus {
+    outline: none;
+    border-color: #0d6efd;
+    background: white;
+    box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.1);
+}
+
+.dash-date {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 14px;
+    background: #f8f9fa;
+    border-radius: 10px;
+    font-size: 0.85rem;
+    color: #495057;
+    font-weight: 600;
+}
+
+.dash-date i {
+    color: #0d6efd;
+}
+
+.dash-notification {
+    position: relative;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f8f9fa;
+    border-radius: 10px;
+    color: #495057;
+    text-decoration: none;
+    transition: all 0.2s;
+}
+
+.dash-notification:hover {
+    background: #e7f1ff;
+    color: #0d6efd;
+}
+
+.badge-notification {
+    position: absolute;
+    top: -4px;
+    {% if lang == 'ar' %}left: -4px;{% else %}right: -4px;{% endif %}
+    background: #dc3545;
+    color: white;
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 50px;
+    min-width: 18px;
+    text-align: center;
+    box-shadow: 0 2px 6px rgba(220, 53, 69, 0.4);
+}
+
+/*  */
+/* KPI Cards */
+/*  */
+.kpi-card {
+    background: white;
+    border-radius: 14px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s;
+    position: relative;
+    overflow: hidden;
+    height: 100%;
+}
+
+.kpi-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    {% if lang == 'ar' %}right: 0;{% else %}left: 0;{% endif %}
+    width: 4px;
+    height: 100%;
+}
+
+.kpi-card.kpi-blue::before { background: linear-gradient(180deg, #0d6efd, #0a58ca); }
+.kpi-card.kpi-green::before { background: linear-gradient(180deg, #198754, #157347); }
+.kpi-card.kpi-yellow::before { background: linear-gradient(180deg, #ffc107, #ffb300); }
+.kpi-card.kpi-red::before { background: linear-gradient(180deg, #dc3545, #b02a37); }
+
+.kpi-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+}
+
+.kpi-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 16px;
+}
+
+.kpi-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.3rem;
+}
+
+.kpi-blue .kpi-icon { background: #e7f1ff; color: #0d6efd; }
+.kpi-green .kpi-icon { background: #d1e7dd; color: #198754; }
+.kpi-yellow .kpi-icon { background: #fff3cd; color: #cc9a06; }
+.kpi-red .kpi-icon { background: #f8d7da; color: #dc3545; }
+
+.kpi-trend {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 10px;
+    border-radius: 50px;
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+
+.kpi-trend.up { background: #d1e7dd; color: #0f5132; }
+.kpi-trend.down { background: #f8d7da; color: #842029; }
+.kpi-trend.neutral { background: #e2e3e5; color: #41464b; }
+
+.kpi-body {
+    text-align: {% if lang == 'ar' %}right{% else %}left{% endif %};
+}
+
+.kpi-value {
+    font-size: 2rem;
+    font-weight: 800;
+    color: #212529;
+    line-height: 1;
+    margin-bottom: 6px;
+    font-family: 'Courier New', monospace;
+}
+
+.kpi-label {
+    font-size: 0.85rem;
+    color: #6c757d;
+    font-weight: 600;
+}
+
+/*  */
+/* Recent Card */
+/*  */
+.recent-card {
+    border-radius: 14px !important;
+    overflow: hidden;
+}
+
+.recent-card .card-header {
+    border-bottom: 1px solid #f0f0f0;
+    padding: 18px 24px;
+}
+
+.recent-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.recent-table thead th {
+    background: #f8f9fa;
+    padding: 12px 24px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #6c757d;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    text-align: {% if lang == 'ar' %}right{% else %}left{% endif %};
+    border-bottom: 1px solid #e9ecef;
+}
+
+.recent-table tbody td {
+    padding: 14px 24px;
+    border-bottom: 1px solid #f0f0f0;
+    font-size: 0.9rem;
+    color: #495057;
+}
+
+.recent-table tbody tr:hover {
+    background: #f8f9fa;
+}
+
+.recent-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 12px;
+    border-radius: 50px;
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+
+.status-badge.confirmed { background: #d1e7dd; color: #0f5132; }
+.status-badge.pending { background: #fff3cd; color: #664d03; }
+.status-badge.cancelled { background: #f8d7da; color: #842029; }
+.status-badge.expired { background: #e2e3e5; color: #41464b; }
+
+.booking-ref {
+    font-family: 'Courier New', monospace;
+    font-weight: 700;
+    color: #0d6efd;
+    font-size: 0.85rem;
+}
+
+.amount {
+    font-family: 'Courier New', monospace;
+    font-weight: 700;
+    color: #198754;
+}
+
+/*  */
+/* Empty State */
+/*  */
+.empty-state {
+    padding: 60px 20px;
+    text-align: center;
+}
+
+.empty-state-icon {
+    font-size: 4rem;
+    color: #dee2e6;
+    margin-bottom: 16px;
+}
+
+.empty-state h5 {
+    color: #6c757d;
+    font-weight: 700;
+    margin-bottom: 8px;
+}
+
+.empty-state p {
+    color: #adb5bd;
+    margin: 0;
+    font-size: 0.9rem;
+}
+
+/*  */
+/* Responsive */
+/*  */
+@media (max-width: 768px) {
+    .dash-search { width: 100%; }
+    .dash-toolbar { padding: 12px; }
+    .dash-date span { display: none; }
+    .kpi-value { font-size: 1.6rem; }
+}
+</style>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+const LANG = "{{ lang }}";
+
+document.addEventListener('DOMContentLoaded', async function() {
+    //  تاريخ اليوم
+    const today = new Date();
+    const options = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' };
+    const dateEl = document.getElementById('todayDate');
+    if (dateEl) {
+        const locale = LANG === 'ar' ? 'ar-SA' : 'en-GB';
+        dateEl.textContent = today.toLocaleDateString(locale, options);
+    }
+
+    //  بحث سريع
+    const searchInput = document.getElementById('quickSearch');
+    if (searchInput) {
+        searchInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && this.value.trim()) {
+                window.location.href = `/admin/bookings?search=${encodeURIComponent(this.value.trim())}`;
+            }
+        });
+    }
+
+    //  تحميل الإحصائيات
+    try {
+        const [cities, stations, trips, bookings] = await Promise.all([
+            fetch('/stations/cities').then(r => r.json()),
+            fetch('/stations/').then(r => r.json()),
+            fetch('/trips/').then(r => r.json()),
+            fetch('/bookings/').then(r => r.json())
+        ]);
+
+        document.getElementById('statCities').textContent = cities.length;
+        document.getElementById('statStations').textContent = stations.length;
+        document.getElementById('statTrips').textContent = trips.length;
+        document.getElementById('statBookings').textContent = bookings.length;
+
+        //  إشعار الحجوزات المعلقة
+        const pendingCount = bookings.filter(b => b.status === 'pending').length;
+        const badgeEl = document.getElementById('pendingCount');
+        if (badgeEl) {
+            badgeEl.textContent = pendingCount;
+            if (pendingCount === 0) badgeEl.style.display = 'none';
+        }
+
+        //  نسبة التغيير (مثال بسيط - مقارنة بآخر 7 أيام)
+        const now = new Date();
+        const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+
+        const recentBookings = bookings.filter(b => new Date(b.booked_at) >= weekAgo);
+        const olderBookings = bookings.filter(b => new Date(b.booked_at) < weekAgo);
+
+        if (olderBookings.length > 0) {
+            const percent = Math.round(((recentBookings.length - olderBookings.length) / olderBookings.length) * 100);
+            const trendEl = document.getElementById('bookingsTrendValue');
+            if (trendEl) {
+                if (percent >= 0) {
+                    trendEl.textContent = `+${percent}%`;
+                    trendEl.parentElement.className = 'kpi-trend up';
+                    trendEl.parentElement.innerHTML = `<i class="fas fa-arrow-up"></i><span>+${percent}%</span>`;
+                } else {
+                    trendEl.parentElement.className = 'kpi-trend down';
+                    trendEl.parentElement.innerHTML = `<i class="fas fa-arrow-down"></i><span>${percent}%</span>`;
+                }
+            }
+        }
+
+        //  عرض آخر 5 حجوزات
+        renderRecentBookings(bookings);
+
+    } catch (error) {
+        console.error('Error loading dashboard:', error);
+    }
+});
+
+function renderRecentBookings(bookings) {
+    const container = document.getElementById('recentBookings');
+
+    if (bookings.length === 0) {
+        container.innerHTML = `
+            <div class="empty-state">
+                <i class="fas fa-inbox empty-state-icon"></i>
+                <h5>{{ _("لا توجد حجوزات بعد") }}</h5>
+                <p>{{ _("ستظهر هنا آخر الحجوزات عند إنشائها") }}</p>
+            </div>
+        `;
+        return;
+    }
+
+    const recent = bookings.slice(-5).reverse();
+
+    const statusMap = {
+        'confirmed': { class: 'confirmed', icon: 'fa-check-circle', text: '{{ _("مؤكد") }}' },
+        'pending': { class: 'pending', icon: 'fa-clock', text: '{{ _("معلق") }}' },
+        'cancelled': { class: 'cancelled', icon: 'fa-times-circle', text: '{{ _("ملغي") }}' },
+        'expired': { class: 'expired', icon: 'fa-hourglass-end', text: '{{ _("منتهي") }}' }
+    };
+
+    let html = '<div class="table-responsive"><table class="recent-table"><thead><tr>';
+    html += '<th>{{ _("رقم الحجز") }}</th>';
+    html += '<th>{{ _("الراكب") }}</th>';
+    html += '<th>{{ _("الحالة") }}</th>';
+    html += '<th>{{ _("المبلغ") }}</th>';
+    html += '</tr></thead><tbody>';
+
+    recent.forEach(b => {
+        const status = statusMap[b.status] || statusMap['pending'];
+        const passengerName = b.passenger?.full_name || '-';
+        const amount = parseFloat(b.total_price || 0).toLocaleString('en-US', { minimumFractionDigits: 0 });
+        const currency = LANG === 'ar' ? 'ج.س' : 'SDG';
+
+        html += `
+            <tr>
+                <td><span class="booking-ref">${b.booking_reference || '-'}</span></td>
+                <td>${passengerName}</td>
+                <td>
+                    <span class="status-badge ${status.class}">
+                        <i class="fas ${status.icon}"></i>
+                        ${status.text}
+                    </span>
+                </td>
+                <td class="amount">${amount} ${currency}</td>
+            </tr>
+        `;
+    });
+
+    html += '</tbody></table></div>';
+    container.innerHTML = html;
+}
+
+
+// 
+//  Live Trips Widget
+// 
+
+async function loadLiveTripsWidget() {
+    try {
+        const res = await fetch('/trips/live');
+        if (!res.ok) return;
+
+        const data = await res.json();
+        const container = document.getElementById('liveTripsWidget');
+        if (!container) return;
+
+        //  نأخذ أول 5 رحلات (مغادرات + وصولات معًا)
+        const allTrips = [...data.departures, ...data.arrivals];
+        // إزالة التكرار (نفس الرحلة قد تظهر في الاثنين)
+        const uniqueTrips = [];
+        const seenIds = new Set();
+        allTrips.forEach(t => {
+            if (!seenIds.has(t.id)) {
+                seenIds.add(t.id);
+                uniqueTrips.push(t);
+            }
+        });
+
+        if (uniqueTrips.length === 0) {
+            container.innerHTML = `
+                <div class="empty-state py-4">
+                    <i class="fas fa-bus empty-state-icon" style="font-size: 2.5rem;"></i>
+                    <h6 class="mt-2 mb-0">{{ _("لا توجد رحلات اليوم") }}</h6>
+                </div>
+            `;
+            return;
+        }
+
+        // نأخذ أول 5
+        const recentTrips = uniqueTrips.slice(0, 5);
+
+        let html = '';
+        recentTrips.forEach(trip => {
+            const depName = (LANG === 'en' && trip.departure_station_en) ? trip.departure_station_en : trip.departure_station;
+            const arrName = (LANG === 'en' && trip.arrival_station_en) ? trip.arrival_station_en : trip.arrival_station;
+
+            const depTime = trip.departure_time ? new Date(trip.departure_time) : null;
+            const depTimeStr = depTime ? formatTimeShort(depTime) : '-';
+
+            const driverName = (trip.driver && trip.driver.name)
+                ? ((LANG === 'en' && trip.driver.name_en) ? trip.driver.name_en : trip.driver.name)
+                : '{{ _("غير محدد") }}';
+
+            const statusInfo = getWidgetStatusInfo(trip.status);
+            const countdown = getWidgetCountdownText(trip.status, trip.minutes_left);
+
+            html += `
+                <div class="live-trip-item">
+                    <div class="live-trip-dot dot-${trip.status}"></div>
+                    <div class="live-trip-info">
+                        <div class="route">
+                            <span class="badge bg-light text-dark me-1" style="font-size: 0.65rem;">${trip.code || '-'}</span>
+                            ${depName}  ${arrName}
+                        </div>
+                        <div class="details">
+                            <i class="fas fa-user-tie me-1"></i>${driverName}
+                            ${trip.booked_seats > 0 ? `<span class="mx-2">|</span>${trip.booked_seats}/${trip.total_seats} {{ _("محجوز") }}` : ''}
+                        </div>
+                    </div>
+                    <div class="live-trip-time">${depTimeStr}</div>
+                    <div class="live-trip-countdown ${countdown.class}">${countdown.text}</div>
+                </div>
+            `;
+        });
+
+        container.innerHTML = html;
+    } catch (e) {
+        console.error('Failed to load live trips widget:', e);
+    }
+}
+
+function formatTimeShort(d) {
+    const h = d.getHours();
+    const m = String(d.getMinutes()).padStart(2, '0');
+    const ltrMark = '\u200E';
+    if (LANG === 'ar') {
+        const ampm = h >= 12 ? 'م' : 'ص';
+        const hour12 = h % 12 || 12;
+        return ltrMark + `${hour12}:${m} ${ampm}`;
+    }
+    return ltrMark + `${String(h).padStart(2, '0')}:${m}`;
+}
+
+function getWidgetStatusInfo(status) {
+    const map = {
+        'departed':        { 'class': 'bg-danger text-white' },
+        'just_departed':   { 'class': 'bg-danger text-white' },
+        'departing_soon':  { 'class': 'bg-warning text-dark' },
+        'upcoming':        { 'class': 'bg-success text-white' },
+        'later':           { 'class': 'bg-secondary text-white' },
+    };
+    return map[status] || { 'class': 'bg-secondary text-white' };
+}
+
+function getWidgetCountdownText(status, minutes) {
+    if (minutes === null || minutes === undefined || isNaN(minutes)) {
+        return { text: '-', 'class': 'bg-secondary text-white' };
+    }
+
+    if (status === 'departed' || status === 'just_departed') {
+        const abs = Math.abs(minutes);
+        if (abs < 60) return { text: '{{ _("منذ") }} ' + abs + ' {{ _("دقيقة") }}', 'class': 'bg-danger text-white' };
+        const hours = Math.floor(abs / 60);
+        return { text: '{{ _("منذ") }} ' + hours + ' {{ _("ساعة") }}', 'class': 'bg-danger text-white' };
+    }
+
+    if (minutes < 1) return { text: '{{ _("الآن") }}', 'class': 'bg-warning text-dark' };
+    if (minutes < 60) return { text: '{{ _("بعد") }} ' + minutes + ' {{ _("دقيقة") }}', 'class': 'bg-warning text-dark' };
+    const hours = Math.floor(minutes / 60);
+    return { text: '{{ _("بعد") }} ' + hours + ' {{ _("ساعة") }}', 'class': 'bg-success text-white' };
+}
+
+//  تحديث تلقائي كل دقيقة
+document.addEventListener('DOMContentLoaded', function() {
+    if (document.getElementById('liveTripsWidget')) {
+        loadLiveTripsWidget();
+        setInterval(loadLiveTripsWidget, 60000);
+    }
+});
+
+</script>
+{% endblock %}

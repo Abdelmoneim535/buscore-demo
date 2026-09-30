@@ -1,0 +1,449 @@
+{% extends "admin/base_admin.html" %}
+
+{% block title %}{{ _("إدارة البصات") }} - BusCore{% endblock %}
+{% block page_title %}{{ _("إدارة البصات") }}{% endblock %}
+
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <p class="text-muted mb-0">{{ _("إدارة أسطول البصات الخاص بالشركة") }}</p>
+    <button class="btn btn-primary" onclick="openAddModal()">
+        <i class="fas fa-plus me-2"></i>{{ _("إضافة بص جديد") }}
+    </button>
+</div>
+
+<!-- بطاقات إحصائية -->
+<div class="row g-3 mb-3">
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body text-center">
+                <i class="fas fa-bus-alt fa-2x text-primary mb-2"></i>
+                <h4 class="mb-0 fw-bold" id="totalBuses">0</h4>
+                <small class="text-muted">{{ _("إجمالي البصات") }}</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body text-center">
+                <i class="fas fa-check-circle fa-2x text-success mb-2"></i>
+                <h4 class="mb-0 fw-bold" id="activeBuses">0</h4>
+                <small class="text-muted">{{ _("بصات نشطة") }}</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body text-center">
+                <i class="fas fa-chair fa-2x text-warning mb-2"></i>
+                <h4 class="mb-0 fw-bold" id="totalSeats">0</h4>
+                <small class="text-muted">{{ _("إجمالي المقاعد") }}</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body text-center">
+                <i class="fas fa-times-circle fa-2x text-danger mb-2"></i>
+                <h4 class="mb-0 fw-bold" id="inactiveBuses">0</h4>
+                <small class="text-muted">{{ _("بصات متوقفة") }}</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm page-table-card">
+    <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <h5 class="mb-0 fw-bold">
+            <i class="fas fa-bus me-2 text-primary"></i>{{ _("قائمة البصات") }}
+            <span class="badge bg-primary ms-2" id="totalCount">0</span>
+        </h5>
+        <div class="page-table-controls">
+            <div class="input-group input-group-sm search-box">
+                <span class="input-group-text bg-light"><i class="fas fa-search"></i></span>
+                <input type="text" id="searchInput" class="form-control search-input"
+                       placeholder="{{ _('بحث...') }}">
+            </div>
+            <select id="pageSize" class="form-select form-select-sm page-size-select">
+                <option value="10">10 / {{ _("صفحة") }}</option>
+                <option value="25">25 / {{ _("صفحة") }}</option>
+                <option value="50">50 / {{ _("صفحة") }}</option>
+                <option value="0">{{ _("عرض الكل") }}</option>
+            </select>
+        </div>
+    </div>
+    <div class="page-table-container" id="busesTableContainer">
+        <div class="text-center py-5">
+            <div class="spinner-border text-primary"></div>
+            <p class="mt-2 text-muted">{{ _("جاري التحميل...") }}</p>
+        </div>
+    </div>
+    <div class="page-pagination" id="paginationContainer"></div>
+</div>
+
+<!-- Modal: إضافة/تعديل بص -->
+<div class="modal fade" id="busModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="modalTitle">
+                    <i class="fas fa-plus me-2"></i>{{ _("إضافة بص جديد") }}
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="busId">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">{{ _("رقم اللوحة") }} <span class="text-danger">*</span></label>
+                        <input type="text" id="busPlate" class="form-control" placeholder="{{ _('مثال: ب-1234') }}" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">{{ _("الموديل") }} <span class="text-danger">*</span></label>
+                        <input type="text" id="busModel" class="form-control" placeholder="{{ _('مثال: YUTONG / Mercedes') }}" required>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold">{{ _("عدد المقاعد") }} <span class="text-danger">*</span></label>
+                        <input type="number" id="busSeats" class="form-control" placeholder="{{ _('مثال: 55') }}" min="1" max="100" required>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold">{{ _("سنة الصنع") }}</label>
+                        <input type="number" id="busYear" class="form-control" placeholder="{{ _('مثال: 2022') }}" min="1990" max="2030">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold">{{ _("اللون (عربي)") }}</label>
+                        <input type="text" id="busColor" class="form-control" dir="rtl" placeholder="{{ _('مثال: أبيض') }}">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold">{{ _("اللون (إنجليزي)") }}</label>
+                        <input type="text" id="busColorEn" class="form-control" dir="ltr" placeholder="Example: White">
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">
+                            <i class="fas fa-image text-primary me-1"></i>
+                            {{ _("صورة الباص") }}
+                        </label>
+                        <input type="text" id="busImageUrl" class="form-control"
+                            placeholder="/static/images/buses/bus1.jpg" dir="ltr">
+                        <small class="text-muted">{{ _("مسار محلي أو رابط خارجي") }}</small>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">
+                            <i class="fas fa-video text-danger me-1"></i>
+                            {{ _("فيديو الباص") }}
+                        </label>
+                        <input type="text" id="busVideoUrl" class="form-control"
+                            placeholder="https://youtube.com/watch?v=xxx" dir="ltr">
+                        <small class="text-muted">YouTube / MP4</small>
+                    </div>
+
+                    <div class="col-12">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="busIsActive" checked>
+                            <label class="form-check-label fw-bold" for="busIsActive">
+                                {{ _("البص نشط (متاح للرحلات)") }}
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div id="modalMessage" class="mt-3"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ _("إلغاء") }}</button>
+                <button type="button" class="btn btn-primary" id="saveBusBtn" onclick="saveBus()">
+                    <i class="fas fa-save me-2"></i>{{ _("حفظ") }}
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: تأكيد الحذف -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title"><i class="fas fa-exclamation-triangle me-2"></i>{{ _("تأكيد الحذف") }}</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>{{ _("هل أنت متأكد من حذف البص") }} <strong id="deleteBusPlate"></strong>؟</p>
+                <p class="text-danger small mb-0">
+                    <i class="fas fa-info-circle me-1"></i>
+                    {{ _("لا يمكن حذف بص مرتبط برحلات موجودة.") }}
+                </p>
+                <input type="hidden" id="deleteBusId">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ _("إلغاء") }}</button>
+                <button type="button" class="btn btn-danger" onclick="confirmDelete()">
+                    <i class="fas fa-trash me-2"></i>{{ _("حذف نهائي") }}
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+const LANG = "{{ lang }}";
+let busModal, deleteModal;
+let allBuses = [];
+
+document.addEventListener('DOMContentLoaded', async function () {
+    busModal = new bootstrap.Modal(document.getElementById('busModal'));
+    deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+
+    //  تهيئة TableManager
+    TableManager.init({
+        containerId: 'busesTableContainer',
+        paginationId: 'paginationContainer',
+        totalCountId: 'totalCount',
+        emptyIcon: 'fa-bus',
+        emptyTitle: '{{ _("لا توجد بصات") }}',
+        emptyMessage: '{{ _("ابدأ بإضافة بص جديد") }}',
+        searchFields: ['plate_number', 'model', 'color', 'color_en'],
+        columns: [
+            { title: '#', width: '60', render: (item, idx) => idx },
+            { title: '{{ _("الصورة") }}', width: '90', render: (item) => {
+                if (item.image_url) {
+                    return `<img src="${item.image_url}" style="width: 60px; height: 40px; object-fit: cover; border-radius: 6px;" onerror="this.style.display='none'">`;
+                }
+                return `<div style="width: 60px; height: 40px; background: #e7f1ff; border-radius: 6px; display: flex; align-items: center; justify-content: center; color: #0d6efd;"><i class="fas fa-bus"></i></div>`;
+            }},
+            { title: '{{ _("رقم اللوحة") }}', render: (item) => `<strong>${item.plate_number}</strong>` },
+            { title: '{{ _("الموديل") }}', render: (item) => item.model },
+            { title: '{{ _("المقاعد") }}', width: '100', render: (item) =>
+                `<span class="badge bg-info fs-6">${item.total_seats}</span>`
+            },
+            { title: '{{ _("السنة") }}', width: '80', render: (item) => item.year || '-' },
+            { title: '{{ _("اللون") }}', width: '100', render: (item) => {
+                return (LANG === 'en' && item.color_en) ? item.color_en : (item.color || '-');
+            }},
+            { title: '{{ _("الحالة") }}', width: '100', render: (item) =>
+                item.is_active
+                    ? '<span class="badge bg-success">{{ _("نشطة") }}</span>'
+                    : '<span class="badge bg-danger">{{ _("متوقفة") }}</span>'
+            },
+            { title: '{{ _("الإجراءات") }}', width: '220', render: (item) => `
+                <div class="d-flex gap-1 flex-nowrap justify-content-center">
+                    <button class="btn btn-sm btn-outline-primary"
+                            onclick="openEditModal(${item.id})" title="{{ _('تعديل') }}">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-warning"
+                            onclick="toggleStatus(${item.id}, ${!item.is_active})"
+                            title="${item.is_active ? '{{ _("إيقاف") }}' : '{{ _("تفعيل") }}'}">
+                        <i class="fas fa-${item.is_active ? 'pause' : 'play'}"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-danger"
+                            onclick="openDeleteModal(${item.id})" title="{{ _('حذف') }}">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            `}
+        ]
+    });
+
+    //  ربط البحث + حجم الصفحة
+    document.getElementById('searchInput').addEventListener('input', () => TableManager.applyFilters());
+    document.getElementById('pageSize').addEventListener('change', () => {
+        TableManager.currentPage = 1;
+        TableManager.render();
+    });
+
+    await loadBuses();
+});
+
+async function loadBuses() {
+    try {
+        const response = await fetch('/buses/');
+        allBuses = await response.json();
+
+        //  ترتيب حسب رقم اللوحة
+        allBuses.sort((a, b) => (a.plate_number || '').localeCompare(b.plate_number || '', 'ar'));
+
+        updateStats();
+        TableManager.setData(allBuses);
+    } catch (error) {
+        console.error('Error loading buses:', error);
+        document.getElementById('busesTableContainer').innerHTML =
+            '<div class="alert alert-danger m-3">{{ _("فشل تحميل البصات") }}: ' + error.message + '</div>';
+    }
+}
+
+function updateStats() {
+    const total = allBuses.length;
+    const active = allBuses.filter(b => b.is_active).length;
+    const inactive = total - active;
+    const seats = allBuses.reduce((sum, b) => sum + (b.total_seats || 0), 0);
+
+    document.getElementById('totalBuses').textContent = total;
+    document.getElementById('activeBuses').textContent = active;
+    document.getElementById('inactiveBuses').textContent = inactive;
+    document.getElementById('totalSeats').textContent = seats;
+}
+
+function openAddModal() {
+    document.getElementById('modalTitle').innerHTML = '<i class="fas fa-plus me-2"></i>{{ _("إضافة بص جديد") }}';
+    document.getElementById('busId').value = '';
+    document.getElementById('busPlate').value = '';
+    document.getElementById('busModel').value = '';
+    document.getElementById('busSeats').value = '';
+    document.getElementById('busYear').value = '';
+    document.getElementById('busColor').value = '';
+    document.getElementById('busColorEn').value = '';
+    document.getElementById('busImageUrl').value = '';
+    document.getElementById('busVideoUrl').value = '';
+    document.getElementById('busIsActive').checked = true;
+    document.getElementById('modalMessage').innerHTML = '';
+    busModal.show();
+}
+
+function openEditModal(id) {
+    const bus = allBuses.find(b => b.id === id);
+    if (!bus) return;
+
+    document.getElementById('modalTitle').innerHTML = '<i class="fas fa-edit me-2"></i>{{ _("تعديل البص") }}';
+    document.getElementById('busId').value = bus.id;
+    document.getElementById('busPlate').value = bus.plate_number;
+    document.getElementById('busModel').value = bus.model;
+    document.getElementById('busSeats').value = bus.total_seats;
+    document.getElementById('busYear').value = bus.year || '';
+    document.getElementById('busColor').value = bus.color || '';
+    document.getElementById('busColorEn').value = bus.color_en || '';
+    document.getElementById('busImageUrl').value = bus.image_url || '';
+    document.getElementById('busVideoUrl').value = bus.video_url || '';
+    document.getElementById('busIsActive').checked = bus.is_active;
+    document.getElementById('modalMessage').innerHTML = '';
+    busModal.show();
+}
+
+async function saveBus() {
+    const id = document.getElementById('busId').value;
+    const plate = document.getElementById('busPlate').value.trim();
+    const model = document.getElementById('busModel').value.trim();
+    const seats = document.getElementById('busSeats').value;
+    const year = document.getElementById('busYear').value;
+    const color = document.getElementById('busColor').value.trim();
+    const colorEn = document.getElementById('busColorEn').value.trim() || null;
+    const imageUrl = document.getElementById('busImageUrl').value.trim();
+    const videoUrl = document.getElementById('busVideoUrl').value.trim();
+    const isActive = document.getElementById('busIsActive').checked;
+    const messageDiv = document.getElementById('modalMessage');
+    const saveBtn = document.getElementById('saveBusBtn');
+
+    if (!plate) {
+        messageDiv.innerHTML = '<div class="alert alert-danger">{{ _("الرجاء إدخال رقم اللوحة") }}</div>';
+        return;
+    }
+    if (!model) {
+        messageDiv.innerHTML = '<div class="alert alert-danger">{{ _("الرجاء إدخال الموديل") }}</div>';
+        return;
+    }
+    if (!seats || seats < 1) {
+        messageDiv.innerHTML = '<div class="alert alert-danger">{{ _("الرجاء إدخال عدد مقاعد صحيح") }}</div>';
+        return;
+    }
+
+    try {
+        saveBtn.disabled = true;
+        saveBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>{{ _("جاري الحفظ...") }}';
+        messageDiv.innerHTML = '';
+
+        const payload = {
+            plate_number: plate,
+            model: model,
+            total_seats: parseInt(seats),
+            year: year ? parseInt(year) : null,
+            color: color || null,
+            color_en: colorEn,
+            image_url: imageUrl || null,
+            video_url: videoUrl || null,
+            is_active: isActive
+        };
+
+        let response;
+        if (id) {
+            response = await fetch(`/buses/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+        } else {
+            response = await fetch('/buses/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+        }
+
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.detail || '{{ _("فشل الحفظ") }}');
+        }
+
+        messageDiv.innerHTML = '<div class="alert alert-success"> {{ _("تم الحفظ بنجاح!") }}</div>';
+        setTimeout(async () => {
+            busModal.hide();
+            await loadBuses();
+        }, 800);
+
+    } catch (error) {
+        messageDiv.innerHTML = '<div class="alert alert-danger"> ' + error.message + '</div>';
+    } finally {
+        saveBtn.disabled = false;
+        saveBtn.innerHTML = '<i class="fas fa-save me-2"></i>{{ _("حفظ") }}';
+    }
+}
+
+async function toggleStatus(id, newStatus) {
+    try {
+        const response = await fetch(`/buses/${id}/status?is_active=${newStatus}`, {
+            method: 'PATCH'
+        });
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.detail || '{{ _("فشل التحديث") }}');
+        }
+        await loadBuses();
+    } catch (error) {
+        alert(' ' + error.message);
+    }
+}
+
+function openDeleteModal(id) {
+    const bus = allBuses.find(b => b.id === id);
+    if (!bus) return;
+    document.getElementById('deleteBusId').value = bus.id;
+    document.getElementById('deleteBusPlate').textContent = bus.plate_number;
+    deleteModal.show();
+}
+
+async function confirmDelete() {
+    const id = document.getElementById('deleteBusId').value;
+    try {
+        const response = await fetch(`/buses/${id}`, { method: 'DELETE' });
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.detail || '{{ _("فشل الحذف") }}');
+        }
+        deleteModal.hide();
+        await loadBuses();
+    } catch (error) {
+        alert(' ' + error.message);
+    }
+}
+
+window.openAddModal = openAddModal;
+window.openEditModal = openEditModal;
+window.saveBus = saveBus;
+window.toggleStatus = toggleStatus;
+window.openDeleteModal = openDeleteModal;
+window.confirmDelete = confirmDelete;
+</script>
+{% endblock %}

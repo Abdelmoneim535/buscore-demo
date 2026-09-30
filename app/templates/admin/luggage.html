@@ -1,0 +1,361 @@
+{% extends "admin/base_admin.html" %}
+
+{% block title %}{{ _("إدارة الأمتعة") }} - BusCore{% endblock %}
+{% block page_title %}{{ _("إدارة الأمتعة") }}{% endblock %}
+
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <p class="text-muted mb-0">{{ _("إدارة أنواع الأمتعة والأسعار المتاحة") }}</p>
+    <button class="btn btn-primary" onclick="openAddModal()">
+        <i class="fas fa-plus me-2"></i>{{ _("إضافة أمتعة جديدة") }}
+    </button>
+</div>
+
+<div class="alert alert-info">
+    <i class="fas fa-info-circle me-2"></i>
+    {{ _("الشنطة المجانية (40 كجم) تكون مضمّنة مع كل تذكرة. الفئات الأخرى اختيارية ومدفوعة.") }}
+</div>
+
+<div class="card border-0 shadow-sm page-table-card">
+    <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <h5 class="mb-0 fw-bold">
+            <i class="fas fa-suitcase me-2 text-primary"></i>{{ _("قائمة الأمتعة") }}
+            <span class="badge bg-primary ms-2" id="totalCount">0</span>
+        </h5>
+        <div class="page-table-controls">
+            <div class="input-group input-group-sm search-box">
+                <span class="input-group-text bg-light"><i class="fas fa-search"></i></span>
+                <input type="text" id="searchInput" class="form-control search-input"
+                       placeholder="{{ _('بحث...') }}">
+            </div>
+            <select id="pageSize" class="form-select form-select-sm page-size-select">
+                <option value="10">10 / {{ _("صفحة") }}</option>
+                <option value="25">25 / {{ _("صفحة") }}</option>
+                <option value="50">50 / {{ _("صفحة") }}</option>
+                <option value="0">{{ _("عرض الكل") }}</option>
+            </select>
+        </div>
+    </div>
+    <div class="page-table-container" id="luggageTableContainer">
+        <div class="text-center py-5">
+            <div class="spinner-border text-primary"></div>
+            <p class="mt-2 text-muted">{{ _("جاري التحميل...") }}</p>
+        </div>
+    </div>
+    <div class="page-pagination" id="paginationContainer"></div>
+</div>
+
+<!-- Modal: إضافة/تعديل أمتعة -->
+<div class="modal fade" id="luggageModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="modalTitle">
+                    <i class="fas fa-plus me-2"></i>{{ _("إضافة أمتعة جديدة") }}
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="luggageId">
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">{{ _("نوع الأمتعة") }} <span class="text-danger">*</span></label>
+                    <select id="luggageType" class="form-select" required>
+                        <option value="free">{{ _("مجانية") }} (free)</option>
+                        <option value="small">{{ _("صغيرة") }} (small)</option>
+                        <option value="medium">{{ _("متوسطة") }} (medium)</option>
+                        <option value="large">{{ _("كبيرة") }} (large)</option>
+                        <option value="extra">{{ _("إضافية") }} (extra)</option>
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">{{ _("الوزن (كجم)") }} <span class="text-danger">*</span></label>
+                    <input type="number" id="luggageWeight" class="form-control" min="1" max="200"
+                        placeholder="{{ _('مثال: 40') }}" required>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">{{ _("السعر (ج.س)") }} <span class="text-danger">*</span></label>
+                    <input type="number" id="luggagePrice" class="form-control" min="0" step="100"
+                        placeholder="{{ _('مثال: 5000') }}" required>
+                </div>
+
+                <div class="form-check form-switch mb-3">
+                    <input class="form-check-input" type="checkbox" id="luggageIsFree">
+                    <label class="form-check-label fw-bold" for="luggageIsFree">
+                        <i class="fas fa-gift text-success me-1"></i>
+                        {{ _("مجانية (بدون سعر)") }}
+                    </label>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">{{ _("الكمية المسموحة") }}</label>
+                    <input type="number" id="luggageQuantity" class="form-control" min="1" max="10" value="1">
+                    <small class="text-muted">{{ _("عدد القطع المسموح بها من هذا النوع") }}</small>
+                </div>
+
+                <div id="modalMessage"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ _("إلغاء") }}</button>
+                <button type="button" class="btn btn-primary" id="saveLuggageBtn" onclick="saveLuggage()">
+                    <i class="fas fa-save me-2"></i>{{ _("حفظ") }}
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: تأكيد الحذف -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title"><i class="fas fa-exclamation-triangle me-2"></i>{{ _("تأكيد الحذف") }}</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>{{ _("هل أنت متأكد من حذف هذا النوع من الأمتعة؟") }}</p>
+                <p class="text-danger small mb-0">
+                    <i class="fas fa-info-circle me-1"></i>
+                    {{ _("لا يمكن حذف أمتعة مرتبطة بحجوزات موجودة.") }}
+                </p>
+                <input type="hidden" id="deleteLuggageId">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ _("إلغاء") }}</button>
+                <button type="button" class="btn btn-danger" onclick="confirmDelete()">
+                    <i class="fas fa-trash me-2"></i>{{ _("حذف نهائي") }}
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+const LANG = "{{ lang }}";
+let luggageModal, deleteModal;
+let allLuggage = [];
+
+document.addEventListener('DOMContentLoaded', async function () {
+    luggageModal = new bootstrap.Modal(document.getElementById('luggageModal'));
+    deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+
+    //  تهيئة TableManager
+    TableManager.init({
+        containerId: 'luggageTableContainer',
+        paginationId: 'paginationContainer',
+        totalCountId: 'totalCount',
+        emptyIcon: 'fa-suitcase',
+        emptyTitle: '{{ _("لا توجد أنواع أمتعة") }}',
+        emptyMessage: '{{ _("ابدأ بإضافة نوع جديد") }}',
+        searchFields: ['luggage_type', '_type_label'],
+        columns: [
+            { title: '#', width: '60', render: (item, idx) => idx },
+            { title: '{{ _("النوع") }}', render: (item) => {
+                const label = getTypeLabel(item.luggage_type);
+                const freeIcon = item.is_free ? ' <i class="fas fa-gift text-success"></i>' : '';
+                return `<strong>${label}</strong>${freeIcon}`;
+            }},
+            { title: '{{ _("الوزن") }}', width: '120', render: (item) =>
+                `<span class="badge bg-info fs-6">${item.weight_kg} {{ _("كجم") }}</span>`
+            },
+            { title: '{{ _("السعر") }}', width: '150', render: (item) =>
+                item.is_free
+                    ? '<span class="badge bg-success fs-6">{{ _("مجاناً") }}</span>'
+                    : `<strong class="text-success">${formatCurrency(item.price)}</strong>`
+            },
+            { title: '{{ _("الكمية") }}', width: '100', render: (item) =>
+                `<span class="badge bg-secondary">${item.quantity}</span>`
+            },
+            { title: '{{ _("الإجراءات") }}', width: '180', render: (item) => `
+                <div class="d-flex gap-1 flex-nowrap justify-content-center">
+                    <button class="btn btn-sm btn-outline-primary"
+                            onclick="openEditModal(${item.id})" title="{{ _('تعديل') }}">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-danger"
+                            onclick="openDeleteModal(${item.id})" title="{{ _('حذف') }}">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            `}
+        ]
+    });
+
+    //  ربط البحث + حجم الصفحة
+    document.getElementById('searchInput').addEventListener('input', () => TableManager.applyFilters());
+    document.getElementById('pageSize').addEventListener('change', () => {
+        TableManager.currentPage = 1;
+        TableManager.render();
+    });
+
+    await loadLuggage();
+});
+
+function getTypeLabel(type) {
+    const map = {
+        'free': '{{ _("مجانية") }}',
+        'small': '{{ _("صغيرة") }}',
+        'medium': '{{ _("متوسطة") }}',
+        'large': '{{ _("كبيرة") }}',
+        'extra': '{{ _("إضافية") }}'
+    };
+    return map[type] || type;
+}
+
+function formatCurrency(amount) {
+    if (!amount && amount !== 0) return '0 SDG';
+    const locale = LANG === 'ar' ? 'ar-SD' : 'en-SD';
+    return new Intl.NumberFormat(locale, {
+        style: 'currency', currency: 'SDG', minimumFractionDigits: 0
+    }).format(amount);
+}
+
+async function loadLuggage() {
+    try {
+        const res = await fetch('/bookings/luggage');
+        allLuggage = await res.json();
+
+        //  ترتيب حسب النوع أبجديًا
+        const typeOrder = { 'free': 1, 'small': 2, 'medium': 3, 'large': 4, 'extra': 5 };
+        allLuggage.sort((a, b) => (typeOrder[a.luggage_type] || 99) - (typeOrder[b.luggage_type] || 99));
+
+        //  إضافة حقل مساعد للبحث
+        allLuggage.forEach(item => {
+            item._type_label = getTypeLabel(item.luggage_type);
+        });
+
+        TableManager.setData(allLuggage);
+    } catch (e) {
+        console.error(e);
+        document.getElementById('luggageTableContainer').innerHTML =
+            '<div class="alert alert-danger m-3">{{ _("فشل تحميل الأمتعة") }}: ' + e.message + '</div>';
+    }
+}
+
+function openAddModal() {
+    document.getElementById('modalTitle').innerHTML = '<i class="fas fa-plus me-2"></i>{{ _("إضافة أمتعة جديدة") }}';
+    document.getElementById('luggageId').value = '';
+    document.getElementById('luggageType').value = 'small';
+    document.getElementById('luggageWeight').value = '';
+    document.getElementById('luggagePrice').value = '';
+    document.getElementById('luggageIsFree').checked = false;
+    document.getElementById('luggageQuantity').value = '1';
+    document.getElementById('modalMessage').innerHTML = '';
+    luggageModal.show();
+}
+
+function openEditModal(id) {
+    const item = allLuggage.find(l => l.id === id);
+    if (!item) return;
+
+    document.getElementById('modalTitle').innerHTML = '<i class="fas fa-edit me-2"></i>{{ _("تعديل الأمتعة") }}';
+    document.getElementById('luggageId').value = item.id;
+    document.getElementById('luggageType').value = item.luggage_type;
+    document.getElementById('luggageWeight').value = item.weight_kg;
+    document.getElementById('luggagePrice').value = item.price;
+    document.getElementById('luggageIsFree').checked = item.is_free;
+    document.getElementById('luggageQuantity').value = item.quantity;
+    document.getElementById('modalMessage').innerHTML = '';
+    luggageModal.show();
+}
+
+async function saveLuggage() {
+    const id = document.getElementById('luggageId').value;
+    const luggageType = document.getElementById('luggageType').value;
+    const weight = document.getElementById('luggageWeight').value;
+    const price = document.getElementById('luggagePrice').value;
+    const isFree = document.getElementById('luggageIsFree').checked;
+    const quantity = document.getElementById('luggageQuantity').value;
+    const messageDiv = document.getElementById('modalMessage');
+    const saveBtn = document.getElementById('saveLuggageBtn');
+
+    if (!weight || weight < 1) {
+        messageDiv.innerHTML = '<div class="alert alert-danger">{{ _("الرجاء إدخال وزن صحيح") }}</div>';
+        return;
+    }
+    if (!isFree && (!price || price < 0)) {
+        messageDiv.innerHTML = '<div class="alert alert-danger">{{ _("الرجاء إدخال سعر صحيح") }}</div>';
+        return;
+    }
+
+    const payload = {
+        luggage_type: luggageType,
+        weight_kg: parseInt(weight),
+        price: isFree ? 0 : parseFloat(price || 0),
+        is_free: isFree,
+        quantity: parseInt(quantity) || 1
+    };
+
+    try {
+        saveBtn.disabled = true;
+        saveBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>{{ _("جاري الحفظ...") }}';
+        messageDiv.innerHTML = '';
+
+        let response;
+        if (id) {
+            response = await fetch(`/bookings/luggage/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+        } else {
+            response = await fetch('/bookings/luggage', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+        }
+
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.detail || '{{ _("فشل الحفظ") }}');
+        }
+
+        messageDiv.innerHTML = '<div class="alert alert-success"> {{ _("تم الحفظ بنجاح!") }}</div>';
+        setTimeout(async () => {
+            luggageModal.hide();
+            await loadLuggage();
+        }, 800);
+
+    } catch (error) {
+        messageDiv.innerHTML = '<div class="alert alert-danger"> ' + error.message + '</div>';
+    } finally {
+        saveBtn.disabled = false;
+        saveBtn.innerHTML = '<i class="fas fa-save me-2"></i>{{ _("حفظ") }}';
+    }
+}
+
+function openDeleteModal(id) {
+    document.getElementById('deleteLuggageId').value = id;
+    deleteModal.show();
+}
+
+async function confirmDelete() {
+    const id = document.getElementById('deleteLuggageId').value;
+    try {
+        const response = await fetch(`/bookings/luggage/${id}`, { method: 'DELETE' });
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.detail || '{{ _("فشل الحذف") }}');
+        }
+        deleteModal.hide();
+        await loadLuggage();
+    } catch (error) {
+        alert(' ' + error.message);
+    }
+}
+
+window.openAddModal = openAddModal;
+window.openEditModal = openEditModal;
+window.saveLuggage = saveLuggage;
+window.openDeleteModal = openDeleteModal;
+window.confirmDelete = confirmDelete;
+</script>
+{% endblock %}

@@ -1,0 +1,457 @@
+{% extends "base.html" %}
+
+{% block title %}{{ _("تسجيل الدخول") }} - BusCore{% endblock %}
+
+{% block content %}
+<style>
+    /* إخفاء حاويات base.html الافتراضية */
+    body > main.container { padding: 0 !important; max-width: 100% !important; }
+
+    .login-wrapper {
+        min-height: calc(100vh - 76px);
+        display: flex;
+        background: #f8f9fa;
+    }
+
+    /* ═══════════════════════════════════════════ */
+    /* العمود الأيسر (أو الأيمن في RTL) - الصورة */
+    /* ═══════════════════════════════════════════ */
+    .login-visual {
+        flex: 1.2;
+        position: relative;
+        background-image: url('/static/images/buses/bus03.jpg');
+        background-size: cover;
+        background-position: center;
+        display: flex;
+        align-items: flex-end;
+        padding: 60px;
+        color: white;
+        overflow: hidden;
+    }
+
+    .login-visual::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        /*  طبقة سوداء خفيفة للحفاظ على ألوان الباص + قابلية قراءة النص */
+        background: linear-gradient(
+            to bottom,
+            rgba(0, 0, 0, 0.25) 0%,
+            rgba(0, 0, 0, 0.35) 50%,
+            rgba(0, 0, 0, 0.65) 100%
+        );
+        z-index: 1;
+    }
+
+    .login-visual-content {
+        position: relative;
+        z-index: 2;
+        max-width: 500px;
+    }
+
+    .login-visual-logo {
+        width: 80px;
+        height: 80px;
+        background: white;
+        border-radius: 20px;
+        padding: 8px;
+        margin-bottom: 24px;
+        box-shadow: 0 12px 32px rgba(0, 0, 0, 0.25);
+        object-fit: cover;
+    }
+
+    .login-visual h2 {
+        font-size: 2.2rem;
+        font-weight: 800;
+        margin-bottom: 12px;
+        line-height: 1.2;
+        text-shadow: 0 2px 12px rgba(0, 0, 0, 0.7), 0 4px 20px rgba(0, 0, 0, 0.5);
+    }
+
+    .login-visual p {
+        font-size: 1.1rem;
+        margin-bottom: 32px;
+        line-height: 1.6;
+        text-shadow: 0 2px 8px rgba(0, 0, 0, 0.7);
+        font-weight: 500;
+    }
+
+    .login-visual-features {
+        display: flex;
+        gap: 24px;
+        flex-wrap: wrap;
+    }
+
+    .login-feature {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 0.95rem;
+        background: rgba(255, 255, 255, 0.15);
+        padding: 10px 18px;
+        border-radius: 50px;
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .login-feature i {
+        font-size: 1.1rem;
+    }
+
+    /* ═══════════════════════════════════════════ */
+    /* العمود الأيمن (أو الأيسر في RTL) - النموذج */
+    /* ═══════════════════════════════════════════ */
+    .login-form-side {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 40px;
+        background: white;
+    }
+
+    .login-form-container {
+        width: 100%;
+        max-width: 420px;
+    }
+
+    .login-lang-switch {
+        position: absolute;
+        top: 24px;
+        {% if lang == 'ar' %}left: 24px;{% else %}right: 24px;{% endif %}
+        z-index: 10;
+    }
+
+    .login-lang-switch a {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 16px;
+        background: rgba(255, 255, 255, 0.95);
+        color: #0d6efd;
+        border-radius: 50px;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 0.9rem;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s;
+    }
+
+    .login-lang-switch a:hover {
+        background: white;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+    }
+
+    .login-form-header {
+        text-align: center;
+        margin-bottom: 40px;
+    }
+
+    .login-form-header .brand-icon {
+        width: 72px;
+        height: 72px;
+        margin: 0 auto 20px;
+        background: linear-gradient(135deg, #0d6efd, #0a58ca);
+        border-radius: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 2rem;
+        box-shadow: 0 12px 32px rgba(13, 110, 253, 0.35);
+    }
+
+    .login-form-header h3 {
+        font-size: 1.8rem;
+        font-weight: 800;
+        color: #212529;
+        margin-bottom: 8px;
+    }
+
+    .login-form-header p {
+        color: #6c757d;
+        margin: 0;
+        font-size: 0.95rem;
+    }
+
+    .form-floating-custom {
+        position: relative;
+        margin-bottom: 20px;
+    }
+
+    .form-floating-custom .input-icon {
+        position: absolute;
+        {% if lang == 'ar' %}right: 18px;{% else %}left: 18px;{% endif %}
+        top: 50%;
+        transform: translateY(-50%);
+        color: #adb5bd;
+        font-size: 1.1rem;
+        z-index: 3;
+        pointer-events: none;
+    }
+
+    .form-floating-custom input {
+        width: 100%;
+        padding: 16px 18px;
+        {% if lang == 'ar' %}padding-right: 50px;{% else %}padding-left: 50px;{% endif %}
+        border: 2px solid #e9ecef;
+        border-radius: 12px;
+        font-size: 1rem;
+        transition: all 0.3s;
+        background: #f8f9fa;
+    }
+
+    .form-floating-custom input:focus {
+        outline: none;
+        border-color: #0d6efd;
+        background: white;
+        box-shadow: 0 0 0 4px rgba(13, 110, 253, 0.1);
+    }
+
+    .form-floating-custom input::placeholder {
+        color: #adb5bd;
+    }
+
+    .btn-login {
+        width: 100%;
+        padding: 16px;
+        background: linear-gradient(135deg, #0d6efd, #0a58ca);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        font-size: 1.05rem;
+        font-weight: 700;
+        transition: all 0.3s;
+        box-shadow: 0 8px 24px rgba(13, 110, 253, 0.3);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+    }
+
+    .btn-login:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 32px rgba(13, 110, 253, 0.4);
+    }
+
+    .btn-login:disabled {
+        opacity: 0.7;
+        cursor: not-allowed;
+    }
+
+    .login-footer-link {
+        text-align: center;
+        margin-top: 28px;
+    }
+
+    .login-footer-link a {
+        color: #6c757d;
+        text-decoration: none;
+        font-size: 0.9rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        transition: color 0.2s;
+    }
+
+    .login-footer-link a:hover {
+        color: #0d6efd;
+    }
+
+    .alert-container {
+        margin-top: 16px;
+    }
+
+    /* ═══════════════════════════════════════════ */
+    /* التجاوب (Responsive) */
+    /* ═══════════════════════════════════════════ */
+    @media (max-width: 992px) {
+        .login-visual {
+            display: none;
+        }
+
+        .login-form-side {
+            background: linear-gradient(135deg, #f0f7ff, #e7f1ff);
+        }
+
+        .login-form-container {
+            background: white;
+            padding: 40px 30px;
+            border-radius: 24px;
+            box-shadow: 0 12px 48px rgba(13, 110, 253, 0.15);
+        }
+
+        .login-lang-switch {
+            top: auto;
+            bottom: 24px;
+            {% if lang == 'ar' %}left: 50%;{% else %}right: 50%;{% endif %}
+            transform: translateX({% if lang == 'ar' %}-50%{% else %}50%{% endif %});
+        }
+    }
+</style>
+
+<div class="login-wrapper" style="position: relative;">
+
+    <!-- زر تبديل اللغة -->
+    <div class="login-lang-switch">
+        <a href="javascript:void(0)" onclick="switchLang('{{ 'en' if lang == 'ar' else 'ar' }}')">
+            <i class="fas fa-globe"></i>
+            {{ 'English' if lang == 'ar' else 'العربية' }}
+        </a>
+    </div>
+
+    <!-- الجانب البصري -->
+    <div class="login-visual">
+        <div class="login-visual-content">
+            <img src="/static/images/logo.png" alt="Logo" class="login-visual-logo" id="visualLogo">
+            <h2 id="visualCompanyName">{{ _("شركة النقل") }}</h2>
+            <p id="visualTagline">{{ _("سافر بأمان وراحة مع أحدث البصات المجهزة") }}</p>
+            <div class="login-visual-features">
+                <div class="login-feature">
+                    <i class="fas fa-shield-alt"></i>
+                    <span>{{ _("حجز آمن") }}</span>
+                </div>
+                <div class="login-feature">
+                    <i class="fas fa-clock"></i>
+                    <span>{{ _("دعم 24/7") }}</span>
+                </div>
+                <div class="login-feature">
+                    <i class="fas fa-star"></i>
+                    <span>{{ _("خدمة موثوقة") }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- نموذج تسجيل الدخول -->
+    <div class="login-form-side">
+        <div class="login-form-container">
+            <div class="login-form-header">
+                <div class="brand-icon">
+                    <i class="fas fa-bus"></i>
+                </div>
+                <h3>{{ _("مرحبًا بعودتك") }}</h3>
+                <p>{{ _("سجّل دخولك للوصول إلى لوحة التحكم") }}</p>
+            </div>
+
+            <form id="loginForm">
+                <div class="form-floating-custom">
+                    <i class="fas fa-user input-icon"></i>
+                    <input type="text" id="username" placeholder="{{ _('اسم المستخدم') }}" required autofocus>
+                </div>
+
+                <div class="form-floating-custom">
+                    <i class="fas fa-lock input-icon"></i>
+                    <input type="password" id="password" placeholder="{{ _('كلمة المرور') }}" required>
+                </div>
+
+                <button type="submit" class="btn-login">
+                    <i class="fas fa-sign-in-alt"></i>
+                    <span>{{ _("تسجيل الدخول") }}</span>
+                </button>
+            </form>
+
+            <div id="loginMessage" class="alert-container"></div>
+
+            <div class="login-footer-link">
+                <a href="/">
+                    <i class="fas fa-arrow-{% if lang == 'ar' %}right{% else %}left{% endif %}"></i>
+                    {{ _("العودة للصفحة الرئيسية") }}
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+// ═══════════════════════════════════════════
+// تحميل بيانات الشركة ديناميكيًا
+// ═══════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', async function() {
+    try {
+        const res = await fetch('/settings/');
+        const settings = await res.json();
+
+        const LANG = "{{ lang }}";
+
+        // ✅ اسم الشركة
+        const companyName = (LANG === 'en')
+            ? (settings.company_name_en || settings.company_name || 'BusCore')
+            : (settings.company_name || 'BusCore');
+        document.getElementById('visualCompanyName').textContent = companyName;
+
+        // ✅ الشعار
+        if (settings.company_logo) {
+            document.getElementById('visualLogo').src = settings.company_logo;
+        }
+
+        // ✅ نص تعريفي مخصص
+        if (settings.ticket_footer_text) {
+            // لا نستبدل - نُبقي النص الافتراضي
+        }
+
+    } catch (e) {
+        console.error('Failed to load settings:', e);
+    }
+});
+
+// ═══════════════════════════════════════════
+// تسجيل الدخول
+// ═══════════════════════════════════════════
+document.getElementById('loginForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const username = document.getElementById('username').value.trim();
+    const password = document.getElementById('password').value;
+    const messageDiv = document.getElementById('loginMessage');
+    const loginBtn = this.querySelector('button[type="submit"]');
+
+    if (!username || !password) {
+        messageDiv.innerHTML = '<div class="alert alert-warning">{{ _("الرجاء إدخال اسم المستخدم وكلمة المرور") }}</div>';
+        return;
+    }
+
+    try {
+        loginBtn.disabled = true;
+        loginBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>{{ _("جاري الدخول...") }}';
+        messageDiv.innerHTML = '';
+
+        const result = await BusCoreAPI.login(username, password);
+
+        if (result.access_token || result.token_type) {
+            try {
+                const userData = await BusCoreAPI.getMe();
+
+                messageDiv.innerHTML = '<div class="alert alert-success">✅ {{ _("تم تسجيل الدخول بنجاح!") }}</div>';
+
+                const urlParams = new URLSearchParams(window.location.search);
+                const redirect = urlParams.get('redirect');
+
+                setTimeout(() => {
+                    if (userData.is_admin) {
+                        window.location.href = redirect || '/admin/dashboard';
+                    } else {
+                        window.location.href = '/';
+                    }
+                }, 800);
+
+            } catch (e) {
+                messageDiv.innerHTML = '<div class="alert alert-success">✅ {{ _("تم تسجيل الدخول") }}</div>';
+                setTimeout(() => window.location.href = '/', 800);
+            }
+        } else {
+            throw new Error('{{ _("فشل تسجيل الدخول") }}');
+        }
+    } catch (error) {
+        messageDiv.innerHTML = `<div class="alert alert-danger">❌ ${error.message || '{{ _("اسم المستخدم أو كلمة المرور غير صحيحة") }}'}</div>`;
+    } finally {
+        loginBtn.disabled = false;
+        loginBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i><span>{{ _("تسجيل الدخول") }}</span>';
+    }
+});
+</script>
+{% endblock %}

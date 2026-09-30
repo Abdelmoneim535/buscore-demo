@@ -1,0 +1,5 @@
+# Arabic locale (empty - original text is Arabic)
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+"Language: ar\n"

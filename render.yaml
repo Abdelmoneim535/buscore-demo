@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: buscore
+    env: python
+    region: frankfurt
+    plan: free
+    branch: main
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /api/health
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
+      - key: PYTHONUNBUFFERED
+        value: "1"
+      - key: DATABASE_URL
+        value: sqlite:///./buscore.db

@@ -1,0 +1,770 @@
+{% extends "admin/base_admin.html" %}
+
+{% block title %}{{ _("دفتر اليومية") }} - BusCore{% endblock %}
+{% block page_title %}{{ _("دفتر اليومية") }}{% endblock %}
+
+{% block content %}
+
+<!-- Stats Cards -->
+<div class="row g-3 mb-3">
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm" style="border-{% if lang == 'ar' %}right{% else %}left{% endif %}: 4px solid #0d6efd;">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <small class="text-muted">{{ _("إجمالي القيود") }}</small>
+                        <h3 class="mb-0 fw-bold" id="totalEntries">0</h3>
+                    </div>
+                    <i class="fas fa-book fa-2x text-primary" style="opacity: 0.3;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm" style="border-{% if lang == 'ar' %}right{% else %}left{% endif %}: 4px solid #198754;">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <small class="text-muted">{{ _("قيود مرحّلة") }}</small>
+                        <h3 class="mb-0 fw-bold text-success" id="postedEntries">0</h3>
+                    </div>
+                    <i class="fas fa-check-circle fa-2x text-success" style="opacity: 0.3;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm" style="border-{% if lang == 'ar' %}right{% else %}left{% endif %}: 4px solid #ffc107;">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <small class="text-muted">{{ _("مسودات") }}</small>
+                        <h3 class="mb-0 fw-bold text-warning" id="draftEntries">0</h3>
+                    </div>
+                    <i class="fas fa-edit fa-2x text-warning" style="opacity: 0.3;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm" style="border-{% if lang == 'ar' %}right{% else %}left{% endif %}: 4px solid #dc3545;">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <small class="text-muted">{{ _("قيود معكوسة") }}</small>
+                        <h3 class="mb-0 fw-bold text-danger" id="reversedEntries">0</h3>
+                    </div>
+                    <i class="fas fa-undo fa-2x text-danger" style="opacity: 0.3;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Toolbar -->
+<div class="card border-0 shadow-sm mb-3">
+    <div class="card-body">
+        <div class="row g-2 align-items-center">
+            <div class="col-md-3">
+                <select id="statusFilter" class="form-select" onchange="filterEntries()">
+                    <option value="">{{ _("جميع الحالات") }}</option>
+                    <option value="draft">{{ _("مسودة") }}</option>
+                    <option value="posted">{{ _("مرحّل") }}</option>
+                    <option value="reversed">{{ _("معكوس") }}</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <select id="refTypeFilter" class="form-select" onchange="filterEntries()">
+                    <option value="">{{ _("جميع المصادر") }}</option>
+                    <option value="manual">{{ _("يدوي") }}</option>
+                    <option value="booking">{{ _("حجز") }}</option>
+                    <option value="payment">{{ _("دفعة") }}</option>
+                    <option value="expense">{{ _("مصروف") }}</option>
+                    <option value="salary">{{ _("راتب") }}</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <input type="date" id="fromDate" class="form-control" onchange="filterEntries()">
+            </div>
+            <div class="col-md-2">
+                <input type="date" id="toDate" class="form-control" onchange="filterEntries()">
+            </div>
+            <div class="col-md-2 text-end">
+                <button class="btn btn-primary" onclick="openAddModal()">
+                    <i class="fas fa-plus me-1"></i>{{ _("قيد جديد") }}
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Container -->
+<div id="entriesContainer">
+    <div class="text-center py-5">
+        <div class="spinner-border text-primary"></div>
+        <p class="mt-2 text-muted">{{ _("جاري التحميل...") }}</p>
+    </div>
+</div>
+
+<!-- Modal: View Entry -->
+<div class="modal fade" id="viewModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-xl">
+        <div class="modal-content">
+            <div class="modal-header bg-info text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-eye me-2"></i>{{ _("تفاصيل القيد") }}
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="viewContent"></div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ _("إغلاق") }}</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Add Entry -->
+<div class="modal fade" id="addModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-xl">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-plus me-2"></i>{{ _("قيد جديد") }}
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="entryForm">
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-4">
+                            <label class="form-label">{{ _("التاريخ") }} *</label>
+                            <input type="datetime-local" id="entryDate" class="form-control" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">{{ _("النوع") }}</label>
+                            <select id="entryType" class="form-select">
+                                <option value="normal">{{ _("عادي") }}</option>
+                                <option value="opening">{{ _("افتتاحي") }}</option>
+                                <option value="adjustment">{{ _("تسوية") }}</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">{{ _("الفرع") }}</label>
+                            <select id="entryBranch" class="form-select">
+                                <option value="">{{ _("بدون") }}</option>
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">{{ _("الوصف") }} *</label>
+                            <input type="text" id="entryDescription" class="form-control" required>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h6 class="mb-0 fw-bold">{{ _("السطور") }}</h6>
+                        <button type="button" class="btn btn-sm btn-outline-primary" onclick="addLine()">
+                            <i class="fas fa-plus me-1"></i>{{ _("إضافة سطر") }}
+                        </button>
+                    </div>
+
+                    <!--  رأس الجدول -->
+                    <div class="lines-header">
+                        <div class="header-account">
+                            <i class="fas fa-book me-1"></i>{{ _("الحساب") }} <span class="text-danger">*</span>
+                        </div>
+                        <div class="header-debit">
+                            <i class="fas fa-arrow-down text-success me-1"></i>{{ _("مدين") }}
+                        </div>
+                        <div class="header-credit">
+                            <i class="fas fa-arrow-up text-danger me-1"></i>{{ _("دائن") }}
+                        </div>
+                        <div class="header-actions"></div>
+                    </div>
+
+                    <div id="linesContainer"></div>
+
+                    <div class="row g-2 mt-3 p-3 bg-light rounded">
+                        <div class="col-md-4">
+                            <strong>{{ _("إجمالي المدين") }}:</strong>
+                            <span id="totalDebit" class="ms-2 text-success fs-5">0.00</span>
+                        </div>
+                        <div class="col-md-4">
+                            <strong>{{ _("إجمالي الدائن") }}:</strong>
+                            <span id="totalCredit" class="ms-2 text-danger fs-5">0.00</span>
+                        </div>
+                        <div class="col-md-4">
+                            <strong>{{ _("الفرق") }}:</strong>
+                            <span id="balanceDiff" class="ms-2 fs-5">0.00</span>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ _("إلغاء") }}</button>
+                <button type="button" class="btn btn-primary" onclick="saveEntry()">
+                    <i class="fas fa-save me-1"></i>{{ _("حفظ كمسودة") }}
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.lines-header {
+    display: grid;
+    grid-template-columns: 3fr 1fr 1fr 40px;
+    gap: 8px;
+    padding: 8px 12px;
+    background: linear-gradient(135deg, #0d6efd, #0a58ca);
+    color: white;
+    border-radius: 8px 8px 0 0;
+    margin-bottom: 0;
+    font-weight: 700;
+    font-size: 0.85rem;
+}
+.lines-header .header-account {
+    display: flex;
+    align-items: center;
+}
+.lines-header .header-debit {
+    text-align: center;
+}
+.lines-header .header-credit {
+    text-align: center;
+}
+.lines-header .header-actions {
+    text-align: center;
+}
+.line-row {
+    display: grid;
+    grid-template-columns: 3fr 1fr 1fr 40px;
+    gap: 8px;
+    margin-bottom: 4px;
+    padding: 8px 12px;
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-top: none;
+    align-items: center;
+}
+.line-row:last-child {
+    border-radius: 0 0 8px 8px;
+    margin-bottom: 8px;
+}
+.line-row .line-account {
+    font-size: 0.85rem;
+}
+.line-row .line-debit,
+.line-row .line-credit {
+    text-align: center;
+    font-weight: 600;
+}
+.line-row .line-debit {
+    border-color: #d1e7dd;
+    background: #f0fdf4;
+}
+.line-row .line-debit:focus {
+    border-color: #198754;
+    box-shadow: 0 0 0 0.2rem rgba(25, 135, 84, 0.25);
+}
+.line-row .line-credit {
+    border-color: #f8d7da;
+    background: #fef2f2;
+}
+.line-row .line-credit:focus {
+    border-color: #dc3545;
+    box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+}
+.line-row .btn-outline-danger {
+    padding: 4px 8px;
+    font-size: 0.8rem;
+}
+.status-badge {
+    padding: 3px 10px;
+    border-radius: 50px;
+    font-size: 0.72rem;
+    font-weight: 700;
+}
+.status-draft { background: #fff3cd; color: #664d03; }
+.status-posted { background: #d1e7dd; color: #0f5132; }
+.status-reversed { background: #f8d7da; color: #842029; }
+.entry-number {
+    font-family: 'Courier New', monospace;
+    font-weight: 700;
+    color: #0d6efd;
+    background: #e7f1ff;
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+}
+</style>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+const LANG = "{{ lang }}";
+let viewModal, addModal;
+let allEntries = [];
+let filteredEntries = [];
+let allAccounts = [];
+let allBranches = [];
+let lineCounter = 0;
+
+document.addEventListener('DOMContentLoaded', async function() {
+    viewModal = new bootstrap.Modal(document.getElementById('viewModal'));
+    addModal = new bootstrap.Modal(document.getElementById('addModal'));
+
+    await Promise.all([loadAccounts(), loadBranches()]);
+    await loadEntries();
+});
+
+async function loadAccounts() {
+    try {
+        const res = await fetch('/accounts/');
+        allAccounts = await res.json();
+    } catch (e) { console.error('Accounts:', e); }
+}
+
+async function loadBranches() {
+    try {
+        const res = await fetch('/branches/');
+        allBranches = await res.json();
+        const select = document.getElementById('entryBranch');
+        select.innerHTML = '<option value="">{{ _("بدون") }}</option>';
+        allBranches.forEach(b => {
+            const name = LANG === 'ar' ? b.name : (b.name_en || b.name);
+            select.innerHTML += `<option value="${b.id}">${name}</option>`;
+        });
+    } catch (e) { console.error('Branches:', e); }
+}
+
+async function loadEntries() {
+    try {
+        const res = await fetch('/journal-entries/');
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        allEntries = await res.json();
+        updateStats();
+        filterEntries();
+    } catch (e) {
+        console.error(e);
+        document.getElementById('entriesContainer').innerHTML =
+            `<div class="alert alert-danger m-3">{{ _("فشل تحميل القيود") }}: ${e.message}</div>`;
+    }
+}
+
+function updateStats() {
+    document.getElementById('totalEntries').textContent = allEntries.length;
+    document.getElementById('postedEntries').textContent = allEntries.filter(e => e.status === 'posted').length;
+    document.getElementById('draftEntries').textContent = allEntries.filter(e => e.status === 'draft').length;
+    document.getElementById('reversedEntries').textContent = allEntries.filter(e => e.status === 'reversed').length;
+}
+
+function filterEntries() {
+    const status = document.getElementById('statusFilter').value;
+    const refType = document.getElementById('refTypeFilter').value;
+    const fromDate = document.getElementById('fromDate').value;
+    const toDate = document.getElementById('toDate').value;
+
+    filteredEntries = allEntries.filter(e => {
+        if (status && e.status !== status) return false;
+        if (refType && e.reference_type !== refType) return false;
+        if (fromDate && new Date(e.entry_date) < new Date(fromDate)) return false;
+        if (toDate && new Date(e.entry_date) > new Date(toDate + 'T23:59:59')) return false;
+        return true;
+    });
+
+    renderEntries();
+}
+
+function renderEntries() {
+    const container = document.getElementById('entriesContainer');
+
+    if (filteredEntries.length === 0) {
+        container.innerHTML = `
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center py-5">
+                    <i class="fas fa-book fa-4x text-muted mb-3"></i>
+                    <h5>{{ _("لا توجد قيود") }}</h5>
+                    <p class="text-muted">{{ _("ابدأ بإنشاء قيد جديد") }}</p>
+                    <button class="btn btn-primary" onclick="openAddModal()">
+                        <i class="fas fa-plus me-1"></i>{{ _("قيد جديد") }}
+                    </button>
+                </div>
+            </div>`;
+        return;
+    }
+
+    let html = '<div class="card border-0 shadow-sm"><div class="table-responsive">';
+    html += '<table class="table table-hover align-middle mb-0">';
+    html += `
+        <thead class="table-light">
+            <tr>
+                <th width="160">{{ _("رقم القيد") }}</th>
+                <th width="150">{{ _("التاريخ") }}</th>
+                <th>{{ _("الوصف") }}</th>
+                <th width="100">{{ _("المصدر") }}</th>
+                <th width="90">{{ _("مدين") }}</th>
+                <th width="90">{{ _("دائن") }}</th>
+                <th width="100">{{ _("الحالة") }}</th>
+                <th width="200">{{ _("الإجراءات") }}</th>
+            </tr>
+        </thead>
+        <tbody>`;
+
+    filteredEntries.forEach(e => {
+        const totalDebit = (e.lines || []).reduce((s, l) => s + parseFloat(l.debit || 0), 0);
+        const totalCredit = (e.lines || []).reduce((s, l) => s + parseFloat(l.credit || 0), 0);
+
+        const statusText = {
+            draft: '{{ _("مسودة") }}',
+            posted: '{{ _("مرحّل") }}',
+            reversed: '{{ _("معكوس") }}',
+        };
+
+        const refTypes = {
+            manual: ' {{ _("يدوي") }}',
+            booking: ' {{ _("حجز") }}',
+            payment: ' {{ _("دفعة") }}',
+            expense: ' {{ _("مصروف") }}',
+            salary: ' {{ _("راتب") }}',
+        };
+
+        html += `
+        <tr>
+            <td><span class="entry-number">${e.entry_number}</span></td>
+            <td><small>${formatDate(e.entry_date)}</small></td>
+            <td><small>${e.description || '-'}</small></td>
+            <td><small>${refTypes[e.reference_type] || '-'}</small></td>
+            <td class="text-success fw-bold">${totalDebit.toLocaleString()}</td>
+            <td class="text-danger fw-bold">${totalCredit.toLocaleString()}</td>
+            <td><span class="status-badge status-${e.status}">${statusText[e.status] || e.status}</span></td>
+            <td>
+                <div class="d-flex gap-1">
+                    <button class="btn btn-sm btn-outline-info" onclick="viewEntry(${e.id})" title="{{ _('عرض') }}">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                    ${e.status === 'draft' ? `
+                        <button class="btn btn-sm btn-outline-success" onclick="postEntry(${e.id})" title="{{ _('ترحيل') }}">
+                            <i class="fas fa-check"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger" onclick="deleteEntry(${e.id})" title="{{ _('حذف') }}">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    ` : ''}
+                    ${e.status === 'posted' ? `
+                        <button class="btn btn-sm btn-outline-warning" onclick="reverseEntry(${e.id})" title="{{ _('قيد عكسي') }}">
+                            <i class="fas fa-undo"></i>
+                        </button>
+                    ` : ''}
+                </div>
+            </td>
+        </tr>`;
+    });
+
+    html += '</tbody></table></div></div>';
+    container.innerHTML = html;
+}
+
+function formatDate(dateString) {
+    if (!dateString) return '-';
+    const d = new Date(dateString);
+    if (LANG === 'ar') {
+        const months = ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'];
+        return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
+    }
+    return d.toLocaleDateString('en-GB', {day: '2-digit', month: '2-digit', year: 'numeric'});
+}
+
+function viewEntry(id) {
+    const e = allEntries.find(x => x.id === id);
+    if (!e) return;
+
+    const totalDebit = (e.lines || []).reduce((s, l) => s + parseFloat(l.debit || 0), 0);
+    const totalCredit = (e.lines || []).reduce((s, l) => s + parseFloat(l.credit || 0), 0);
+
+    let linesHtml = '';
+    (e.lines || []).forEach(l => {
+        const account = allAccounts.find(a => a.id === l.account_id);
+        const accName = account ? (LANG === 'ar' ? account.name : (account.name_en || account.name)) : '?';
+        const accCode = account ? account.code : '?';
+
+        linesHtml += `
+        <tr>
+            <td><span class="badge bg-primary">${accCode}</span></td>
+            <td>${accName}</td>
+            <td class="text-success fw-bold text-end">${parseFloat(l.debit || 0).toLocaleString()}</td>
+            <td class="text-danger fw-bold text-end">${parseFloat(l.credit || 0).toLocaleString()}</td>
+            <td><small>${l.description || '-'}</small></td>
+        </tr>`;
+    });
+
+    document.getElementById('viewContent').innerHTML = `
+        <div class="row g-3 mb-3">
+            <div class="col-md-6">
+                <strong>{{ _("رقم القيد") }}:</strong> <span class="entry-number">${e.entry_number}</span>
+            </div>
+            <div class="col-md-6">
+                <strong>{{ _("الحالة") }}:</strong>
+                <span class="status-badge status-${e.status}">${e.status}</span>
+            </div>
+            <div class="col-md-6">
+                <strong>{{ _("التاريخ") }}:</strong> ${formatDate(e.entry_date)}
+            </div>
+            <div class="col-md-6">
+                <strong>{{ _("النوع") }}:</strong> ${e.entry_type}
+            </div>
+            <div class="col-12">
+                <strong>{{ _("الوصف") }}:</strong> ${e.description || '-'}
+            </div>
+        </div>
+        <hr>
+        <h6 class="fw-bold mb-2">{{ _("السطور") }}</h6>
+        <table class="table table-sm table-bordered">
+            <thead class="table-light">
+                <tr>
+                    <th width="90">{{ _("الكود") }}</th>
+                    <th>{{ _("الحساب") }}</th>
+                    <th width="120" class="text-end">{{ _("مدين") }}</th>
+                    <th width="120" class="text-end">{{ _("دائن") }}</th>
+                    <th>{{ _("الوصف") }}</th>
+                </tr>
+            </thead>
+            <tbody>${linesHtml}</tbody>
+            <tfoot class="table-light fw-bold">
+                <tr>
+                    <td colspan="2" class="text-end">{{ _("الإجمالي") }}:</td>
+                    <td class="text-success text-end">${totalDebit.toLocaleString()}</td>
+                    <td class="text-danger text-end">${totalCredit.toLocaleString()}</td>
+                    <td></td>
+                </tr>
+            </tfoot>
+        </table>`;
+
+    viewModal.show();
+}
+
+window.filterEntries = filterEntries;
+window.viewEntry = viewEntry;
+
+// 
+// Add Entry
+// 
+function openAddModal() {
+    document.getElementById('entryForm').reset();
+
+    // تاريخ اليوم
+    const now = new Date();
+    const local = new Date(now.getTime() - now.getTimezoneOffset() * 60000);
+    document.getElementById('entryDate').value = local.toISOString().slice(0, 16);
+
+    // حذف السطور القديمة
+    document.getElementById('linesContainer').innerHTML = '';
+    lineCounter = 0;
+
+    // إضافة سطرين افتراضيين
+    addLine();
+    addLine();
+
+    addModal.show();
+}
+
+function addLine() {
+    lineCounter++;
+    const lineId = `line-${lineCounter}`;
+
+    const accountsOptions = allAccounts.map(a => {
+        const name = LANG === 'ar' ? a.name : (a.name_en || a.name);
+        return `<option value="${a.id}">${a.code} - ${name}</option>`;
+    }).join('');
+
+    const html = `
+    <div class="line-row" id="${lineId}">
+        <select class="form-select form-select-sm line-account" onchange="updateTotals()">
+            <option value="">{{ _("اختر الحساب") }}</option>
+            ${accountsOptions}
+        </select>
+        <input type="number" class="form-control form-control-sm line-debit" placeholder="{{ _('مدين') }}" step="0.01" value="0" oninput="updateTotals()">
+        <input type="number" class="form-control form-control-sm line-credit" placeholder="{{ _('دائن') }}" step="0.01" value="0" oninput="updateTotals()">
+        <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeLine('${lineId}')">
+            <i class="fas fa-times"></i>
+        </button>
+    </div>`;
+
+    document.getElementById('linesContainer').insertAdjacentHTML('beforeend', html);
+    updateTotals();
+}
+
+function removeLine(lineId) {
+    const el = document.getElementById(lineId);
+    if (el) {
+        if (document.querySelectorAll('.line-row').length <= 2) {
+            alert('{{ _("يجب أن يحتوي القيد على سطرين على الأقل") }}');
+            return;
+        }
+        el.remove();
+        updateTotals();
+    }
+}
+
+function updateTotals() {
+    let totalDebit = 0;
+    let totalCredit = 0;
+
+    document.querySelectorAll('.line-row').forEach(row => {
+        const debit = parseFloat(row.querySelector('.line-debit').value) || 0;
+        const credit = parseFloat(row.querySelector('.line-credit').value) || 0;
+        totalDebit += debit;
+        totalCredit += credit;
+    });
+
+    document.getElementById('totalDebit').textContent = totalDebit.toLocaleString(undefined, {minimumFractionDigits: 2});
+    document.getElementById('totalCredit').textContent = totalCredit.toLocaleString(undefined, {minimumFractionDigits: 2});
+
+    const diff = Math.abs(totalDebit - totalCredit);
+    const diffEl = document.getElementById('balanceDiff');
+    diffEl.textContent = diff.toLocaleString(undefined, {minimumFractionDigits: 2});
+    diffEl.className = diff < 0.01 ? 'ms-2 fs-5 text-success' : 'ms-2 fs-5 text-danger';
+}
+
+async function saveEntry() {
+    const date = document.getElementById('entryDate').value;
+    const type = document.getElementById('entryType').value;
+    const branch = document.getElementById('entryBranch').value;
+    const description = document.getElementById('entryDescription').value.trim();
+
+    if (!date || !description) {
+        alert('{{ _("الرجاء إدخال التاريخ والوصف") }}');
+        return;
+    }
+
+    const lines = [];
+    let hasError = false;
+
+    document.querySelectorAll('.line-row').forEach(row => {
+        const accountId = row.querySelector('.line-account').value;
+        const debit = parseFloat(row.querySelector('.line-debit').value) || 0;
+        const credit = parseFloat(row.querySelector('.line-credit').value) || 0;
+
+        if (!accountId) {
+            hasError = true;
+            return;
+        }
+
+        if (debit === 0 && credit === 0) return;
+
+        lines.push({
+            account_id: parseInt(accountId),
+            debit: debit,
+            credit: credit,
+            description: description,
+            line_order: lines.length,
+        });
+    });
+
+    if (hasError) {
+        alert('{{ _("يجب اختيار حساب لكل سطر") }}');
+        return;
+    }
+
+    if (lines.length < 2) {
+        alert('{{ _("القيد يحتاج سطرين على الأقل") }}');
+        return;
+    }
+
+    const totalD = lines.reduce((s, l) => s + l.debit, 0);
+    const totalC = lines.reduce((s, l) => s + l.credit, 0);
+
+    if (Math.abs(totalD - totalC) >= 0.01) {
+        alert('{{ _("القيد غير متوازن") }}  {{ _("الفرق") }}: ' + Math.abs(totalD - totalC).toFixed(2));
+        return;
+    }
+
+    const data = {
+        entry_date: date + ':00',
+        entry_type: type,
+        description: description,
+        reference_type: 'manual',
+        branch_id: branch ? parseInt(branch) : null,
+        lines: lines,
+    };
+
+    try {
+        const res = await fetch('/journal-entries/', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(data),
+        });
+
+        if (!res.ok) {
+            const err = await res.json();
+            throw new Error(err.detail || 'خطأ في الحفظ');
+        }
+
+        addModal.hide();
+        await loadEntries();
+    } catch (e) {
+        alert(' ' + e.message);
+    }
+}
+
+// 
+// Actions
+// 
+async function postEntry(id) {
+    if (!confirm('{{ _("هل تريد ترحيل القيد؟") }}')) return;
+
+    try {
+        const res = await fetch(`/journal-entries/${id}/post`, {method: 'POST'});
+        if (!res.ok) {
+            const err = await res.json();
+            throw new Error(err.detail || 'خطأ');
+        }
+        await loadEntries();
+    } catch (e) {
+        alert(' ' + e.message);
+    }
+}
+
+async function deleteEntry(id) {
+    if (!confirm('{{ _("هل تريد حذف هذه المسودة؟") }}')) return;
+
+    try {
+        const res = await fetch(`/journal-entries/${id}`, {method: 'DELETE'});
+        if (!res.ok) {
+            const err = await res.json();
+            throw new Error(err.detail || 'خطأ');
+        }
+        await loadEntries();
+    } catch (e) {
+        alert(' ' + e.message);
+    }
+}
+
+async function reverseEntry(id) {
+    const reason = prompt('{{ _("سبب القيد العكسي:") }}');
+    if (!reason) return;
+
+    try {
+        const url = `/journal-entries/${id}/reverse?reason=${encodeURIComponent(reason)}`;
+        const res = await fetch(url, {method: 'POST'});
+        if (!res.ok) {
+            const err = await res.json();
+            throw new Error(err.detail || 'خطأ');
+        }
+        await loadEntries();
+    } catch (e) {
+        alert(' ' + e.message);
+    }
+}
+
+window.openAddModal = openAddModal;
+window.addLine = addLine;
+window.removeLine = removeLine;
+window.updateTotals = updateTotals;
+window.saveEntry = saveEntry;
+window.postEntry = postEntry;
+window.deleteEntry = deleteEntry;
+window.reverseEntry = reverseEntry;
+</script>
+{% endblock %}

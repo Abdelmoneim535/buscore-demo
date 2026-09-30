@@ -1,0 +1,1037 @@
+<!DOCTYPE html>
+<html lang="{{ lang }}" dir="{{ dir }}">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{{ _("لوحة التحكم") }} - BusCore{% endblock %}</title>
+    {% if lang == 'ar' %}
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+    {% else %}
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    {% endif %}
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link href="/static/css/style.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Cairo', sans-serif;
+            background: #f4f6f9;
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+
+        /*  إخفاء أي navbar قادم من base.html بشكل كامل */
+        body > nav,
+        body > nav.navbar,
+        body > .navbar,
+        .navbar.navbar-expand-lg,
+        nav.navbar {
+            display: none !important;
+            visibility: hidden !important;
+            height: 0 !important;
+            max-height: 0 !important;
+            overflow: hidden !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            border: none !important;
+        }
+
+        /*  إزالة أي main.container قادم من base.html */
+        body > main.container {
+            padding: 0 !important;
+            margin: 0 !important;
+            max-width: 100% !important;
+        }
+
+        /*  إخفاء navbar الأساسي القادم من base.html */
+        body > nav.navbar,
+        body > nav {
+            display: none !important;
+        }
+
+        /* إزالة أي padding علوي */
+        body {
+            padding-top: 0 !important;
+        }
+
+        .admin-wrapper {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .admin-sidebar {
+            width: 260px;
+            background: linear-gradient(180deg, #0d6efd 0%, #0a58ca 100%);
+            color: white;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            transition: all 0.3s;
+            z-index: 1000;
+            {% if lang == 'ar' %}right: 0;{% else %}left: 0;{% endif %}
+        }
+
+        .admin-sidebar .sidebar-brand {
+            padding: 24px 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            text-align: center;
+        }
+
+        .admin-sidebar .sidebar-brand h3 {
+            margin: 0;
+            font-weight: 800;
+            font-size: 1.4rem;
+        }
+
+        .admin-sidebar .sidebar-brand small {
+            opacity: 0.7;
+            font-size: 0.8rem;
+        }
+
+        .admin-sidebar .sidebar-menu {
+            list-style: none;
+            padding: 16px 0;
+            margin: 0;
+        }
+
+        .admin-sidebar .sidebar-menu li a {
+            display: block;
+            padding: 12px 24px;
+            color: rgba(255, 255, 255, 0.85);
+            text-decoration: none;
+            transition: all 0.2s;
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        .admin-sidebar .sidebar-menu li a:hover,
+        .admin-sidebar .sidebar-menu li a.active {
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+            {% if lang == 'ar' %}border-right: 4px solid #ffc107; padding-right: 20px;{% else %}border-left: 4px solid #ffc107; padding-left: 20px;{% endif %}
+        }
+
+        .admin-sidebar .sidebar-menu li a i {
+            width: 24px;
+            {% if lang == 'ar' %}margin-left: 8px;{% else %}margin-right: 8px;{% endif %}
+        }
+
+        .sidebar-section-title {
+            padding: 8px 24px;
+            display: block;
+            opacity: 0.6;
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 8px;
+        }
+
+        .sidebar-divider {
+            margin-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.15);
+            padding-top: 16px;
+        }
+
+        .admin-content {
+            flex: 1;
+            {% if lang == 'ar' %}margin-right: 260px;{% else %}margin-left: 260px;{% endif %}
+            padding: 24px 30px 20px 30px;
+            transition: all 0.3s;
+        }
+
+        .admin-topbar {
+            background: white;
+            border-radius: 12px;
+            padding: 16px 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .admin-topbar h4 {
+            margin: 0;
+            font-weight: 700;
+            color: #212529;
+        }
+
+        .admin-topbar .user-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .admin-topbar .user-info i {
+            font-size: 1.8rem;
+            color: #0d6efd;
+        }
+
+        @media (max-width: 768px) {
+            .admin-sidebar {
+                transform: translateX({% if lang == 'ar' %}100%{% else %}-100%{% endif %});
+                width: 240px;
+            }
+
+            .admin-sidebar.active {
+                transform: translateX(0);
+            }
+
+            .admin-content {
+                {% if lang == 'ar' %}margin-right: 0;{% else %}margin-left: 0;{% endif %}
+                padding: 16px;
+            }
+
+            .sidebar-toggle {
+                display: block !important;
+            }
+        }
+
+        .sidebar-toggle {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: #0d6efd;
+            cursor: pointer;
+        }
+    
+        /*  */
+        /*  أنماط موحدة للجداول + البحث + Pagination */
+        /*  */
+
+        .page-table-card {
+            border-radius: 14px !important;
+            overflow: hidden;
+        }
+
+        .page-table-card .card-header {
+            padding: 18px 24px;
+            border-bottom: 1px solid #f0f0f0;
+            background: white;
+        }
+
+        .page-table-controls {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .page-table-controls .search-box {
+            width: 240px;
+        }
+
+        .page-table-controls .page-size-select {
+            width: auto;
+        }
+
+        .page-table-container {
+            max-height: 620px;
+            overflow-y: auto;
+            position: relative;
+            border-radius: 0 0 14px 14px;
+        }
+
+        /*  شريط التمرير المخصص */
+        .page-table-container::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .page-table-container::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        .page-table-container::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 10px;
+        }
+
+        .page-table-container::-webkit-scrollbar-thumb:hover {
+            background: #a8a8a8;
+        }
+
+        /*  رأس الجدول الثابت */
+        .page-table-container thead th {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            background: #f8f9fa !important;
+            border-bottom: 2px solid #e9ecef !important;
+        }
+
+        /*  الجدول */
+        .page-table {
+            width: 100%;
+            margin: 0;
+            border-collapse: collapse;
+        }
+
+        .page-table tbody tr {
+            transition: background 0.15s;
+        }
+
+        .page-table tbody tr:hover {
+            background: #f8f9fa;
+        }
+
+        .page-table tbody td {
+            padding: 12px 16px;
+            vertical-align: middle;
+            border-bottom: 1px solid #f0f0f0;
+            font-size: 0.9rem;
+        }
+
+        .page-table thead th {
+            padding: 12px 16px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #6c757d;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            text-align: {% if lang == 'ar' %}right{% else %}left{% endif %};
+            white-space: nowrap;
+        }
+
+        /*  شريط البحث */
+        .search-input {
+            border: 1px solid #e9ecef;
+            border-radius: 10px;
+            padding: 8px 14px;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #0d6efd;
+            box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.1);
+        }
+
+        /*  Pagination */
+        .page-pagination {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 24px;
+            border-top: 1px solid #f0f0f0;
+            background: white;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .page-pagination-info {
+            font-size: 0.85rem;
+            color: #6c757d;
+        }
+
+        .page-pagination .pagination {
+            margin: 0;
+        }
+
+        .page-pagination .page-link {
+            color: #0d6efd;
+            border-radius: 8px;
+            margin: 0 2px;
+            border: 1px solid #e9ecef;
+            font-size: 0.85rem;
+            padding: 6px 12px;
+        }
+
+        .page-pagination .page-link:hover {
+            background: #e7f1ff;
+            border-color: #0d6efd;
+        }
+
+        .page-pagination .page-item.active .page-link {
+            background: #0d6efd;
+            border-color: #0d6efd;
+            color: white;
+        }
+
+        .page-pagination .page-item.disabled .page-link {
+            color: #adb5bd;
+            background: #f8f9fa;
+        }
+
+        /*  Empty state */
+        .page-empty-state {
+            text-align: center;
+            padding: 80px 20px;
+        }
+
+        .page-empty-state i {
+            font-size: 4rem;
+            color: #dee2e6;
+            margin-bottom: 20px;
+        }
+
+        .page-empty-state h5 {
+            color: #6c757d;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .page-empty-state p {
+            color: #adb5bd;
+            margin: 0;
+        }
+
+        /*  Responsive */
+        @media (max-width: 768px) {
+            .page-table-controls .search-box {
+                width: 100%;
+            }
+
+            .page-table-container {
+                max-height: 480px;
+            }
+
+            .page-pagination {
+                justify-content: center;
+            }
+
+            .page-pagination-info {
+                width: 100%;
+                text-align: center;
+            }
+        }
+
+    
+/*  */
+/* MOBILE RESPONSIVE  للجوال */
+/*  */
+
+@media (max-width: 768px) {
+    /*  الشريط الجانبي  مخفي افتراضياً  */
+    .sidebar {
+        position: fixed !important;
+        right: -280px !important;
+        top: 0 !important;
+        width: 280px !important;
+        height: 100vh !important;
+        z-index: 1050 !important;
+        transition: right 0.3s ease !important;
+        overflow-y: auto !important;
+    }
+    
+    .sidebar.active {
+        right: 0 !important;
+    }
+    
+    /*  Overlay معتم عند فتح الشريط  */
+    .sidebar-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 1040;
+    }
+    
+    .sidebar-overlay.active {
+        display: block;
+    }
+    
+    /*  المحتوى الرئيسي  يأخذ كامل العرض  */
+    .main-content {
+        margin-right: 0 !important;
+        margin-left: 0 !important;
+        padding: 10px !important;
+        width: 100% !important;
+    }
+    
+    /*  Topbar  */
+    .topbar {
+        padding: 10px 15px !important;
+        position: sticky;
+        top: 0;
+        z-index: 1030;
+        background: white;
+    }
+    
+    .topbar h4, .page-title {
+        font-size: 1rem !important;
+    }
+    
+    /*  زر Toggle  */
+    .sidebar-toggle, .menu-toggle {
+        display: flex !important;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+        background: #0d6efd;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-size: 1.2rem;
+        cursor: pointer;
+    }
+    
+    /*  البطاقات  عرض كامل  */
+    .card, .kpi-card, .stat-card {
+        margin-bottom: 10px !important;
+        width: 100% !important;
+    }
+    
+    /*  الشبكات  عمود واحد  */
+    .row {
+        margin-right: 0 !important;
+        margin-left: 0 !important;
+    }
+    
+    .col-1, .col-2, .col-3, .col-4, .col-5, .col-6,
+    .col-7, .col-8, .col-9, .col-10, .col-11, .col-12,
+    [class*="col-md-"], [class*="col-lg-"] {
+        flex: 0 0 100% !important;
+        max-width: 100% !important;
+        padding-right: 5px !important;
+        padding-left: 5px !important;
+    }
+    
+    /*  الجداول  Scroll أفقي  */
+    .table-responsive {
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+    }
+    
+    table {
+        font-size: 0.8rem !important;
+        min-width: 600px;
+    }
+    
+    /*  الأزرار  */
+    button, .btn {
+        font-size: 0.85rem !important;
+        padding: 8px 12px !important;
+    }
+    
+    /*  العناوين  */
+    h1 { font-size: 1.3rem !important; }
+    h2 { font-size: 1.2rem !important; }
+    h3 { font-size: 1.1rem !important; }
+    h4 { font-size: 1rem !important; }
+    h5 { font-size: 0.95rem !important; }
+    h6 { font-size: 0.9rem !important; }
+    
+    /*  إخفاء العناصر غير الضرورية  */
+    .hide-mobile {
+        display: none !important;
+    }
+}
+
+/*  شاشات صغيرة جداً  */
+@media (max-width: 480px) {
+    .main-content {
+        padding: 5px !important;
+    }
+    
+    .card-body {
+        padding: 10px !important;
+    }
+    
+    table {
+        font-size: 0.7rem !important;
+    }
+}
+
+</style>
+</head>
+
+<body>
+
+    <div class="admin-wrapper">
+        <aside class="admin-sidebar" id="sidebar">
+            <div class="sidebar-brand">
+                <img id="sidebarLogo" src="/static/images/logo.png" alt="Logo"
+                     style="height: 48px; width: 48px; border-radius: 10px; margin-bottom: 8px; object-fit: cover; background: white; padding: 4px;">
+                <h3 id="sidebarCompanyName" style="font-size: 1.1rem;">BusCore</h3>
+                <small>{{ _("لوحة التحكم الإدارية") }}</small>
+            </div>
+            <ul class="sidebar-menu">
+
+                <li><a href="/admin/dashboard" class="{% if 'dashboard' in request.path and 'live' not in request.path %}active{% endif %}">
+                        <i class="fas fa-tachometer-alt"></i> {{ _("الرئيسية") }}
+                    </a>
+
+            <a href="/about" class="nav-link" target="_blank">
+                <i class="fas fa-info-circle"></i>
+                <span>{{ _("عن البرنامج") }}</span>
+            </a></li>
+                <li><a href="/admin/live-trips" class="{% if 'live-trips' in request.path %}active{% endif %}">
+                        <i class="fas fa-satellite-dish"></i> {{ _("الرحلات المباشرة") }}
+                        <span class="badge bg-danger ms-1" style="font-size: 0.6rem;">LIVE</span>
+                    </a>
+            <a href="/admin/branches" class="nav-link">
+                <i class="fas fa-building"></i>
+                <span>{{ _("الفروع") }}</span>
+            </a>
+            <a href="/admin/customers" class="nav-link">
+                <i class="fas fa-users"></i>
+                <span>{{ _("العملاء") }}</span>
+            </a>
+
+            <!--  إعدادات المحاسبة -->
+            <a href="/admin/accounting/settings" class="nav-link">
+                <i class="fas fa-calculator"></i>
+                <span>{{ _("إعدادات المحاسبة") }}</span>
+            </a>
+
+            <!--  شجرة الحسابات -->
+            <a href="/admin/accounts" class="nav-link">
+                <i class="fas fa-sitemap"></i>
+                <span>{{ _("شجرة الحسابات") }}</span>
+            </a>
+
+            <a href="/admin/bi" class="nav-link">
+                <i class="fas fa-chart-pie"></i>
+                <span>{{ _("لوحة تحليل البيانات") }}</span>
+            </a></li>
+                <li><a href="/admin/cities" class="{% if 'cities' in request.path %}active{% endif %}">
+                        <i class="fas fa-city"></i> {{ _("المدن") }}
+                    </a></li>
+                <li><a href="/admin/stations" class="{% if 'stations' in request.path %}active{% endif %}">
+                        <i class="fas fa-map-marker-alt"></i> {{ _("المحطات") }}
+                    </a></li>
+                <li><a href="/admin/routes" class="{% if 'routes' in request.path %}active{% endif %}">
+                        <i class="fas fa-route"></i> {{ _("المسارات") }}
+                    </a></li>
+                <li><a href="/admin/trips" class="{% if 'trips' in request.path %}active{% endif %}">
+                        <i class="fas fa-calendar-alt"></i> {{ _("الرحلات") }}
+                    </a></li>
+                <li><a href="/admin/buses" class="{% if 'buses' in request.path %}active{% endif %}">
+                        <i class="fas fa-bus-alt"></i> {{ _("الحافلات") }}
+                    </a></li>
+                <li><a href="/admin/bookings" class="{% if 'bookings' in request.path %}active{% endif %}">
+                        <i class="fas fa-ticket-alt"></i> {{ _("الحجوزات") }}
+                    </a></li>
+                <li><a href="/admin/luggage" class="{% if 'luggage' in request.path %}active{% endif %}">
+                        <i class="fas fa-suitcase"></i> {{ _("إدارة الأمتعة") }}
+                    </a></li>
+                <li><a href="/admin/employees" class="{% if 'employees' in request.path %}active{% endif %}">
+                        <i class="fas fa-user-tie"></i> {{ _("إدارة العاملين") }}
+                    </a></li>
+                <li><a href="/admin/positions" class="{% if 'positions' in request.path %}active{% endif %}">
+                        <i class="fas fa-briefcase"></i> {{ _("إدارة الوظائف") }}
+                    </a></li>
+
+                <li class="sidebar-divider">
+                    <span class="sidebar-section-title">
+                        <i class="fas fa-calculator"></i> {{ _("المحاسبة") }}
+                    </span>
+                </li>
+                <li><a href="/admin/expenses" class="{% if request.path == '/admin/expenses' %}active{% endif %}">
+                        <i class="fas fa-money-bill-wave"></i> {{ _("المصروفات") }}
+                    </a></li>
+                <li><a href="/admin/expense-categories" class="{% if 'expense-categories' in request.path %}active{% endif %}">
+                        <i class="fas fa-tags"></i> {{ _("تصنيفات المصروفات") }}
+                    </a></li>
+                <li><a href="/admin/financial-reports" class="{% if 'financial-reports' in request.path %}active{% endif %}">
+                        <i class="fas fa-chart-line"></i> {{ _("التقارير المالية") }}
+                    </a></li>
+
+                <li class="sidebar-divider">
+                    <span class="sidebar-section-title">
+                        <i class="fas fa-cog"></i> {{ _("الإدارة") }}
+                    </span>
+                </li>
+                <li><a href="/admin/users" class="{% if 'users' in request.path %}active{% endif %}">
+                        <i class="fas fa-users"></i> {{ _("المستخدمون") }}
+                    </a></li>
+                <li><a href="/admin/system-map" class="{% if 'system-map' in request.path %}active{% endif %}">
+                        <i class="fas fa-sitemap"></i> {{ _("خريطة النظام") }}
+                    </a></li>
+                <li><a href="/admin/settings" class="{% if 'settings' in request.path %}active{% endif %}">
+                        <i class="fas fa-cog"></i> {{ _("إعدادات الشركة") }}
+                    </a></li>
+
+                <li class="sidebar-divider">
+                    <a href="/" style="color: #ffc107 !important;">
+                        <i class="fas fa-globe"></i> {{ _("الموقع الرئيسي") }}
+                    </a>
+                </li>
+                <li><a href="#" onclick="logout(); return false;" style="color: #ff6b6b !important;">
+                        <i class="fas fa-sign-out-alt"></i> {{ _("تسجيل الخروج") }}
+                    </a></li>
+
+                <li class="sidebar-divider">
+                    <a href="javascript:void(0)" onclick="switchLang('{% if lang == "ar" %}en{% else %}ar{% endif %}')">
+                        <i class="fas fa-globe"></i>
+                        {% if lang == "ar" %}English{% else %}العربية{% endif %}
+                    </a>
+                </li>
+            </ul>
+        </aside>
+
+        <main class="admin-content">
+            <div class="admin-topbar">
+                <div class="d-flex align-items-center">
+                    <button class="sidebar-toggle" onclick="toggleSidebar()">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <h4>{% block page_title %}{{ _("لوحة التحكم") }}{% endblock %}</h4>
+                </div>
+                <div class="user-info">
+                    <i class="fas fa-user-circle"></i>
+                    <span id="adminUsername">{{ _("مدير النظام") }}</span>
+                </div>
+            </div>
+
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('active');
+        }
+
+        //  تحميل بيانات الشركة للـ sidebar
+        (async function loadCompanyInfo() {
+            try {
+                const res = await fetch('/settings/', { credentials: 'same-origin' });
+                if (!res.ok) return;
+                const settings = await res.json();
+
+                const LANG = "{{ lang }}";
+
+                // اسم الشركة
+                const nameEl = document.getElementById('sidebarCompanyName');
+                if (nameEl) {
+                    const name = (LANG === 'en')
+                        ? (settings.company_name_en || settings.company_name || 'BusCore')
+                        : (settings.company_name || 'BusCore');
+                    nameEl.textContent = name;
+                }
+
+                // الشعار
+                if (settings.company_logo) {
+                    const logoEl = document.getElementById('sidebarLogo');
+                    if (logoEl) logoEl.src = settings.company_logo;
+                }
+            } catch (e) {
+                console.error('Failed to load company info:', e);
+            }
+        })();
+
+        function switchLang(newLang) {
+            document.cookie = "lang=" + newLang + "; path=/; max-age=31536000; SameSite=Lax";
+            const url = new URL(window.location.href);
+            url.searchParams.set('lang', newLang);
+            window.location.href = url.toString();
+        }
+
+        async function logout() {
+            if (!confirm('{{ _("هل تريد تسجيل الخروج؟") }}')) return;
+            try {
+                await fetch('/auth/logout', { method: 'POST', credentials: 'same-origin' });
+            } catch (e) { /* ignore */ }
+            window.location.href = '/login';
+        }
+    </script>
+
+        <script>
+        (function checkAuth() {
+            //  نستخدم الكوكي (HttpOnly) بدلا من localStorage
+            fetch('/auth/me', {
+                credentials: 'same-origin'   //  يرسل الكوكي تلقائيا
+            })
+                .then(function(response) {
+                    if (!response.ok) {
+                        console.warn('غير مصرح - جاري التوجيه...');
+                        throw new Error('Not authenticated');
+                    }
+                    return response.json();
+                })
+                .then(function(user) {
+                    if (!user.is_admin) {
+                        alert('{{ _("ليس لديك صلاحيات للوصول إلى لوحة التحكم") }}');
+                        window.location.href = '/';
+                        return;
+                    }
+                    var usernameEl = document.getElementById('adminUsername');
+                    if (usernameEl) {
+                        usernameEl.textContent = user.username + ' {{ _("(مدير)") }}';
+                    }
+                })
+                .catch(function(error) {
+                    console.warn('Auth check failed:', error.message);
+                    // تأخير بسيط قبل التوجيه
+                    setTimeout(function() {
+                        window.location.href = '/login?redirect=' + encodeURIComponent(window.location.pathname);
+                    }, 500);
+                });
+        })();
+    </script>
+
+    
+    <script>
+        // 
+        //  TableManager  إدارة موحدة للجداول
+        // 
+        window.TableManager = {
+            allItems: [],
+            filteredItems: [],
+            currentPage: 1,
+            LANG: "{{ lang }}",
+
+            /**
+             * تهيئة الجدول
+             */
+            init: function(options) {
+                this.options = options;
+                this.allItems = [];
+                this.currentPage = 1;
+                this.render();
+            },
+
+            /**
+             * تعيين البيانات
+             */
+            setData: function(items) {
+                this.allItems = items;
+                this.applyFilters();
+            },
+
+            /**
+             * تطبيق البحث
+             */
+            applyFilters: function() {
+                const searchInput = document.getElementById('searchInput');
+                const search = searchInput ? searchInput.value.toLowerCase().trim() : '';
+
+                if (!search) {
+                    this.filteredItems = [...this.allItems];
+                } else {
+                    const searchFields = this.options.searchFields || [];
+                    this.filteredItems = this.allItems.filter(item => {
+                        return searchFields.some(field => {
+                            const value = this.getFieldValue(item, field);
+                            if (value === null || value === undefined) return false;
+                            //  تحويل آمن إلى نص
+                            return String(value).toLowerCase().includes(search);
+                        });
+                    });
+                }
+
+                this.currentPage = 1;
+                this.render();
+            },
+
+            /**
+             * قراءة حقل (يدعم النقاط: 'passenger.full_name')
+             */
+            getFieldValue: function(obj, path) {
+                return path.split('.').reduce((acc, part) => acc && acc[part], obj);
+            },
+
+            /**
+             * عرض الجدول
+             */
+            render: function() {
+                const container = document.getElementById(this.options.containerId || 'tableContainer');
+                const paginationContainer = document.getElementById(this.options.paginationId || 'paginationContainer');
+                const totalCountEl = document.getElementById(this.options.totalCountId || 'totalCount');
+
+                if (!container) return;
+
+                // العدد الإجمالي
+                if (totalCountEl) {
+                    totalCountEl.textContent = this.filteredItems.length;
+                }
+
+                // فارغ
+                if (this.filteredItems.length === 0) {
+                    container.innerHTML = `
+                        <div class="page-empty-state">
+                            <i class="fas ${this.options.emptyIcon || 'fa-inbox'}"></i>
+                            <h5>${this.options.emptyTitle || '{{ _("لا توجد بيانات") }}'}</h5>
+                            <p>${this.options.emptyMessage || '{{ _("ابدأ بإضافة عناصر جديدة") }}'}</p>
+                        </div>
+                    `;
+                    if (paginationContainer) paginationContainer.innerHTML = '';
+                    return;
+                }
+
+                // Pagination
+                const pageSize = this.getPageSize();
+                let pageItems = this.filteredItems;
+                let totalPages = 1;
+
+                if (pageSize > 0) {
+                    totalPages = Math.ceil(this.filteredItems.length / pageSize);
+                    if (this.currentPage > totalPages) this.currentPage = totalPages;
+                    const start = (this.currentPage - 1) * pageSize;
+                    pageItems = this.filteredItems.slice(start, start + pageSize);
+                }
+
+                // الجدول
+                let html = '<table class="page-table">';
+                html += '<thead><tr>';
+                this.options.columns.forEach(col => {
+                    const style = col.width ? `width="${col.width}"` : '';
+                    html += `<th ${style}>${col.title}</th>`;
+                });
+                html += '</tr></thead><tbody>';
+
+                pageItems.forEach((item, index) => {
+                    const globalIndex = pageSize > 0 ? (this.currentPage - 1) * pageSize + index + 1 : index + 1;
+                    html += '<tr>';
+                    this.options.columns.forEach(col => {
+                        html += '<td>';
+                        html += col.render ? col.render(item, globalIndex) : (this.getFieldValue(item, col.field) || '-');
+                        html += '</td>';
+                    });
+                    html += '</tr>';
+                });
+
+                html += '</tbody></table>';
+                container.innerHTML = html;
+
+                // Pagination
+                if (paginationContainer) {
+                    this.renderPagination(paginationContainer, pageSize, totalPages);
+                }
+            },
+
+            /**
+             * قراءة حجم الصفحة
+             */
+            getPageSize: function() {
+                const pageSizeEl = document.getElementById('pageSize');
+                return pageSizeEl ? parseInt(pageSizeEl.value) || 10 : 10;
+            },
+
+            /**
+             * عرض Pagination
+             */
+            renderPagination: function(container, pageSize, totalPages) {
+                if (pageSize === 0 || totalPages <= 1) {
+                    // عرض فقط عدد النتائج
+                    let html = `<div class="page-pagination-info">
+                        {{ _("عرض") }} ${this.filteredItems.length} {{ _("عنصر") }}
+                    </div>`;
+                    container.innerHTML = html;
+                    return;
+                }
+
+                const start = (this.currentPage - 1) * pageSize + 1;
+                const end = Math.min(this.currentPage * pageSize, this.filteredItems.length);
+
+                let html = `<div class="page-pagination-info">
+                    {{ _("عرض") }} ${start} - ${end} {{ _("من") }} ${this.filteredItems.length}
+                </div>`;
+
+                html += '<nav><ul class="pagination">';
+
+                // السابق
+                const prevIcon = this.LANG === 'ar' ? 'right' : 'left';
+                html += `<li class="page-item ${this.currentPage === 1 ? 'disabled' : ''}">
+                    <a class="page-link" href="javascript:void(0)" onclick="TableManager.goToPage(${this.currentPage - 1})">
+                        <i class="fas fa-chevron-${prevIcon}"></i>
+                    </a>
+                </li>`;
+
+                // الأرقام
+                for (let i = 1; i <= totalPages; i++) {
+                    if (i === 1 || i === totalPages || Math.abs(i - this.currentPage) <= 1) {
+                        html += `<li class="page-item ${i === this.currentPage ? 'active' : ''}">
+                            <a class="page-link" href="javascript:void(0)" onclick="TableManager.goToPage(${i})">${i}</a>
+                        </li>`;
+                    } else if (Math.abs(i - this.currentPage) === 2) {
+                        html += `<li class="page-item disabled"><span class="page-link">...</span></li>`;
+                    }
+                }
+
+                // التالي
+                const nextIcon = this.LANG === 'ar' ? 'left' : 'right';
+                html += `<li class="page-item ${this.currentPage === totalPages ? 'disabled' : ''}">
+                    <a class="page-link" href="javascript:void(0)" onclick="TableManager.goToPage(${this.currentPage + 1})">
+                        <i class="fas fa-chevron-${nextIcon}"></i>
+                    </a>
+                </li>`;
+
+                html += '</ul></nav>';
+                container.innerHTML = html;
+            },
+
+            /**
+             * الانتقال لصفحة
+             */
+            goToPage: function(page) {
+                const pageSize = this.getPageSize();
+                const totalPages = Math.ceil(this.filteredItems.length / pageSize);
+                if (page < 1 || page > totalPages) return;
+                this.currentPage = page;
+                this.render();
+                const container = document.getElementById(this.options.containerId || 'tableContainer');
+                if (container) container.scrollTop = 0;
+            }
+        };
+    </script>
+
+    {% block scripts %}{% endblock %}
+
+<script>
+// 
+// Mobile Sidebar Toggle
+// 
+(function() {
+    function initMobileSidebar() {
+        const sidebar = document.querySelector('.sidebar');
+        const toggleBtn = document.querySelector('.sidebar-toggle, .menu-toggle, [onclick*="toggleSidebar"]');
+        
+        if (!sidebar) return;
+        
+        // إنشاء overlay
+        let overlay = document.querySelector('.sidebar-overlay');
+        if (!overlay) {
+            overlay = document.createElement('div');
+            overlay.className = 'sidebar-overlay';
+            document.body.appendChild(overlay);
+            
+            // إغلاق عند النقر على الـ overlay
+            overlay.addEventListener('click', function() {
+                sidebar.classList.remove('active');
+                overlay.classList.remove('active');
+            });
+        }
+        
+        // عند فتح Sidebar
+        if (toggleBtn) {
+            toggleBtn.addEventListener('click', function() {
+                setTimeout(function() {
+                    if (sidebar.classList.contains('active')) {
+                        overlay.classList.add('active');
+                    } else {
+                        overlay.classList.remove('active');
+                    }
+                }, 50);
+            });
+        }
+        
+        // إغلاق Sidebar عند تغيير الحجم
+        window.addEventListener('resize', function() {
+            if (window.innerWidth > 768) {
+                sidebar.classList.remove('active');
+                overlay.classList.remove('active');
+            }
+        });
+    }
+    
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initMobileSidebar);
+    } else {
+        initMobileSidebar();
+    }
+})();
+</script>
+
+</body>
+
+</html>

@@ -1,0 +1,477 @@
+{% extends "admin/base_admin.html" %}
+
+{% block title %}{{ _("إعدادات النظام المحاسبي") }} - BusCore{% endblock %}
+{% block page_title %}{{ _("إعدادات النظام المحاسبي") }}{% endblock %}
+
+{% block content %}
+
+<!--  -->
+<!-- Header -->
+<!--  -->
+<div class="row g-3 mb-4">
+    <div class="col-12">
+        <div class="card border-0 shadow-sm" style="background: linear-gradient(135deg, #0d6efd, #0a58ca);">
+            <div class="card-body text-white">
+                <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+                    <div>
+                        <h3 class="mb-1 fw-bold">
+                            <i class="fas fa-calculator me-2"></i>{{ _("النظام المحاسبي") }}
+                        </h3>
+                        <p class="mb-0 opacity-75 small">
+                            {{ _("اختر المستوى المناسب لشركتك  يمكنك الترقية في أي وقت") }}
+                        </p>
+                    </div>
+                    <div class="text-center">
+                        <div class="small opacity-75">{{ _("المستوى الحالي") }}</div>
+                        <h2 class="mb-0 fw-bold" id="currentTierDisplay">-</h2>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!--  -->
+<!-- اختيار المستوى -->
+<!--  -->
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-header bg-white">
+        <h5 class="mb-0 fw-bold">
+            <i class="fas fa-layer-group me-2 text-primary"></i>
+            {{ _("المستوى") }}
+        </h5>
+    </div>
+    <div class="card-body">
+        <div class="row g-3">
+            <div class="col-md-4">
+                <div class="tier-card" data-tier="simple" onclick="selectTier('simple')">
+                    <div class="text-center">
+                        <i class="fas fa-feather fa-3x text-success mb-2"></i>
+                        <h5 class="fw-bold mb-1">{{ _("بسيط") }}</h5>
+                        <small class="text-muted">Simple</small>
+                        <p class="small mt-2 mb-0 text-muted">
+                            {{ _("للشركات الصغيرة  إيرادات ومصروفات فقط") }}
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="tier-card" data-tier="medium" onclick="selectTier('medium')">
+                    <div class="text-center">
+                        <i class="fas fa-balance-scale fa-3x text-warning mb-2"></i>
+                        <h5 class="fw-bold mb-1">{{ _("متوسط") }}</h5>
+                        <small class="text-muted">Medium</small>
+                        <p class="small mt-2 mb-0 text-muted">
+                            {{ _("للشركات المتوسطة  قيود مزدوجة + تقارير") }}
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="tier-card" data-tier="full" onclick="selectTier('full')">
+                    <div class="text-center">
+                        <i class="fas fa-crown fa-3x text-danger mb-2"></i>
+                        <h5 class="fw-bold mb-1">{{ _("كامل") }}</h5>
+                        <small class="text-muted">Full</small>
+                        <p class="small mt-2 mb-0 text-muted">
+                            {{ _("للشركات الكبيرة  كل الميزات + تدقيق") }}
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!--  -->
+<!-- الميزات -->
+<!--  -->
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-header bg-white">
+        <h5 class="mb-0 fw-bold">
+            <i class="fas fa-toggle-on me-2 text-primary"></i>
+            {{ _("الميزات") }}
+            <small class="text-muted ms-2">({{ _("يمكنك تفعيل/تعطيل كل ميزة بشكل مستقل") }})</small>
+        </h5>
+    </div>
+    <div class="card-body">
+        <div class="row g-3" id="featuresContainer">
+            <!-- تُملأ عبر JavaScript -->
+            <div class="text-center py-3">
+                <div class="spinner-border text-primary"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!--  -->
+<!-- الضرائب -->
+<!--  -->
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-header bg-white">
+        <h5 class="mb-0 fw-bold">
+            <i class="fas fa-percentage me-2 text-primary"></i>
+            {{ _("الضرائب") }}
+            <small class="text-muted ms-2">({{ _("اتركها 0 إذا لم تكن مطلوبة") }})</small>
+        </h5>
+    </div>
+    <div class="card-body">
+        <div class="row g-3">
+            <div class="col-md-4">
+                <label class="form-label fw-bold">{{ _("ضريبة القيمة المضافة") }}</label>
+                <div class="input-group">
+                    <input type="number" id="vatRate" class="form-control" min="0" max="100" step="0.01" value="0">
+                    <span class="input-group-text">%</span>
+                </div>
+                <small class="text-muted">VAT</small>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label fw-bold">{{ _("ضريبة الدخل") }}</label>
+                <div class="input-group">
+                    <input type="number" id="incomeTaxRate" class="form-control" min="0" max="100" step="0.01" value="0">
+                    <span class="input-group-text">%</span>
+                </div>
+                <small class="text-muted">Income Tax</small>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label fw-bold">{{ _("ضريبة المبيعات") }}</label>
+                <div class="input-group">
+                    <input type="number" id="salesTaxRate" class="form-control" min="0" max="100" step="0.01" value="0">
+                    <span class="input-group-text">%</span>
+                </div>
+                <small class="text-muted">Sales Tax</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!--  -->
+<!-- إعدادات أخرى -->
+<!--  -->
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-header bg-white">
+        <h5 class="mb-0 fw-bold">
+            <i class="fas fa-cog me-2 text-primary"></i>
+            {{ _("إعدادات أخرى") }}
+        </h5>
+    </div>
+    <div class="card-body">
+        <div class="row g-3">
+            <div class="col-md-4">
+                <label class="form-label fw-bold">{{ _("العملة الأساسية") }}</label>
+                <select id="baseCurrency" class="form-select">
+                    <option value="SDG">SDG - {{ _("جنيه سوداني") }}</option>
+                    <option value="SAR">SAR - {{ _("ريال سعودي") }}</option>
+                    <option value="USD">USD - {{ _("دولار أمريكي") }}</option>
+                    <option value="EGP">EGP - {{ _("جنيه مصري") }}</option>
+                    <option value="AED">AED - {{ _("درهم إماراتي") }}</option>
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label fw-bold">{{ _("طريقة الإهلاك") }}</label>
+                <select id="depreciationMethod" class="form-select">
+                    <option value="straight_line">{{ _("القسط الثابت") }}</option>
+                    <option value="declining_balance">{{ _("القسط المتناقص") }}</option>
+                    <option value="units_of_production">{{ _("وحدات الإنتاج") }}</option>
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label fw-bold">{{ _("طريقة المخزون") }}</label>
+                <select id="inventoryMethod" class="form-select">
+                    <option value="fifo">FIFO - {{ _("الوارد أولًا") }}</option>
+                    <option value="lifo">LIFO - {{ _("الصادر أولًا") }}</option>
+                    <option value="average">{{ _("المتوسط المرجح") }}</option>
+                </select>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!--  -->
+<!-- أزرار -->
+<!--  -->
+<div class="d-flex gap-2 justify-content-end mb-4 flex-wrap">
+    <button class="btn btn-outline-secondary" onclick="resetSettings()">
+        <i class="fas fa-undo me-1"></i>{{ _("إعادة للافتراضي") }}
+    </button>
+    <button class="btn btn-primary btn-lg" onclick="saveSettings()">
+        <i class="fas fa-save me-2"></i>{{ _("حفظ الإعدادات") }}
+    </button>
+</div>
+
+<style>
+.tier-card {
+    background: #f8f9fa;
+    border: 3px solid #dee2e6;
+    border-radius: 12px;
+    padding: 20px 15px;
+    cursor: pointer;
+    transition: all 0.2s;
+    height: 100%;
+}
+.tier-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+    border-color: #0d6efd;
+}
+.tier-card.active {
+    background: #e7f1ff;
+    border-color: #0d6efd;
+    box-shadow: 0 6px 20px rgba(13, 110, 253, 0.2);
+}
+.tier-card.active::after {
+    content: '';
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background: #0d6efd;
+    color: white;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+}
+.feature-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    background: #f8f9fa;
+    border-radius: 10px;
+    border: 1px solid #e9ecef;
+    transition: all 0.2s;
+}
+.feature-item:hover {
+    background: #e7f1ff;
+    border-color: #0d6efd;
+}
+.feature-item.enabled {
+    background: #d1e7dd;
+    border-color: #198754;
+}
+.feature-item i {
+    font-size: 1.1rem;
+    width: 24px;
+    text-align: center;
+}
+.feature-item.enabled i {
+    color: #198754;
+}
+.feature-item.disabled i {
+    color: #adb5bd;
+}
+</style>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+const LANG = "{{ lang }}";
+let currentSettings = null;
+let selectedTier = 'simple';
+
+// قائمة الميزات
+const FEATURES = [
+    { key: 'double_entry', name_ar: 'القيود المزدوجة', name_en: 'Double-Entry', icon: 'fa-exchange-alt' },
+    { key: 'journal', name_ar: 'دفتر اليومية', name_en: 'Journal', icon: 'fa-book' },
+    { key: 'ledger', name_ar: 'دفتر الأستاذ', name_en: 'General Ledger', icon: 'fa-book-open' },
+    { key: 'trial_balance', name_ar: 'ميزان المراجعة', name_en: 'Trial Balance', icon: 'fa-balance-scale' },
+    { key: 'balance_sheet', name_ar: 'الميزانية العمومية', name_en: 'Balance Sheet', icon: 'fa-file-invoice' },
+    { key: 'income_statement', name_ar: 'قائمة الدخل', name_en: 'Income Statement', icon: 'fa-chart-line' },
+    { key: 'depreciation', name_ar: 'الإهلاك', name_en: 'Depreciation', icon: 'fa-arrow-trend-down' },
+    { key: 'fiscal_periods', name_ar: 'الفترات المحاسبية', name_en: 'Fiscal Periods', icon: 'fa-calendar-alt' },
+    { key: 'audit_log', name_ar: 'سجل التدقيق', name_en: 'Audit Log', icon: 'fa-history' },
+    { key: 'cost_centers', name_ar: 'مراكز التكلفة', name_en: 'Cost Centers', icon: 'fa-sitemap' },
+    { key: 'tax', name_ar: 'الضرائب', name_en: 'Tax', icon: 'fa-percentage' },
+    { key: 'multi_currency', name_ar: 'تعدد العملات', name_en: 'Multi-Currency', icon: 'fa-dollar-sign' },
+];
+
+// 
+// تحميل الإعدادات
+// 
+document.addEventListener('DOMContentLoaded', async function() {
+    await loadSettings();
+});
+
+async function loadSettings() {
+    try {
+        const res = await fetch('/accounting-settings/');
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        currentSettings = await res.json();
+
+        // تحديث الواجهة
+        selectedTier = currentSettings.tier || 'simple';
+        document.getElementById('currentTierDisplay').textContent =
+            selectedTier.charAt(0).toUpperCase() + selectedTier.slice(1);
+
+        // Tier
+        document.querySelectorAll('.tier-card').forEach(card => {
+            card.classList.toggle('active', card.dataset.tier === selectedTier);
+        });
+
+        // الميزات
+        renderFeatures();
+
+        // الضرائب
+        document.getElementById('vatRate').value = currentSettings.vat_rate || 0;
+        document.getElementById('incomeTaxRate').value = currentSettings.income_tax_rate || 0;
+        document.getElementById('salesTaxRate').value = currentSettings.sales_tax_rate || 0;
+
+        // إعدادات أخرى
+        document.getElementById('baseCurrency').value = currentSettings.base_currency || 'SDG';
+        document.getElementById('depreciationMethod').value = currentSettings.depreciation_method || 'straight_line';
+        document.getElementById('inventoryMethod').value = currentSettings.inventory_method || 'fifo';
+
+    } catch (e) {
+        console.error(e);
+        alert(' {{ _("فشل تحميل الإعدادات") }}: ' + e.message);
+    }
+}
+
+// 
+// عرض الميزات
+// 
+function renderFeatures() {
+    const container = document.getElementById('featuresContainer');
+    let html = '';
+
+    FEATURES.forEach(f => {
+        const isEnabled = currentSettings[`enable_${f.key}`] === true;
+        const name = LANG === 'ar' ? f.name_ar : f.name_en;
+
+        html += `
+            <div class="col-md-4">
+                <label class="feature-item ${isEnabled ? 'enabled' : 'disabled'}" style="cursor: pointer;">
+                    <input type="checkbox" class="form-check-input feature-checkbox"
+                           data-feature="${f.key}" ${isEnabled ? 'checked' : ''}
+                           onchange="toggleFeature(this)">
+                    <i class="fas ${f.icon}"></i>
+                    <span class="fw-bold">${name}</span>
+                </label>
+            </div>
+        `;
+    });
+
+    container.innerHTML = html;
+}
+
+function toggleFeature(checkbox) {
+    const label = checkbox.closest('.feature-item');
+    if (checkbox.checked) {
+        label.classList.add('enabled');
+        label.classList.remove('disabled');
+    } else {
+        label.classList.remove('enabled');
+        label.classList.add('disabled');
+    }
+}
+
+// 
+// اختيار Tier
+// 
+function selectTier(tier) {
+    selectedTier = tier;
+
+    document.querySelectorAll('.tier-card').forEach(card => {
+        card.classList.toggle('active', card.dataset.tier === tier);
+    });
+
+    // تطبيق Preset على الميزات (فقط للعرض)
+    const presets = {
+        simple: ['income_statement'],
+        medium: ['double_entry', 'journal', 'ledger', 'trial_balance', 'income_statement', 'cost_centers'],
+        full: ['double_entry', 'journal', 'ledger', 'trial_balance', 'balance_sheet', 'income_statement',
+               'depreciation', 'fiscal_periods', 'audit_log', 'cost_centers', 'tax'],
+    };
+
+    const enabledFeatures = presets[tier] || [];
+
+    document.querySelectorAll('.feature-checkbox').forEach(cb => {
+        const key = cb.dataset.feature;
+        const shouldBeEnabled = enabledFeatures.includes(key);
+        cb.checked = shouldBeEnabled;
+        toggleFeature(cb);
+    });
+}
+
+// 
+// حفظ الإعدادات
+// 
+async function saveSettings() {
+    // جمع الميزات
+    const features = {};
+    document.querySelectorAll('.feature-checkbox').forEach(cb => {
+        features[`enable_${cb.dataset.feature}`] = cb.checked;
+    });
+
+    const data = {
+        tier: selectedTier,
+        ...features,
+        vat_rate: parseFloat(document.getElementById('vatRate').value) || 0,
+        income_tax_rate: parseFloat(document.getElementById('incomeTaxRate').value) || 0,
+        sales_tax_rate: parseFloat(document.getElementById('salesTaxRate').value) || 0,
+        base_currency: document.getElementById('baseCurrency').value,
+        depreciation_method: document.getElementById('depreciationMethod').value,
+        inventory_method: document.getElementById('inventoryMethod').value,
+    };
+
+    try {
+        const res = await fetch('/accounting-settings/', {
+            method: 'PUT',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(data),
+        });
+
+        if (!res.ok) {
+            const err = await res.json();
+            throw new Error(err.detail || 'خطأ في الحفظ');
+        }
+
+        //  تحديث العرض
+        document.getElementById('currentTierDisplay').textContent =
+            selectedTier.charAt(0).toUpperCase() + selectedTier.slice(1);
+
+        showMessage(' {{ _("تم حفظ الإعدادات بنجاح") }}', 'success');
+    } catch (e) {
+        showMessage(' ' + e.message, 'danger');
+    }
+}
+
+// 
+// إعادة للافتراضي
+// 
+async function resetSettings() {
+    if (!confirm('{{ _("هل تريد إعادة الإعدادات للافتراضي؟") }}')) return;
+
+    try {
+        const res = await fetch('/accounting-settings/reset', {method: 'POST'});
+        if (!res.ok) throw new Error('خطأ');
+
+        await loadSettings();
+        showMessage(' {{ _("تم إعادة الإعدادات للافتراضي") }}', 'success');
+    } catch (e) {
+        showMessage(' ' + e.message, 'danger');
+    }
+}
+
+// 
+// رسالة
+// 
+function showMessage(text, type) {
+    const div = document.createElement('div');
+    div.className = `alert alert-${type} position-fixed top-0 start-50 translate-middle-x mt-3`;
+    div.style.zIndex = '9999';
+    div.textContent = text;
+    document.body.appendChild(div);
+    setTimeout(() => div.remove(), 3000);
+}
+
+window.selectTier = selectTier;
+window.toggleFeature = toggleFeature;
+window.saveSettings = saveSettings;
+window.resetSettings = resetSettings;
+</script>
+{% endblock %}

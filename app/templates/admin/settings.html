@@ -1,0 +1,429 @@
+{% extends "admin/base_admin.html" %}
+
+{% block title %}{{ _("إعدادات الشركة") }} - BusCore{% endblock %}
+{% block page_title %}{{ _("إعدادات الشركة") }}{% endblock %}
+
+{% block content %}
+
+<div class="alert alert-info">
+    <i class="fas fa-info-circle me-2"></i>
+    <strong>{{ _("ملاحظة:") }}</strong> {{ _("أي تعديل هنا سيظهر") }} <strong>{{ _("فوراً") }}</strong> {{ _("في التذاكر، الموقع، والمنفستو.") }}
+</div>
+
+<form id="settingsForm">
+
+    <!-- ═══════════════════════════════════════════ -->
+    <!-- معلومات الشركة -->
+    <!-- ═══════════════════════════════════════════ -->
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-primary text-white">
+            <i class="fas fa-building me-2"></i>{{ _("معلومات الشركة") }}
+        </div>
+        <div class="card-body">
+
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">{{ _("اسم الشركة (عربي)") }} <span class="text-danger">*</span></label>
+                    <input type="text" id="company_name" class="form-control" dir="rtl" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">{{ _("اسم الشركة (إنجليزي)") }}</label>
+                    <input type="text" id="company_name_en" class="form-control" dir="ltr">
+                </div>
+            </div>
+
+            <hr class="my-4">
+
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">{{ _("رقم الهاتف") }}</label>
+                    <input type="text" id="company_phone" class="form-control" dir="ltr" placeholder="+249...">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">{{ _("البريد الإلكتروني") }}</label>
+                    <input type="email" id="company_email" class="form-control" dir="ltr">
+                </div>
+            </div>
+
+            <hr class="my-4">
+
+            <!-- العنوان (ثنائي اللغة) -->
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">
+                        <i class="fas fa-map-marker-alt text-primary me-1"></i>
+                        {{ _("العنوان (عربي)") }}
+                    </label>
+                    <input type="text" id="company_address" class="form-control" dir="rtl">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">
+                        <i class="fas fa-map-marker-alt text-primary me-1"></i>
+                        {{ _("العنوان (إنجليزي)") }}
+                    </label>
+                    <input type="text" id="company_address_en" class="form-control" dir="ltr">
+                </div>
+            </div>
+
+            <hr class="my-4">
+
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">{{ _("الموقع الإلكتروني") }}</label>
+                    <input type="text" id="company_website" class="form-control" dir="ltr">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">{{ _("رابط الشعار (Logo URL)") }}</label>
+                    <input type="text" id="company_logo" class="form-control" dir="ltr" placeholder="/static/images/logo.png">
+                    <small class="text-muted">{{ _("مثال: /static/images/logo.png") }}</small>
+                </div>
+            </div>
+
+            <hr class="my-4">
+
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">{{ _("السجل التجاري") }}</label>
+                    <input type="text" id="commercial_register" class="form-control">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">{{ _("الرقم الضريبي") }}</label>
+                    <input type="text" id="tax_number" class="form-control">
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════ -->
+    <!-- إعدادات التذكرة -->
+    <!-- ═══════════════════════════════════════════ -->
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-success text-white">
+            <i class="fas fa-ticket-alt me-2"></i>{{ _("إعدادات التذكرة") }}
+        </div>
+        <div class="card-body">
+
+            <!-- نص الفوتر -->
+            <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">{{ _("نص الفوتر (عربي)") }}</label>
+                    <input type="text" id="ticket_footer_text" class="form-control" dir="rtl">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">{{ _("نص الفوتر (إنجليزي)") }}</label>
+                    <input type="text" id="ticket_footer_text_en" class="form-control" dir="ltr">
+                </div>
+            </div>
+
+            <!-- تعليمات الراكب -->
+            <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">{{ _("تعليمات الراكب (عربي)") }}</label>
+                    <textarea id="ticket_instructions" class="form-control" rows="4" dir="rtl"></textarea>
+                    <small class="text-muted">{{ _("كل سطر = تعليمة منفصلة") }}</small>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">{{ _("تعليمات الراكب (إنجليزي)") }}</label>
+                    <textarea id="ticket_instructions_en" class="form-control" rows="4" dir="ltr"></textarea>
+                    <small class="text-muted">{{ _("Each line = separate instruction") }}</small>
+                </div>
+            </div>
+
+            <!-- نص الضمان -->
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">{{ _("نص الضمان (عربي)") }}</label>
+                    <input type="text" id="ticket_warranty_text" class="form-control" dir="rtl">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">{{ _("نص الضمان (إنجليزي)") }}</label>
+                    <input type="text" id="ticket_warranty_text_en" class="form-control" dir="ltr">
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════ -->
+    <!-- معلومات الدفع -->
+    <!-- ═══════════════════════════════════════════ -->
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-warning text-dark">
+            <i class="fas fa-university me-2"></i>{{ _("معلومات الدفع") }}
+        </div>
+        <div class="card-body">
+
+            <div class="row g-3 mb-3">
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">{{ _("اسم البنك (عربي)") }}</label>
+                    <input type="text" id="bank_name" class="form-control" dir="rtl">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">{{ _("اسم البنك (إنجليزي)") }}</label>
+                    <input type="text" id="bank_name_en" class="form-control" dir="ltr">
+                </div>
+            </div>
+
+            <div class="row g-3 mb-3">
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">{{ _("رقم الحساب") }}</label>
+                    <input type="text" id="bank_account" class="form-control" dir="ltr">
+                </div>
+            </div>
+
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">{{ _("اسم صاحب الحساب (عربي)") }}</label>
+                    <input type="text" id="bank_account_name" class="form-control" dir="rtl">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">{{ _("اسم صاحب الحساب (إنجليزي)") }}</label>
+                    <input type="text" id="bank_account_name_en" class="form-control" dir="ltr">
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════ -->
+    <!-- الدعم الفني -->
+    <!-- ═══════════════════════════════════════════ -->
+    
+            <!--  -->
+            <!-- Colors / Appearance -->
+            <!--  -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-palette me-2"></i>
+                        {{ _("المظهر والألوان") }}
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info small mb-4">
+                        <i class="fas fa-info-circle me-1"></i>
+                        {{ _("تُطبَّق هذه الألوان على الموقع بالكامل (Navbar، الأزرار، الروابط)") }}
+                    </div>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">
+                                <i class="fas fa-tint me-1"></i>
+                                {{ _("اللون الأساسي") }}
+                            </label>
+                            <div class="input-group">
+                                <input type="color" id="primary_color_picker" class="form-control form-control-color" 
+                                       style="max-width: 60px;">
+                                <input type="text" id="primary_color" name="primary_color" class="form-control" 
+                                       placeholder="#0d6efd" dir="ltr">
+                            </div>
+                            <small class="text-muted">
+                                {{ _("مثال") }}: #0d6efd, #dc3545, #198754
+                            </small>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">
+                                <i class="fas fa-tint me-1"></i>
+                                {{ _("اللون الثانوي") }}
+                            </label>
+                            <div class="input-group">
+                                <input type="color" id="secondary_color_picker" class="form-control form-control-color" 
+                                       style="max-width: 60px;">
+                                <input type="text" id="secondary_color" name="secondary_color" class="form-control" 
+                                       placeholder="#6c757d" dir="ltr">
+                            </div>
+                            <small class="text-muted">
+                                {{ _("مثال") }}: #6c757d, #ffc107, #fd7e14
+                            </small>
+                        </div>
+                    </div>
+
+                    <!-- معاينة -->
+                    <div class="mt-4">
+                        <h6 class="fw-bold mb-2">{{ _("معاينة الألوان") }}:</h6>
+                        <div class="d-flex gap-2 flex-wrap">
+                            <button type="button" class="btn" id="previewPrimaryBtn"
+                                    style="background-color: #0d6efd; color: white;">
+                                {{ _("زر أساسي") }}
+                            </button>
+                            <button type="button" class="btn" id="previewSecondaryBtn"
+                                    style="background-color: #6c757d; color: white;">
+                                {{ _("زر ثانوي") }}
+                            </button>
+                            <span class="badge" id="previewBadge"
+                                  style="background-color: #0d6efd; color: white;">
+                                {{ _("شارة") }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+<div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-info text-white">
+            <i class="fas fa-headset me-2"></i>{{ _("الدعم الفني") }}
+        </div>
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">{{ _("هاتف الدعم") }}</label>
+                    <input type="text" id="support_phone" class="form-control" dir="ltr">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">{{ _("واتساب") }}</label>
+                    <input type="text" id="support_whatsapp" class="form-control" dir="ltr">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- الأزرار -->
+    <div class="text-center mb-4">
+        <button type="submit" class="btn btn-primary btn-lg px-5" id="saveBtn">
+            <i class="fas fa-save me-2"></i>{{ _("حفظ الإعدادات") }}
+        </button>
+        <button type="button" class="btn btn-outline-secondary btn-lg px-4" onclick="loadSettings()">
+            <i class="fas fa-undo me-2"></i>{{ _("إعادة تحميل") }}
+        </button>
+    </div>
+
+    <div id="saveMessage"></div>
+</form>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', loadSettings);
+
+const FIELDS = [
+    'company_name', 'company_name_en', 'company_logo', 'company_phone',
+    'company_email', 'company_address', 'company_address_en',
+    'company_website', 'tax_number', 'commercial_register',
+    'ticket_footer_text', 'ticket_footer_text_en',
+    'ticket_instructions', 'ticket_instructions_en',
+    'ticket_warranty_text', 'ticket_warranty_text_en',
+    'bank_name', 'bank_name_en',
+    'bank_account', 'bank_account_name', 'bank_account_name_en',
+    'support_phone', 'support_whatsapp'
+];
+
+async function loadSettings() {
+    try {
+        const res = await fetch('/settings/');
+        const data = await res.json();
+        FIELDS.forEach(field => {
+            const el = document.getElementById(field);
+            if (el && data[field] !== null && data[field] !== undefined) {
+                el.value = data[field];
+            }
+        });
+    } catch (e) {
+        console.error(e);
+    }
+}
+
+document.getElementById('settingsForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const saveBtn = document.getElementById('saveBtn');
+    const msgDiv = document.getElementById('saveMessage');
+
+    const payload = {};
+    FIELDS.forEach(field => {
+        const el = document.getElementById(field);
+        if (el) payload[field] = el.value.trim() || null;
+    });
+
+    if (!payload.company_name) payload.company_name = 'BusCore';
+
+    try {
+        saveBtn.disabled = true;
+        saveBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>{{ _("جاري الحفظ...") }}';
+        msgDiv.innerHTML = '';
+
+        const res = await fetch('/settings/', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+
+        if (!res.ok) throw new Error('{{ _("فشل الحفظ") }}');
+
+        msgDiv.innerHTML = '<div class="alert alert-success">✅ {{ _("تم حفظ الإعدادات بنجاح! ستظهر التعديلات فوراً في التذاكر والموقع.") }}</div>';
+        setTimeout(() => msgDiv.innerHTML = '', 4000);
+
+    } catch (e) {
+        msgDiv.innerHTML = `<div class="alert alert-danger">❌ ${e.message}</div>`;
+    } finally {
+        saveBtn.disabled = false;
+        saveBtn.innerHTML = '<i class="fas fa-save me-2"></i>{{ _("حفظ الإعدادات") }}';
+    }
+});
+</script>
+
+<script>
+// 
+// Color Pickers  Text Inputs
+// 
+document.addEventListener('DOMContentLoaded', function() {
+    const primaryPicker = document.getElementById('primary_color_picker');
+    const primaryText = document.getElementById('primary_color');
+    const secondaryPicker = document.getElementById('secondary_color_picker');
+    const secondaryText = document.getElementById('secondary_color');
+
+    if (primaryPicker && primaryText) {
+        // عند تغيير اللون من المنتقي
+        primaryPicker.addEventListener('input', function() {
+            primaryText.value = this.value;
+            updatePreview();
+        });
+
+        // عند تغيير اللون من النص
+        primaryText.addEventListener('input', function() {
+            if (/^#[0-9A-Fa-f]{6}$/.test(this.value)) {
+                primaryPicker.value = this.value;
+                updatePreview();
+            }
+        });
+
+        // تعيين القيمة الأولية
+        if (primaryText.value && /^#[0-9A-Fa-f]{6}$/.test(primaryText.value)) {
+            primaryPicker.value = primaryText.value;
+        }
+    }
+
+    if (secondaryPicker && secondaryText) {
+        secondaryPicker.addEventListener('input', function() {
+            secondaryText.value = this.value;
+            updatePreview();
+        });
+
+        secondaryText.addEventListener('input', function() {
+            if (/^#[0-9A-Fa-f]{6}$/.test(this.value)) {
+                secondaryPicker.value = this.value;
+                updatePreview();
+            }
+        });
+
+        if (secondaryText.value && /^#[0-9A-Fa-f]{6}$/.test(secondaryText.value)) {
+            secondaryPicker.value = secondaryText.value;
+        }
+    }
+
+    function updatePreview() {
+        const primary = primaryText?.value || '#0d6efd';
+        const secondary = secondaryText?.value || '#6c757d';
+
+        const previewPrimary = document.getElementById('previewPrimaryBtn');
+        const previewSecondary = document.getElementById('previewSecondaryBtn');
+        const previewBadge = document.getElementById('previewBadge');
+
+        if (previewPrimary) previewPrimary.style.backgroundColor = primary;
+        if (previewSecondary) previewSecondary.style.backgroundColor = secondary;
+        if (previewBadge) previewBadge.style.backgroundColor = primary;
+    }
+
+    updatePreview();
+});
+</script>
+{% endblock %}

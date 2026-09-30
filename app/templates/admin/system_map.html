@@ -1,0 +1,189 @@
+{% extends "admin/base_admin.html" %}
+
+{% block title %}{{ _("خريطة النظام") }} - BusCore{% endblock %}
+{% block page_title %}{{ _("خريطة النظام") }}{% endblock %}
+
+{% block content %}
+
+<div class="row g-4">
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-primary text-white">
+                <h6 class="mb-0"><i class="fas fa-map-marked-alt me-2"></i>{{ _("المواقع") }}</h6>
+            </div>
+            <div class="card-body p-2">
+                <a href="/admin/cities" class="map-link">
+                    <i class="fas fa-city text-primary"></i>
+                    <span>{{ _("المدن") }}</span>
+                    <i class="fas fa-chevron-{% if lang == 'ar' %}left{% else %}right{% endif %} ms-auto"></i>
+                </a>
+                <a href="/admin/stations" class="map-link">
+                    <i class="fas fa-map-marker-alt text-primary"></i>
+                    <span>{{ _("المحطات") }}</span>
+                    <i class="fas fa-chevron-{% if lang == 'ar' %}left{% else %}right{% endif %} ms-auto"></i>
+                </a>
+                <a href="/admin/routes" class="map-link">
+                    <i class="fas fa-route text-primary"></i>
+                    <span>{{ _("المسارات") }}</span>
+                    <i class="fas fa-chevron-{% if lang == 'ar' %}left{% else %}right{% endif %} ms-auto"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-success text-white">
+                <h6 class="mb-0"><i class="fas fa-cogs me-2"></i>{{ _("العمليات") }}</h6>
+            </div>
+            <div class="card-body p-2">
+                <a href="/admin/buses" class="map-link">
+                    <i class="fas fa-bus text-success"></i>
+                    <span>{{ _("الحافلات") }}</span>
+                    <i class="fas fa-chevron-{% if lang == 'ar' %}left{% else %}right{% endif %} ms-auto"></i>
+                </a>
+                <a href="/admin/trips" class="map-link">
+                    <i class="fas fa-calendar-alt text-success"></i>
+                    <span>{{ _("الرحلات") }}</span>
+                    <i class="fas fa-chevron-{% if lang == 'ar' %}left{% else %}right{% endif %} ms-auto"></i>
+                </a>
+                <a href="/admin/bookings" class="map-link">
+                    <i class="fas fa-ticket-alt text-success"></i>
+                    <span>{{ _("الحجوزات + المنفستو") }}</span>
+                    <i class="fas fa-chevron-{% if lang == 'ar' %}left{% else %}right{% endif %} ms-auto"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-warning text-dark">
+                <h6 class="mb-0"><i class="fas fa-crown me-2"></i>{{ _("الإدارة") }}</h6>
+            </div>
+            <div class="card-body p-2">
+                <a href="/admin/users" class="map-link">
+                    <i class="fas fa-users-cog text-warning"></i>
+                    <span>{{ _("المستخدمون") }}</span>
+                    <i class="fas fa-chevron-{% if lang == 'ar' %}left{% else %}right{% endif %} ms-auto"></i>
+                </a>
+                <a href="/docs" target="_blank" class="map-link">
+                    <i class="fas fa-book text-warning"></i>
+                    <span>{{ _("وثائق API") }}</span>
+                    <i class="fas fa-external-link-alt ms-auto"></i>
+                </a>
+                <a href="/" class="map-link">
+                    <i class="fas fa-globe text-warning"></i>
+                    <span>{{ _("الموقع الرئيسي") }}</span>
+                    <i class="fas fa-external-link-alt ms-auto"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm mt-4">
+    <div class="card-header bg-white">
+        <h5 class="mb-0 fw-bold"><i class="fas fa-chart-line me-2 text-primary"></i>{{ _("نظرة عامة سريعة") }}</h5>
+    </div>
+    <div class="card-body">
+        <div class="row g-3 text-center" id="quickStats">
+            <div class="col-md-2">
+                <div class="stat-mini">
+                    <h3 class="text-primary mb-1" id="statCitiesMini">-</h3>
+                    <small class="text-muted">{{ _("مدن") }}</small>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="stat-mini">
+                    <h3 class="text-info mb-1" id="statStationsMini">-</h3>
+                    <small class="text-muted">{{ _("محطات") }}</small>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="stat-mini">
+                    <h3 class="text-warning mb-1" id="statBusesMini">-</h3>
+                    <small class="text-muted">{{ _("حافلات") }}</small>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="stat-mini">
+                    <h3 class="text-success mb-1" id="statTripsMini">-</h3>
+                    <small class="text-muted">{{ _("رحلات") }}</small>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="stat-mini">
+                    <h3 class="text-danger mb-1" id="statBookingsMini">-</h3>
+                    <small class="text-muted">{{ _("حجوزات") }}</small>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="stat-mini">
+                    <h3 class="text-dark mb-1" id="statUsersMini">-</h3>
+                    <small class="text-muted">{{ _("مستخدمون") }}</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.map-link {
+    display: flex;
+    align-items: center;
+    padding: 14px 16px;
+    text-decoration: none;
+    color: #212529;
+    border-radius: 10px;
+    transition: all 0.2s;
+    font-weight: 600;
+    gap: 12px;
+}
+.map-link:hover {
+    background: #f8f9fa;
+    color: #0d6efd;
+    transform: translateX({% if lang == 'ar' %}-4px{% else %}4px{% endif %});
+}
+.map-link i:first-child {
+    width: 24px;
+    font-size: 1.1rem;
+}
+.map-link i:last-child {
+    opacity: 0.4;
+    font-size: 0.9rem;
+}
+.stat-mini {
+    padding: 12px 8px;
+    border-radius: 12px;
+    background: #f8f9fa;
+}
+</style>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', async function() {
+    try {
+        const [cities, stations, buses, trips, bookings, users] = await Promise.all([
+            fetch('/stations/cities').then(r => r.json()),
+            fetch('/stations/').then(r => r.json()),
+            fetch('/buses/').then(r => r.json()),
+            fetch('/trips/').then(r => r.json()),
+            fetch('/bookings/').then(r => r.json()),
+            fetch('/auth/users').then(r => r.json())
+        ]);
+
+        document.getElementById('statCitiesMini').textContent = cities.length;
+        document.getElementById('statStationsMini').textContent = stations.length;
+        document.getElementById('statBusesMini').textContent = buses.length;
+        document.getElementById('statTripsMini').textContent = trips.length;
+        document.getElementById('statBookingsMini').textContent = bookings.length;
+        document.getElementById('statUsersMini').textContent = users.length;
+    } catch (e) {
+        console.error('Error loading stats:', e);
+    }
+});
+</script>
+{% endblock %}

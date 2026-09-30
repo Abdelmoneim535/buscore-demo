@@ -1,0 +1,1438 @@
+{% extends "base.html" %}
+
+{% block title %}BusCore - {{ _("تأكيد الحجز") }}{% endblock %}
+
+{% block content %}
+<div class="container py-3">
+    <div class="text-center mb-3 no-print">
+        <h3 class="text-success fw-bold">✅ {{ _("تم حجز تذاكرك بنجاح!") }}</h3>
+        <p class="text-muted small">{{ _("احتفظ بالتذكرة وأظهرها عند الصعود") }}</p>
+    </div>
+
+    <!-- ✅ بطاقة رقم الحجز (PNR) -->
+    <div id="pnrCard" class="pnr-card no-print" style="display: none;">
+        <div class="pnr-content">
+            <div class="pnr-icon">
+                <i class="fas fa-users"></i>
+            </div>
+            <div class="pnr-details">
+                <div class="pnr-label">{{ _("رقم الحجز (PNR)") }}</div>
+                <div class="pnr-value" id="pnrDisplay">-</div>
+                <div class="pnr-hint">{{ _("يُستخدم للرجوع إلى هذا الحجز لاحقًا") }}</div>
+            </div>
+            <div class="pnr-count">
+                <div class="count-number" id="ticketCountDisplay">0</div>
+                <div class="count-label">{{ _("تذكرة") }}</div>
+            </div>
+        </div>
+    </div>
+
+    <div id="ticketsContainer"></div>
+
+    <div class="d-flex gap-2 justify-content-center mt-3 flex-wrap no-print">
+        <button class="btn btn-primary btn-lg" onclick="printTickets()">
+            <i class="fas fa-print me-2"></i>{{ _("طباعة كل التذاكر") }}
+        </button>
+        <a href="/" class="btn btn-outline-primary btn-lg">
+            <i class="fas fa-home me-2"></i>{{ _("الرئيسية") }}
+        </a>
+    </div>
+</div>
+
+<style>
+.pnr-card {
+    background: linear-gradient(135deg, #0d6efd, #0a58ca);
+    color: white;
+    border-radius: 16px;
+    padding: 20px 24px;
+    margin-bottom: 20px;
+    box-shadow: 0 8px 24px rgba(13, 110, 253, 0.25);
+    max-width: 780px;
+    margin-left: auto;
+    margin-right: auto;
+}
+.pnr-content {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+.pnr-icon {
+    width: 60px; height: 60px;
+    background: rgba(255,255,255,0.2);
+    border-radius: 14px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.8rem;
+    flex-shrink: 0;
+}
+.pnr-details { flex: 1; min-width: 200px; }
+.pnr-label {
+    font-size: 0.75rem;
+    opacity: 0.85;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 4px;
+}
+.pnr-value {
+    font-family: 'Courier New', monospace;
+    font-size: 1.5rem;
+    font-weight: 800;
+    letter-spacing: 2px;
+    margin-bottom: 2px;
+}
+.pnr-hint {
+    font-size: 0.7rem;
+    opacity: 0.75;
+}
+.pnr-count {
+    text-align: center;
+    background: rgba(255,255,255,0.15);
+    padding: 10px 20px;
+    border-radius: 12px;
+    flex-shrink: 0;
+}
+.pnr-count .count-number {
+    font-size: 1.8rem;
+    font-weight: 800;
+    line-height: 1;
+}
+.pnr-count .count-label {
+    font-size: 0.7rem;
+    opacity: 0.85;
+    margin-top: 4px;
+}
+/* زر الطباعة محذوف  الطباعة من الزر العام في الأسفل */
+.ticket-number-badge {
+    display: inline-block;
+    background: rgba(255,255,255,0.2);
+    padding: 2px 10px;
+    border-radius: 6px;
+    font-family: 'Courier New', monospace;
+    font-size: 0.8rem;
+    margin-top: 4px;
+}
+@media print {
+    .ticket-print-btn { display: none !important; }
+}
+
+    /*  */
+    /*  شعار الشركة */
+    /*  */
+    .eticket-brand img {
+        height: 45px;
+        background: white;
+        padding: 4px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .eticket-brand-icon {
+        width: 45px;
+        height: 45px;
+        background: rgba(255, 255, 255, 0.2);
+        border: 2px solid rgba(255, 255, 255, 0.3);
+    }
+
+    /*  */
+    /*  تحسين الحالة */
+    /*  */
+    .eticket-status-badge {
+        padding: 4px 14px;
+        font-weight: 800;
+        letter-spacing: 0.3px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    /*  */
+    /*  تحسين البار */
+    /*  */
+    .eticket-bar {
+        padding: 10px 20px;
+        background: linear-gradient(135deg, #fff, #f8f9fa);
+    }
+    .eticket-bar-item .value {
+        font-size: 0.9rem;
+        color: #212529;
+    }
+
+    /*  */
+    /*  تحسين الأرقام في Info */
+    /*  */
+    .eticket-info-item .icon {
+        width: 32px;
+        height: 32px;
+        background: #e7f1ff;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 4px auto;
+        font-size: 0.9rem;
+        color: #0d6efd;
+    }
+
+</style>
+{% endblock %}
+
+{% block scripts %}
+<style>
+    .eticket {
+        width: 100%;
+        max-width: 780px;
+        margin: 0 auto 14px;
+        background: white;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        border: 1px solid #e9ecef;
+        font-size: 13px;
+        page-break-inside: avoid;
+        box-sizing: border-box;
+    }
+
+    .eticket-header {
+        background: linear-gradient(135deg, #0d6efd, #0a58ca);
+        color: white;
+        padding: 12px 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .eticket-brand {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .eticket-brand img {
+        height: 42px;
+        background: white;
+        padding: 3px;
+        border-radius: 8px;
+    }
+
+    .eticket-brand-icon {
+        width: 42px;
+        height: 42px;
+        background: rgba(255, 255, 255, 0.15);
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.3rem;
+    }
+
+    .eticket-brand h4 {
+        margin: 0;
+        font-weight: 800;
+        font-size: 1rem;
+    }
+
+    .eticket-brand small {
+        opacity: 0.85;
+        font-size: 0.7rem;
+    }
+
+    .eticket-type {
+        text-align: left;
+        direction: ltr;
+    }
+
+    .eticket-type .label {
+        font-size: 0.6rem;
+        opacity: 0.8;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .eticket-type .ref {
+        font-family: 'Courier New', monospace;
+        font-size: 0.95rem;
+        font-weight: 800;
+        background: rgba(255, 255, 255, 0.15);
+        padding: 2px 10px;
+        border-radius: 6px;
+        display: inline-block;
+        margin-top: 2px;
+    }
+
+    .eticket-trip-no {
+        font-size: 0.6rem;
+        opacity: 0.75;
+        margin-top: 2px;
+        font-family: monospace;
+    }
+
+    .eticket-route {
+        padding: 14px 20px;
+        display: grid;
+        grid-template-columns: 1fr auto 1fr;
+        gap: 12px;
+        align-items: center;
+        background: #f8f9fa;
+        border-bottom: 1px solid #e9ecef;
+    }
+
+    .eticket-point {
+        text-align: center;
+    }
+
+    .eticket-point .label {
+        font-size: 0.6rem;
+        color: #6c757d;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-weight: 600;
+    }
+
+    .eticket-point .city {
+        font-size: 0.95rem;
+        font-weight: 800;
+        color: #212529;
+        margin: 2px 0;
+        line-height: 1.2;
+    }
+
+    .eticket-point .time {
+        font-size: 1.15rem;
+        font-weight: 800;
+        font-family: 'Courier New', monospace;
+    }
+
+    .eticket-point.from .time {
+        color: #0d6efd;
+    }
+
+    .eticket-point.to .time {
+        color: #198754;
+    }
+
+    .eticket-arrow {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        color: #0d6efd;
+        font-size: 1.1rem;
+    }
+
+    .eticket-arrow-line {
+        width: 30px;
+        height: 2px;
+        background: linear-gradient(90deg, #0d6efd, #198754);
+    }
+
+    .eticket-bar {
+        padding: 8px 20px;
+        background: white;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid #e9ecef;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .eticket-bar-item {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.8rem;
+    }
+
+    .eticket-bar-item .label {
+        color: #6c757d;
+        font-size: 0.7rem;
+    }
+
+    .eticket-bar-item .value {
+        font-weight: 700;
+        color: #212529;
+    }
+
+    .eticket-status-badge {
+        padding: 3px 12px;
+        border-radius: 50px;
+        font-weight: 700;
+        font-size: 0.75rem;
+        color: white;
+    }
+
+    .eticket-info {
+        padding: 12px 20px;
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 12px;
+        border-bottom: 1px solid #e9ecef;
+    }
+
+    .eticket-info-item {
+        text-align: center;
+        padding: 8px 4px;
+        background: #f8f9fa;
+        border-radius: 8px;
+    }
+
+    .eticket-info-item .icon {
+        color: #0d6efd;
+        font-size: 0.95rem;
+        margin-bottom: 2px;
+    }
+
+    .eticket-info-item .label {
+        font-size: 0.6rem;
+        color: #6c757d;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .eticket-info-item .value {
+        font-size: 0.8rem;
+        font-weight: 700;
+        color: #212529;
+        margin-top: 2px;
+        word-break: break-word;
+    }
+
+    .eticket-passenger {
+        padding: 10px 20px;
+        background: white;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        border-bottom: 1px solid #e9ecef;
+    }
+
+    .eticket-passenger-info .label {
+        font-size: 0.6rem;
+        color: #6c757d;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .eticket-passenger-info .name {
+        font-size: 0.95rem;
+        font-weight: 800;
+        color: #212529;
+    }
+
+    .eticket-passenger-info .detail {
+        font-size: 0.72rem;
+        color: #6c757d;
+    }
+
+    .eticket-price-box {
+        text-align: center;
+        padding: 6px 16px;
+        background: linear-gradient(135deg, #198754, #157347);
+        color: white;
+        border-radius: 8px;
+        min-width: 110px;
+    }
+
+    .eticket-price-box .label {
+        font-size: 0.6rem;
+        opacity: 0.9;
+        text-transform: uppercase;
+    }
+
+    .eticket-price-box .amount {
+        font-size: 1.1rem;
+        font-weight: 800;
+        font-family: 'Courier New', monospace;
+    }
+
+    .eticket-codes {
+        padding: 12px 20px;
+        background: white;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        align-items: center;
+        border-bottom: 1px solid #e9ecef;
+        max-width: 100%;
+        overflow: hidden;
+        box-sizing: border-box;
+    }
+
+    .eticket-code-box {
+        text-align: center;
+        padding: 6px;
+        background: #f8f9fa;
+        border-radius: 8px;
+        max-width: 100%;
+        overflow: hidden;
+        box-sizing: border-box;
+    }
+
+    .eticket-code-box .label {
+        font-size: 0.6rem;
+        color: #6c757d;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 4px;
+    }
+
+    .eticket-qr {
+        width: 100%;
+        max-width: 90px;
+        height: auto;
+        display: block;
+        margin: 0 auto;
+        object-fit: contain;
+    }
+
+    .eticket-barcode-img {
+        height: auto;
+        max-height: 55px;
+        width: 100%;
+        max-width: 100%;
+        display: block;
+        margin: 0 auto;
+        object-fit: contain;
+    }
+
+    .eticket-instructions {
+        padding: 8px 20px;
+        background: #f0f7ff;
+        display: flex;
+        justify-content: center;
+        gap: 20px;
+        flex-wrap: wrap;
+        font-size: 0.72rem;
+        color: #084298;
+        border-bottom: 1px solid #cfe2ff;
+    }
+
+    .eticket-instruction {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .eticket-instruction i {
+        color: #0d6efd;
+    }
+
+    .eticket-footer {
+        padding: 8px 20px;
+        background: #212529;
+        color: rgba(255, 255, 255, 0.85);
+        text-align: center;
+        font-size: 0.72rem;
+    }
+
+    .eticket-footer .thanks {
+        color: white;
+        font-weight: 700;
+        margin-bottom: 4px;
+    }
+
+    .eticket-footer .contacts {
+        display: flex;
+        justify-content: center;
+        gap: 16px;
+        flex-wrap: wrap;
+    }
+
+    .eticket-footer .contacts i {
+        color: #ffc107;
+    }
+
+    .infant-ticket {
+        background: linear-gradient(135deg, #fff9e6, #fff);
+        border: 2px solid #ffc107;
+        border-radius: 12px;
+        padding: 8px 16px;
+        margin-top: 10px;
+        margin-left: auto;
+        margin-right: auto;
+        max-width: 780px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        flex-wrap: nowrap;
+    }
+
+    .infant-ticket .icon-box {
+        width: 40px;
+        height: 40px;
+        background: linear-gradient(135deg, #ffc107, #ffb300);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.1rem;
+        flex-shrink: 0;
+    }
+
+    .infant-ticket .info {
+        flex: 1;
+    }
+
+    .infant-ticket .info h6 {
+        margin: 0;
+        font-weight: 800;
+        color: #212529;
+        font-size: 0.9rem;
+    }
+
+    .infant-ticket .info small {
+        color: #856404;
+        font-size: 0.7rem;
+    }
+
+    .infant-ticket .badge-free {
+        background: #198754;
+        color: white;
+        padding: 4px 12px;
+        border-radius: 50px;
+        font-size: 0.75rem;
+        font-weight: 700;
+    }
+
+    /*  */
+    /* Luggage Block */
+    /*  */
+    .luggage-block {
+        background: linear-gradient(135deg, #f0f7ff, #e7f1ff);
+        border-radius: 10px;
+        padding: 10px 14px;
+        margin-top: 10px;
+        border-{% if lang == 'ar' %}right{% else %}left{% endif %}: 4px solid #0d6efd;
+    }
+    .luggage-block .luggage-title {
+        font-weight: 800;
+        color: #084298;
+        font-size: 0.8rem;
+        margin-bottom: 6px;
+    }
+    .luggage-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 3px 0;
+        font-size: 0.75rem;
+        border-bottom: 1px dashed #cfe2ff;
+    }
+    .luggage-row:last-child { border-bottom: none; }
+    .luggage-row .free-row { color: #198754; font-weight: 700; }
+    .luggage-total {
+        margin-top: 6px;
+        padding-top: 6px;
+        border-top: 2px solid #0d6efd;
+        font-weight: 800;
+        color: #084298;
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.85rem;
+    }
+
+
+    /*  */
+    /*  بطاقة المسافر */
+    /*  */
+    .eticket-passenger {
+        padding: 12px 20px;
+        background: linear-gradient(135deg, #f8f9fa, #fff);
+        border-bottom: 1px solid #e9ecef;
+        display: block !important;
+        text-align: {% if lang == 'ar' %}right{% else %}left{% endif %} !important;
+    }
+    .eticket-passenger-info {
+        padding-{% if lang == 'ar' %}right{% else %}left{% endif %}: 0;
+        text-align: {% if lang == 'ar' %}right{% else %}left{% endif %} !important;
+        width: 100% !important;
+    }
+    .eticket-passenger-info .label {
+        font-size: 0.6rem;
+        color: #6c757d;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-weight: 700;
+        margin-bottom: 2px;
+    }
+    .eticket-passenger-info .name {
+        font-size: 1.05rem;
+        font-weight: 800;
+        color: #212529;
+        letter-spacing: 0.3px;
+    }
+
+    /*  */
+    /*  الأمتعة (الشاشة) */
+    /*  */
+    .luggage-block {
+        background: linear-gradient(135deg, #f0f7ff, #e7f1ff);
+        border: 1.5px solid #cfe2ff;
+        border-{% if lang == 'ar' %}right{% else %}left{% endif %}: 4px solid #0d6efd;
+        border-radius: 10px;
+        padding: 8px 12px;
+        margin-top: 8px;
+    }
+    .luggage-title {
+        color: #084298;
+        font-weight: 800;
+        font-size: 0.85rem;
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+    .luggage-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 4px 0;
+        font-size: 0.78rem;
+        color: #495057;
+        border-bottom: 1px dashed #cfe2ff;
+    }
+    .luggage-row:last-child { border-bottom: none; }
+    .luggage-row .free-row { color: #198754; font-weight: 700; }
+    .luggage-total {
+        display: flex;
+        justify-content: space-between;
+        padding-top: 8px;
+        margin-top: 6px;
+        border-top: 2px solid #0d6efd;
+        color: #084298;
+        font-weight: 800;
+        font-size: 0.88rem;
+    }
+
+    /*  */
+    /*  تحسين التباعد */
+    /*  */
+    .eticket-info-item {
+        padding: 10px 6px;
+        transition: all 0.2s;
+    }
+    .eticket-info-item:hover {
+        background: #e7f1ff;
+        transform: translateY(-2px);
+    }
+    .eticket-codes {
+        padding: 14px 20px;
+    }
+    .eticket-qr {
+        width: 90px;
+        height: 90px;
+    }
+    .eticket-barcode-img {
+        height: 60px;
+    }
+
+
+
+    /*  */
+    /*  بطاقة السعر (أسفل الأمتعة) */
+    /*  */
+    .eticket-price-section {
+        padding: 12px 20px;
+        background: linear-gradient(135deg, #f8f9fa, #fff);
+        border-bottom: 1px solid #e9ecef;
+        max-width: 100%;
+        box-sizing: border-box;
+    }
+    .price-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 4px 0;
+        font-size: 0.85rem;
+        color: #495057;
+    }
+    .price-row.total {
+        margin-top: 6px;
+        padding-top: 8px;
+        border-top: 2px solid #198754;
+        font-weight: 800;
+        font-size: 1rem;
+        color: #198754;
+    }
+    .price-row.total .amount {
+        font-family: 'Courier New', monospace;
+        font-size: 1.15rem;
+    }
+
+    @media print {
+        @page {
+            size: A4 portrait;
+            margin: 8mm;
+        }
+
+        body {
+            background: white !important;
+            padding: 0 !important;
+            margin: 0 !important;
+        }
+
+        .navbar,
+        footer,
+        .no-print {
+            display: none !important;
+        }
+
+        .container {
+            padding: 0 !important;
+            max-width: 100% !important;
+            margin: 0 !important;
+        }
+
+        .eticket {
+            box-shadow: none !important;
+            border: 1px solid #ccc !important;
+            page-break-inside: avoid;
+            margin-bottom: 8px !important;
+            max-width: 100% !important;
+            border-radius: 8px !important;
+        }
+
+        .eticket * {
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+        }
+
+        .eticket-route { display: grid !important; grid-template-columns: 1fr auto 1fr !important; gap: 12px !important; }
+        .eticket-point { text-align: center !important; }
+        .eticket-arrow { display: flex !important; align-items: center !important; }
+        /* اسم المسافر في مكانه */
+        .eticket-passenger {
+            display: flex !important;
+            justify-content: space-between !important;
+            align-items: center !important;
+            padding: 10px 20px !important;
+            text-align: {% if lang == 'ar' %}right{% else %}left{% endif %} !important;
+        }
+
+        .eticket-info { display: grid !important; grid-template-columns: repeat(4, 1fr) !important; }
+        .luggage-block { padding: 10px 14px !important; background: #f0f7ff !important; }
+        .luggage-row { display: flex !important; justify-content: space-between !important; }
+
+        /*  إصلاح: اسم المسافر في مكانه */
+        .eticket-passenger {
+            display: flex !important;
+            justify-content: space-between !important;
+            align-items: center !important;
+            padding: 10px 20px !important;
+        }
+
+
+        /*  إصلاح: بطاقة الرضيع */
+        .infant-ticket {
+            max-width: 780px !important;
+            margin-left: auto !important;
+            margin-right: auto !important;
+            padding: 8px 16px !important;
+        }
+
+        /*  إصلاح: الأمتعة كتلة واحدة */
+        .luggage-block {
+            max-width: 100% !important;
+            page-break-inside: avoid !important;
+        }
+
+
+        /*  إصلاح 1: المحطات جنبًا إلى جنب */
+        .eticket-route {
+            display: grid !important;
+            grid-template-columns: 1fr auto 1fr !important;
+            gap: 12px !important;
+            text-align: center !important;
+        }
+        .eticket-point {
+            text-align: center !important;
+        }
+        .eticket-arrow {
+            display: flex !important;
+            align-items: center !important;
+            gap: 4px !important;
+        }
+
+        /*  إصلاح 2: اسم المسافر (flex + محاذاة يمين) */
+        .eticket-passenger {
+            display: flex !important;
+            justify-content: space-between !important;
+            align-items: center !important;
+            text-align: right !important;
+            padding: 10px 20px !important;
+        }
+
+            flex-shrink: 0 !important;
+        }
+
+        /*  إصلاح 3: info grid (4 أعمدة) */
+        .eticket-info {
+            display: grid !important;
+            grid-template-columns: repeat(4, 1fr) !important;
+            gap: 12px !important;
+        }
+
+        /*  إصلاح 4: luggage block */
+        .luggage-block {
+            padding: 10px 14px !important;
+        }
+        .luggage-row {
+            display: flex !important;
+            justify-content: space-between !important;
+        }
+    }
+
+
+        /*  اسم المسافر  قاعدة نهائية موحدة */
+        .eticket-passenger {
+            display: flex !important;
+            justify-content: space-between !important;
+            align-items: center !important;
+            padding: 10px 20px !important;
+            text-align: {% if lang == 'ar' %}right{% else %}left{% endif %} !important;
+            direction: {% if lang == 'ar' %}rtl{% else %}ltr{% endif %} !important;
+        }
+        .eticket-passenger-info {
+            text-align: {% if lang == 'ar' %}right{% else %}left{% endif %} !important;
+            flex: 1 !important;
+        }
+        .eticket-passenger-info .label,
+        .eticket-passenger-info .name,
+        .eticket-passenger-info .detail {
+            text-align: {% if lang == 'ar' %}right{% else %}left{% endif %} !important;
+            width: 100% !important;
+        }
+        .eticket-price-box {
+            flex-shrink: 0 !important;
+        }
+
+        /*  QR + Barcode جنبًا إلى جنب */
+        .eticket-codes {
+            display: grid !important;
+            grid-template-columns: 1fr 1fr !important;
+            gap: 12px !important;
+        }
+
+        /*  الأمتعة */
+        .luggage-block {
+            background: #f0f7ff !important;
+            border: 1px solid #0d6efd !important;
+            border-radius: 8px !important;
+            padding: 10px 14px !important;
+            page-break-inside: avoid !important;
+        }
+        .luggage-row {
+            display: flex !important;
+            justify-content: space-between !important;
+        }
+        .luggage-total {
+            display: flex !important;
+            justify-content: space-between !important;
+        }
+
+
+
+        /*  */
+        /*  الطباعة الملونة الاحترافية */
+        /*  */
+        
+        /* إجبار الألوان على الطباعة */
+        * {
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+            color-adjust: exact !important;
+        }
+
+        /*  Header أزرق على الطباعة */
+        .eticket-header {
+            background: linear-gradient(135deg, #0d6efd, #0a58ca) !important;
+            color: white !important;
+        }
+
+        /*  بطاقة PNR */
+        .pnr-card {
+            background: linear-gradient(135deg, #0d6efd, #0a58ca) !important;
+            color: white !important;
+        }
+
+        /*  شارات الحالة */
+        .eticket-status-badge {
+            color: white !important;
+        }
+
+        /*  صندوق السعر */
+        .eticket-price-box {
+            background: linear-gradient(135deg, #198754, #157347) !important;
+            color: white !important;
+        }
+
+        /*  الأمتعة: خلفية فاتحة + حدود */
+        .luggage-block {
+            background: #f0f7ff !important;
+            border: 1.5px solid #0d6efd !important;
+            border-radius: 8px !important;
+            padding: 10px 14px !important;
+            page-break-inside: avoid !important;
+        }
+        .luggage-title {
+            color: #084298 !important;
+            font-weight: 800 !important;
+        }
+        .luggage-row {
+            display: flex !important;
+            justify-content: space-between !important;
+            padding: 3px 0 !important;
+            border-bottom: 1px dashed #cfe2ff !important;
+        }
+        .luggage-row .free-row {
+            color: #198754 !important;
+            font-weight: 700 !important;
+        }
+        .luggage-total {
+            display: flex !important;
+            justify-content: space-between !important;
+            border-top: 2px solid #0d6efd !important;
+            padding-top: 6px !important;
+            margin-top: 6px !important;
+            color: #084298 !important;
+            font-weight: 800 !important;
+        }
+
+        /*  بطاقة الرضيع */
+        .infant-ticket {
+            background: linear-gradient(135deg, #fff9e6, #fff) !important;
+            border: 2px solid #ffc107 !important;
+            page-break-inside: avoid !important;
+            max-width: 780px !important;
+            margin: 8px auto !important;
+        }
+
+        /*  التذييل (أسود) */
+        .eticket-footer {
+            background: #212529 !important;
+            color: rgba(255, 255, 255, 0.9) !important;
+        }
+        .eticket-footer .thanks {
+            color: white !important;
+        }
+        .eticket-footer .contacts i {
+            color: #ffc107 !important;
+        }
+
+        /*  التعليمات */
+        .eticket-instructions {
+            background: #f0f7ff !important;
+            color: #084298 !important;
+            border-bottom: 1px solid #cfe2ff !important;
+        }
+        .eticket-instruction i {
+            color: #0d6efd !important;
+        }
+
+
+    @media (max-width: 768px) {
+        .eticket-info {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .eticket-route {
+            grid-template-columns: 1fr;
+            text-align: center;
+        }
+
+        .eticket-arrow {
+            transform: rotate(90deg);
+            margin: 6px 0;
+        }
+
+        .eticket-codes {
+            display: grid !important;
+            grid-template-columns: 1fr 1fr !important;
+            gap: 12px !important;
+        }
+
+        .eticket-passenger {
+            flex-direction: column;
+            text-align: center;
+        }
+    }
+</style>
+
+<script>
+    const LANG = "{{ lang }}";
+    let SETTINGS = null;
+
+    document.addEventListener('DOMContentLoaded', async function () {
+        try {
+            const res = await fetch('/settings/');
+            SETTINGS = await res.json();
+        } catch (e) {
+            SETTINGS = { company_name: 'BusCore', ticket_footer_text: 'شكراً لثقتكم' };
+        }
+
+        //  قراءة من URL أولا  يعمل على كل الأجهزة (بما فيها الجوال)
+        const urlParams = new URLSearchParams(window.location.search);
+        let pnr = urlParams.get('pnr');
+        let bookingsData = urlParams.get('data');
+        let tripDataRaw = urlParams.get('trip');
+
+        // احتياطي: من localStorage (للحاسوب)
+        if (!bookingsData) {
+            bookingsData = localStorage.getItem('booking_data');
+        }
+        if (!pnr) {
+            pnr = localStorage.getItem('pnr_reference');
+        }
+        if (!tripDataRaw) {
+            tripDataRaw = localStorage.getItem('selected_trip');
+        }
+
+        const tripData = tripDataRaw ? JSON.parse(tripDataRaw) : null;
+
+        if (!bookingsData) { window.location.href = '/'; return; }
+
+        // ✅ عرض بطاقة PNR
+        if (pnr) {
+            const pnrCard = document.getElementById('pnrCard');
+            const pnrDisplay = document.getElementById('pnrDisplay');
+            if (pnrCard && pnrDisplay) {
+                pnrDisplay.textContent = pnr;
+                pnrCard.style.display = 'block';
+            }
+        }
+
+        const bookings = JSON.parse(bookingsData);
+        const container = document.getElementById('ticketsContainer');
+
+        //  تحديث عدد التذاكر الفعلي
+        const adults = bookings.filter(b => !b.passenger?.is_infant);
+        const ticketCountDisplay = document.getElementById('ticketCountDisplay');
+        if (ticketCountDisplay) {
+            ticketCountDisplay.textContent = adults.length;
+        }
+
+        let fromStation = '-', toStation = '-', busNumber = '-';
+        let departureTime = new Date().toISOString(), arrivalTime = null, tripNumber = '-';
+
+        if (tripData) {
+            const routeSource = (LANG === 'en' && tripData.route_en) ? tripData.route_en : tripData.route;
+            if (routeSource && routeSource.includes('→')) {
+                const parts = routeSource.split('→');
+                fromStation = parts[0].trim();
+                toStation = parts[1].trim();
+            }
+            busNumber = tripData.bus_number || '-';
+            departureTime = tripData.departure_time || departureTime;
+
+            //  جلب arrival_time (مع حساب احتياطي)
+            arrivalTime = tripData.arrival_time || null;
+            if (!arrivalTime && departureTime) {
+                try {
+                    // نفترض مدة الرحلة 4 ساعات (قابلة للتعديل)
+                    const depDate = new Date(departureTime);
+                    const durationMs = 4 * 60 * 60 * 1000;
+                    arrivalTime = new Date(depDate.getTime() + durationMs).toISOString();
+                    console.log(' arrival_time محسوب احتياطيًا:', arrivalTime);
+                } catch (e) {
+                    arrivalTime = null;
+                }
+            }
+
+            tripNumber = tripData.id ? `TRIP-${new Date(departureTime).toISOString().slice(0, 10).replace(/-/g, '')}-${String(tripData.id).padStart(3, '0')}` : '-';
+        }
+
+        const infants = bookings.filter(b => b.passenger?.is_infant);
+
+        let html = '';
+
+        adults.forEach((booking) => {
+            const dep = booking.trip?.route?.departure_station;
+            const arr = booking.trip?.route?.arrival_station;
+            const bookingFrom = (LANG === 'en' && dep?.name_en) ? dep.name_en : (dep?.name || fromStation);
+            const bookingTo = (LANG === 'en' && arr?.name_en) ? arr.name_en : (arr?.name || toStation);
+
+            const statusColor = booking.status === 'confirmed' ? '#198754' :
+                booking.status === 'cancelled' ? '#dc3545' : '#ffc107';
+            const statusText = booking.status === 'confirmed' ? '✅ {{ _("مؤكد") }}' :
+                booking.status === 'cancelled' ? '❌ {{ _("ملغي") }}' : '⏳ {{ _("قيد التأكيد") }}';
+
+            const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(`${booking.booking_reference}|${busNumber}|${booking.seat_numbers?.join(',') || ''}`)}`;
+            const barcodeUrl = `https://barcode.tec-it.com/barcode.ashx?data=${encodeURIComponent(booking.booking_reference)}&code=Code128&dpi=96&imagetype=gif&rotation=0&color=%23000000&bgcolor=%23ffffff&qunit=mm&quiet=1`;
+
+            const displayCompanyName = LANG === 'ar'
+                ? (SETTINGS.company_name || 'BusCore')
+                : (SETTINGS.company_name_en || SETTINGS.company_name || 'BusCore');
+            const displayCompanyNameSec = LANG === 'ar'
+                ? (SETTINGS.company_name_en || '')
+                : (SETTINGS.company_name || '');
+
+            html += `
+            <div class="eticket" style="position: relative;">
+                <div class="eticket-header">
+                    <div class="eticket-brand">
+                        ${SETTINGS.company_logo ?
+                    `<img src="${SETTINGS.company_logo}" alt="Logo">` :
+                    `<div class="eticket-brand-icon"><i class="fas fa-bus"></i></div>`}
+                        <div>
+                            <h4>${displayCompanyName}</h4>
+                            <small>${displayCompanyNameSec}</small>
+                        </div>
+                    </div>
+                    <div class="eticket-type">
+                        <div class="label">Ticket No.</div>
+                        <div class="ref">${booking.ticket_number || booking.booking_reference}</div>
+                        <div class="eticket-trip-no">${tripNumber}</div>
+                    </div>
+                </div>
+
+                <div class="eticket-route">
+                    <div class="eticket-point from">
+                        <div class="label">{{ _("من") }}</div>
+                        <div class="city">${bookingFrom}</div>
+                        <div class="time">${formatTimeOnly(departureTime)}</div>
+                    </div>
+                    <div class="eticket-arrow">
+                        <div class="eticket-arrow-line"></div>
+                        <i class="fas fa-bus"></i>
+                        <div class="eticket-arrow-line"></div>
+                    </div>
+                    <div class="eticket-point to">
+                        <div class="label">{{ _("إلى") }}</div>
+                        <div class="city">${bookingTo}</div>
+                        <div class="time">
+                            ${arrivalTime
+                                ? ` ${formatTimeOnly(arrivalTime)}`
+                                : (tripData?.arrival_time
+                                    ? ` ${formatTimeOnly(tripData.arrival_time)}`
+                                    : `<span class="text-muted" style="font-size: 0.7rem;">{{ _("متوقع") }}</span>`)
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <div class="eticket-bar">
+                    <div class="eticket-bar-item">
+                        <span class="label">📅</span>
+                        <span class="value">${formatDateOnly(departureTime)}</span>
+                    </div>
+                    <span class="eticket-status-badge" style="background:${statusColor};">${statusText}</span>
+                    <span class="eticket-status-badge" style="background:#ffc107; color:#212529;">⏳ {{ _("غير مدفوع") }}</span>
+                </div>
+
+                <div class="eticket-info">
+                    <div class="eticket-info-item">
+                        <div class="icon"><i class="fas fa-bus"></i></div>
+                        <div class="label">{{ _("الحافلة") }}</div>
+                        <div class="value">${busNumber}</div>
+                    </div>
+                    <div class="eticket-info-item">
+                        <div class="icon"><i class="fas fa-chair"></i></div>
+                        <div class="label">{{ _("المقعد") }}</div>
+                        <div class="value">${booking.seat_numbers?.join('، ') || '-'}</div>
+                    </div>
+                    <div class="eticket-info-item">
+                        <div class="icon"><i class="fas fa-id-card"></i></div>
+                        <div class="label">{{ _("الإثبات") }}</div>
+                        <div class="value">${formatIdNumber(booking.passenger?.id_number)}</div>
+                    </div>
+                    <div class="eticket-info-item">
+                        <div class="icon"><i class="fas fa-phone"></i></div>
+                        <div class="label">{{ _("الهاتف") }}</div>
+                        <div class="value">${booking.passenger?.phone || '-'}</div>
+                    </div>
+                </div>
+
+                <div class="eticket-passenger">
+                    <div class="eticket-passenger-info">
+                        <div class="label">👤 {{ _("الراكب") }}</div>
+                        <div class="name">${booking.passenger?.full_name || '-'}</div>
+                        ${(() => {
+                            const luggageItems = booking.luggage_items || [];
+                            const grouped = {};
+                            let luggageTotal = 0;
+
+                            luggageItems.forEach(item => {
+                                if (item.luggage_type === 'free') return;
+                                const t = item.luggage_type;
+                                if (!grouped[t]) {
+                                    grouped[t] = {
+                                        weight_kg: item.weight_kg,
+                                        price: parseFloat(item.price),
+                                        quantity: 0,
+                                    };
+                                }
+                                grouped[t].quantity += 1;
+                                luggageTotal += parseFloat(item.price);
+                            });
+
+                            let html = '<div class="luggage-block">';
+                            html += '<div class="luggage-title"> {{ _("الأمتعة") }}</div>';
+
+                            html += `<div class="luggage-row">
+                                <span class="free-row"> 1 × {{ _("شنطة مجانية") }} (40 {{ _("كجم") }})</span>
+                                <span class="free-row">{{ _("مجانًا") }}</span>
+                            </div>`;
+
+                            Object.entries(grouped).forEach(([type, g]) => {
+                                const typeName =
+                                    type === 'small' ? '{{ _("شنطة صغيرة") }}' :
+                                    type === 'medium' ? '{{ _("شنطة متوسطة") }}' :
+                                    type === 'large' ? '{{ _("صندوق كبير") }}' : type;
+                                const total = g.price * g.quantity;
+                                html += `<div class="luggage-row">
+                                    <span> ${g.quantity} × ${typeName} (${g.weight_kg} {{ _("كجم") }})</span>
+                                    <span><strong>${total.toLocaleString()} {{ _("ج.س") }}</strong></span>
+                                </div>`;
+                            });
+
+                            if (luggageTotal > 0) {
+                                html += `<div class="luggage-total">
+                                    <span> {{ _("إجمالي الأمتعة") }}:</span>
+                                    <span>${luggageTotal.toLocaleString()} {{ _("ج.س") }}</span>
+                                </div>`;
+                            }
+
+                            html += '</div>';
+                            return html;
+                        })()}
+                    </div>
+                </div>
+
+                <div class="eticket-price-section">
+                    <div class="price-row">
+                        <span>{{ _("سعر التذكرة") }}:</span>
+                        <span>${formatCurrency(booking.total_price)}</span>
+                    </div>
+                </div>
+
+                <div class="eticket-codes">
+                    <div class="eticket-code-box">
+                        <div class="label">{{ _("امسح للتحقق") }}</div>
+                        <img src="${qrUrl}" alt="QR" class="eticket-qr" onerror="this.style.display='none'">
+                    </div>
+                    <div class="eticket-code-box">
+                        <div class="label">Barcode</div>
+                        <img src="${barcodeUrl}" alt="Barcode" class="eticket-barcode-img" onerror="this.style.display='none'">
+                    </div>
+                </div>
+
+                <div class="eticket-instructions">
+                    <span class="eticket-instruction"><i class="fas fa-clock"></i> {{ _("الحضور قبل 30 دقيقة") }}</span>
+                    <span class="eticket-instruction"><i class="fas fa-id-card"></i> {{ _("إحضار الهوية") }}</span>
+                    <span class="eticket-instruction"><i class="fas fa-suitcase"></i> {{ _("الأمتعة 40 كجم") }}</span>
+                </div>
+
+                <div class="eticket-footer">
+                    <div class="thanks">${LANG === 'ar' ? (SETTINGS.ticket_footer_text || '{{ _("شكراً لثقتكم بنا") }}') : (SETTINGS.ticket_footer_text_en || SETTINGS.ticket_footer_text || '{{ _("شكراً لثقتكم بنا") }}')}</div>
+                    <div class="contacts">
+                        ${SETTINGS.company_phone ? `<span><i class="fas fa-phone"></i> ${SETTINGS.company_phone}</span>` : ''}
+                        ${SETTINGS.company_email ? `<span><i class="fas fa-envelope"></i> ${SETTINGS.company_email}</span>` : ''}
+                        ${SETTINGS.support_phone ? `<span><i class="fas fa-headset"></i> ${SETTINGS.support_phone}</span>` : ''}
+                    </div>
+                </div>
+            </div>
+            `;
+        });
+
+        infants.forEach((b) => {
+            html += `
+            <div class="infant-ticket">
+                <div class="icon-box"><i class="fas fa-baby"></i></div>
+                <div class="info">
+                    <h6>👶 ${b.passenger?.full_name || '-'}</h6>
+                    <small>{{ _("طفل رضيع - رقم الحجز:") }} ${b.booking_reference}</small>
+                </div>
+                <span class="badge-free">🎁 {{ _("مجاني") }}</span>
+            </div>
+            `;
+        });
+
+        container.innerHTML = html;
+    });
+
+    function formatDateOnly(dateString) {
+        if (!dateString) return '-';
+        const date = new Date(dateString);
+        if (LANG === 'ar') {
+            const months = ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'];
+            return `${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear()}`;
+        }
+        return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+    }
+
+    function formatTimeOnly(dateString) {
+        if (!dateString) return '-';
+        const date = new Date(dateString);
+        if (LANG === 'ar') {
+            const h = date.getHours();
+            const ampm = h >= 12 ? 'م' : 'ص';
+            const hour12 = h % 12 || 12;
+            return `${hour12}:${String(date.getMinutes()).padStart(2, '0')} ${ampm}`;
+        }
+        return date.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+    }
+
+    function formatCurrency(amount) {
+        if (!amount && amount !== 0) return '0 SDG';
+        const locale = LANG === 'ar' ? 'ar-SD' : 'en-SD';
+        return new Intl.NumberFormat(locale, {
+            style: 'currency', currency: 'SDG', minimumFractionDigits: 0
+        }).format(amount);
+    }
+    function formatIdNumber(idNumber) {
+        if (!idNumber) return '-';
+        if (LANG === 'ar') return idNumber;
+        return idNumber
+            .replace('جواز سفر', 'Passport')
+            .replace('بطاقة قومي', 'National ID')
+            .replace('بطاقة شخصية', 'Personal ID');
+    }
+
+    function printTickets() {
+        // طباعة كل التذاكر
+        document.querySelectorAll('.no-print').forEach(el => el.style.display = 'none');
+        window.print();
+        setTimeout(() => {
+            document.querySelectorAll('.no-print').forEach(el => el.style.display = '');
+        }, 500);
+    }
+
+    function printSingleTicket(ticketRef) {
+        // ✅ طباعة تذكرة واحدة فقط
+        const allTickets = document.querySelectorAll('.eticket');
+        const pnrCard = document.getElementById('pnrCard');
+
+        // إخفاء كل شيء مؤقتًا
+        const originalStates = [];
+        allTickets.forEach(t => {
+            originalStates.push({ el: t, display: t.style.display });
+            t.style.display = 'none';
+        });
+        if (pnrCard) pnrCard.style.display = 'none';
+
+        // إظهار التذكرة المطلوبة فقط
+        let found = false;
+        allTickets.forEach(t => {
+            const refEl = t.querySelector('.eticket-type .ref');
+            if (refEl && refEl.textContent.trim() === ticketRef) {
+                t.style.display = 'block';
+                t.style.width = '100%';
+                found = true;
+            }
+        });
+
+        if (!found) {
+            // في حال عدم إيجاد المطابقة، أظهر كل التذاكر
+            allTickets.forEach(t => t.style.display = originalStates.find(s => s.el === t).display || '');
+        }
+
+        window.print();
+
+        // استعادة الحالة الأصلية
+        setTimeout(() => {
+            allTickets.forEach(t => t.style.display = originalStates.find(s => s.el === t).display || '');
+            if (pnrCard) pnrCard.style.display = 'block';
+        }, 500);
+    }
+
+    window.printTickets = printTickets;
+    window.printSingleTicket = printSingleTicket;
+</script>
+{% endblock %}

@@ -1,0 +1,368 @@
+{% extends "admin/base_admin.html" %}
+
+{% block title %}{{ _("إدارة الوظائف") }} - BusCore{% endblock %}
+{% block page_title %}{{ _("إدارة الوظائف") }}{% endblock %}
+
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <p class="text-muted mb-0">{{ _("إدارة الوظائف المتاحة في النظام") }}</p>
+    <button class="btn btn-primary" onclick="openAddModal()">
+        <i class="fas fa-plus me-2"></i>{{ _("إضافة وظيفة جديدة") }}
+    </button>
+</div>
+
+<div class="alert alert-info">
+    <i class="fas fa-info-circle me-2"></i>
+    <strong>{{ _("ملاحظة:") }}</strong>
+    {{ _("الفئة تحدد مكان ظهور الوظيفة في النظام:") }}
+    <ul class="mb-0 mt-2">
+        <li><strong>{{ _("سائق") }}</strong>: {{ _("يظهر في قائمة السائقين عند إنشاء رحلة") }}</li>
+        <li><strong>{{ _("مساعد") }}</strong>: {{ _("يظهر في قائمة المساعدين عند إنشاء رحلة") }}</li>
+        <li><strong>{{ _("إداري") }}</strong> / <strong>{{ _("أخرى") }}</strong>: {{ _("لا يظهر في قوائم الرحلات") }}</li>
+    </ul>
+</div>
+
+<div class="card border-0 shadow-sm page-table-card">
+    <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <h5 class="mb-0 fw-bold">
+            <i class="fas fa-briefcase me-2 text-primary"></i>{{ _("قائمة الوظائف") }}
+            <span class="badge bg-primary ms-2" id="totalCount">0</span>
+        </h5>
+        <div class="page-table-controls">
+            <div class="input-group input-group-sm search-box">
+                <span class="input-group-text bg-light"><i class="fas fa-search"></i></span>
+                <input type="text" id="searchInput" class="form-control search-input"
+                       placeholder="{{ _('بحث...') }}">
+            </div>
+            <select id="pageSize" class="form-select form-select-sm page-size-select">
+                <option value="10">10 / {{ _("صفحة") }}</option>
+                <option value="25">25 / {{ _("صفحة") }}</option>
+                <option value="50">50 / {{ _("صفحة") }}</option>
+                <option value="0">{{ _("عرض الكل") }}</option>
+            </select>
+        </div>
+    </div>
+    <div class="page-table-container" id="positionsTableContainer">
+        <div class="text-center py-5">
+            <div class="spinner-border text-primary"></div>
+            <p class="mt-2 text-muted">{{ _("جاري التحميل...") }}</p>
+        </div>
+    </div>
+    <div class="page-pagination" id="paginationContainer"></div>
+</div>
+
+<!-- Modal: إضافة/تعديل وظيفة -->
+<div class="modal fade" id="positionModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="modalTitle">
+                    <i class="fas fa-plus me-2"></i>{{ _("إضافة وظيفة جديدة") }}
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="positionId">
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">{{ _("اسم الوظيفة (عربي)") }} <span class="text-danger">*</span></label>
+                    <input type="text" id="posName" class="form-control" dir="rtl" required>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">{{ _("اسم الوظيفة (إنجليزي)") }}</label>
+                    <input type="text" id="posNameEn" class="form-control" dir="ltr">
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">{{ _("الفئة") }} <span class="text-danger">*</span></label>
+                    <select id="posCategory" class="form-select" required>
+                        <option value="driver"> {{ _("سائق") }} (driver)</option>
+                        <option value="assistant"> {{ _("مساعد") }} (assistant)</option>
+                        <option value="admin"> {{ _("إداري") }} (admin)</option>
+                        <option value="other"> {{ _("أخرى") }} (other)</option>
+                    </select>
+                    <small class="text-muted">{{ _("الفئة تحدد مكان ظهور الوظيفة") }}</small>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">{{ _("الأيقونة") }}</label>
+                    <input type="text" id="posIcon" class="form-control" dir="ltr"
+                           placeholder="fa-briefcase">
+                    <small class="text-muted">
+                        {{ _("من FontAwesome  مثال: fa-user-tie, fa-user-friends, fa-calculator") }}
+                    </small>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">{{ _("ترتيب العرض") }}</label>
+                    <input type="number" id="posSortOrder" class="form-control" value="0" min="0">
+                    <small class="text-muted">{{ _("الأصغر يظهر أولًا") }}</small>
+                </div>
+
+                <div class="form-check form-switch mb-3">
+                    <input class="form-check-input" type="checkbox" id="posIsActive" checked>
+                    <label class="form-check-label fw-bold" for="posIsActive">
+                        {{ _("نشط") }}
+                    </label>
+                </div>
+
+                <div id="modalMessage"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ _("إلغاء") }}</button>
+                <button type="button" class="btn btn-primary" id="savePosBtn" onclick="savePosition()">
+                    <i class="fas fa-save me-2"></i>{{ _("حفظ") }}
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: تأكيد الحذف -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title"><i class="fas fa-exclamation-triangle me-2"></i>{{ _("تأكيد الحذف") }}</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>{{ _("هل أنت متأكد من حذف الوظيفة") }} <strong id="deletePosName"></strong>؟</p>
+                <p class="text-danger small mb-0">
+                    <i class="fas fa-info-circle me-1"></i>
+                    {{ _("لا يمكن حذف وظيفة مرتبطة بموظفين.") }}
+                </p>
+                <input type="hidden" id="deletePosId">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ _("إلغاء") }}</button>
+                <button type="button" class="btn btn-danger" onclick="confirmDelete()">
+                    <i class="fas fa-trash me-2"></i>{{ _("حذف نهائي") }}
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+const LANG = "{{ lang }}";
+let positionModal, deleteModal;
+let allPositions = [];
+
+document.addEventListener('DOMContentLoaded', async function() {
+    positionModal = new bootstrap.Modal(document.getElementById('positionModal'));
+    deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+
+    //  تهيئة TableManager
+    TableManager.init({
+        containerId: 'positionsTableContainer',
+        paginationId: 'paginationContainer',
+        totalCountId: 'totalCount',
+        emptyIcon: 'fa-briefcase',
+        emptyTitle: '{{ _("لا توجد وظائف") }}',
+        emptyMessage: '{{ _("ابدأ بإضافة وظيفة جديدة") }}',
+        searchFields: ['name', 'name_en', 'category'],
+        columns: [
+            { title: '#', width: '60', render: (item, idx) => idx },
+            { title: '{{ _("الأيقونة") }}', width: '80', render: (item) => `
+                <div class="text-center">
+                    <i class="fas ${item.icon || 'fa-briefcase'} fa-2x text-primary"></i>
+                </div>
+            `},
+            { title: '{{ _("الاسم (عربي)") }}', render: (item) => `<strong>${item.name}</strong>` },
+            { title: '{{ _("الاسم (إنجليزي)") }}', render: (item) => `<small class="text-muted">${item.name_en || '-'}</small>` },
+            { title: '{{ _("الفئة") }}', width: '140', render: (item) => getCategoryBadge(item.category) },
+            { title: '{{ _("الترتيب") }}', width: '80', render: (item) => `
+                <div class="text-center">
+                    <span class="badge bg-light text-dark">${item.sort_order}</span>
+                </div>
+            `},
+            { title: '{{ _("الحالة") }}', width: '100', render: (item) =>
+                item.is_active
+                    ? '<span class="badge bg-success">{{ _("نشط") }}</span>'
+                    : '<span class="badge bg-danger">{{ _("متوقف") }}</span>'
+            },
+            { title: '{{ _("الإجراءات") }}', width: '150', render: (item) => `
+                <div class="d-flex gap-1 flex-nowrap justify-content-center">
+                    <button class="btn btn-sm btn-outline-primary"
+                            onclick="openEditModal(${item.id})" title="{{ _('تعديل') }}">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-danger"
+                            onclick="openDeleteModal(${item.id})" title="{{ _('حذف') }}">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            `}
+        ]
+    });
+
+    //  ربط البحث + حجم الصفحة
+    document.getElementById('searchInput').addEventListener('input', () => TableManager.applyFilters());
+    document.getElementById('pageSize').addEventListener('change', () => {
+        TableManager.currentPage = 1;
+        TableManager.render();
+    });
+
+    await loadPositions();
+});
+
+function getCategoryBadge(cat) {
+    const map = {
+        'driver': { label: '{{ _("سائق") }}', color: 'success', icon: 'fa-car' },
+        'assistant': { label: '{{ _("مساعد") }}', color: 'info', icon: 'fa-users' },
+        'admin': { label: '{{ _("إداري") }}', color: 'warning', icon: 'fa-briefcase' },
+        'other': { label: '{{ _("أخرى") }}', color: 'secondary', icon: 'fa-circle' }
+    };
+    const info = map[cat] || map['other'];
+    return `<span class="badge bg-${info.color}"><i class="fas ${info.icon} me-1"></i>${info.label}</span>`;
+}
+
+async function loadPositions() {
+    try {
+        const res = await fetch('/positions/?limit=500');
+        allPositions = await res.json();
+
+        //  ترتيب أبجدي حسب اسم الوظيفة
+        allPositions.sort((a, b) => {
+            const nameA = (LANG === 'en' && a.name_en) ? a.name_en : a.name;
+            const nameB = (LANG === 'en' && b.name_en) ? b.name_en : b.name;
+            return nameA.localeCompare(nameB, LANG === 'ar' ? 'ar' : 'en');
+        });
+
+        TableManager.setData(allPositions);
+    } catch (e) {
+        console.error(e);
+        document.getElementById('positionsTableContainer').innerHTML =
+            '<div class="alert alert-danger m-3">{{ _("فشل تحميل الوظائف") }}: ' + e.message + '</div>';
+    }
+}
+
+function openAddModal() {
+    document.getElementById('modalTitle').innerHTML = '<i class="fas fa-plus me-2"></i>{{ _("إضافة وظيفة جديدة") }}';
+    document.getElementById('positionId').value = '';
+    document.getElementById('posName').value = '';
+    document.getElementById('posNameEn').value = '';
+    document.getElementById('posCategory').value = 'driver';
+    document.getElementById('posIcon').value = 'fa-briefcase';
+    document.getElementById('posSortOrder').value = '0';
+    document.getElementById('posIsActive').checked = true;
+    document.getElementById('modalMessage').innerHTML = '';
+    positionModal.show();
+}
+
+function openEditModal(id) {
+    const p = allPositions.find(x => x.id === id);
+    if (!p) return;
+
+    document.getElementById('modalTitle').innerHTML = '<i class="fas fa-edit me-2"></i>{{ _("تعديل الوظيفة") }}';
+    document.getElementById('positionId').value = p.id;
+    document.getElementById('posName').value = p.name || '';
+    document.getElementById('posNameEn').value = p.name_en || '';
+    document.getElementById('posCategory').value = p.category || 'other';
+    document.getElementById('posIcon').value = p.icon || 'fa-briefcase';
+    document.getElementById('posSortOrder').value = p.sort_order || 0;
+    document.getElementById('posIsActive').checked = p.is_active;
+    document.getElementById('modalMessage').innerHTML = '';
+    positionModal.show();
+}
+
+async function savePosition() {
+    const id = document.getElementById('positionId').value;
+    const name = document.getElementById('posName').value.trim();
+    const nameEn = document.getElementById('posNameEn').value.trim() || null;
+    const category = document.getElementById('posCategory').value;
+    const icon = document.getElementById('posIcon').value.trim() || 'fa-briefcase';
+    const sortOrder = parseInt(document.getElementById('posSortOrder').value) || 0;
+    const isActive = document.getElementById('posIsActive').checked;
+    const messageDiv = document.getElementById('modalMessage');
+    const saveBtn = document.getElementById('savePosBtn');
+
+    if (!name) {
+        messageDiv.innerHTML = '<div class="alert alert-danger">{{ _("الرجاء إدخال اسم الوظيفة") }}</div>';
+        return;
+    }
+
+    const payload = {
+        name: name,
+        name_en: nameEn,
+        category: category,
+        icon: icon,
+        sort_order: sortOrder,
+        is_active: isActive
+    };
+
+    try {
+        saveBtn.disabled = true;
+        saveBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>{{ _("جاري الحفظ...") }}';
+        messageDiv.innerHTML = '';
+
+        let response;
+        if (id) {
+            response = await fetch(`/positions/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+        } else {
+            response = await fetch('/positions/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+        }
+
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.detail || '{{ _("فشل الحفظ") }}');
+        }
+
+        messageDiv.innerHTML = '<div class="alert alert-success"> {{ _("تم الحفظ بنجاح!") }}</div>';
+        setTimeout(async () => {
+            positionModal.hide();
+            await loadPositions();
+        }, 800);
+
+    } catch (error) {
+        messageDiv.innerHTML = '<div class="alert alert-danger"> ' + error.message + '</div>';
+    } finally {
+        saveBtn.disabled = false;
+        saveBtn.innerHTML = '<i class="fas fa-save me-2"></i>{{ _("حفظ") }}';
+    }
+}
+
+function openDeleteModal(id) {
+    const p = allPositions.find(x => x.id === id);
+    if (!p) return;
+    document.getElementById('deletePosId').value = p.id;
+    document.getElementById('deletePosName').textContent = p.name;
+    deleteModal.show();
+}
+
+async function confirmDelete() {
+    const id = document.getElementById('deletePosId').value;
+    try {
+        const response = await fetch(`/positions/${id}`, { method: 'DELETE' });
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.detail || '{{ _("فشل الحذف") }}');
+        }
+        deleteModal.hide();
+        await loadPositions();
+    } catch (error) {
+        alert(' ' + error.message);
+    }
+}
+
+window.openAddModal = openAddModal;
+window.openEditModal = openEditModal;
+window.savePosition = savePosition;
+window.openDeleteModal = openDeleteModal;
+window.confirmDelete = confirmDelete;
+</script>
+{% endblock %}

@@ -1,0 +1,354 @@
+{% extends "admin/base_admin.html" %}
+
+{% block title %}{{ _("إدارة المحطات") }} - BusCore{% endblock %}
+{% block page_title %}{{ _("إدارة المحطات") }}{% endblock %}
+
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <p class="text-muted mb-0">{{ _("إدارة جميع المحطات المرتبطة بالمدن") }}</p>
+    <button class="btn btn-primary" onclick="openAddModal()">
+        <i class="fas fa-plus me-2"></i>{{ _("إضافة محطة جديدة") }}
+    </button>
+</div>
+
+<div class="card border-0 shadow-sm page-table-card">
+    <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <h5 class="mb-0 fw-bold">
+            <i class="fas fa-map-marker-alt me-2 text-primary"></i>{{ _("قائمة المحطات") }}
+            <span class="badge bg-primary ms-2" id="totalCount">0</span>
+        </h5>
+        <div class="page-table-controls">
+            <div class="input-group input-group-sm search-box">
+                <span class="input-group-text bg-light"><i class="fas fa-search"></i></span>
+                <input type="text" id="searchInput" class="form-control search-input"
+                       placeholder="{{ _('بحث...') }}">
+            </div>
+            <select id="pageSize" class="form-select form-select-sm page-size-select">
+                <option value="10">10 / {{ _("صفحة") }}</option>
+                <option value="25">25 / {{ _("صفحة") }}</option>
+                <option value="50">50 / {{ _("صفحة") }}</option>
+                <option value="0">{{ _("عرض الكل") }}</option>
+            </select>
+        </div>
+    </div>
+    <div class="page-table-container" id="stationsTableContainer">
+        <div class="text-center py-5">
+            <div class="spinner-border text-primary"></div>
+            <p class="mt-2 text-muted">{{ _("جاري التحميل...") }}</p>
+        </div>
+    </div>
+    <div class="page-pagination" id="paginationContainer"></div>
+</div>
+
+<!-- Modal: إضافة/تعديل محطة -->
+<div class="modal fade" id="stationModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-plus me-2"></i>{{ _("إضافة محطة جديدة") }}
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="stationId">
+                <div class="mb-3">
+                    <label class="form-label fw-bold">{{ _("المدينة") }} <span class="text-danger">*</span></label>
+                    <select id="stationCity" class="form-select" required>
+                        <option value="">{{ _("اختر المدينة") }}</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold">{{ _("اسم المحطة (عربي)") }} <span class="text-danger">*</span></label>
+                    <input type="text" id="stationName" class="form-control" dir="rtl"
+                           placeholder="{{ _('مثال: الخرطوم - الميناء البري') }}" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold">{{ _("اسم المحطة (إنجليزي)") }}</label>
+                    <input type="text" id="stationNameEn" class="form-control" dir="ltr"
+                           placeholder="Example: Khartoum - Dry Port">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold">{{ _("العنوان (عربي)") }}</label>
+                    <input type="text" id="stationAddress" class="form-control" dir="rtl"
+                           placeholder="{{ _('مثال: السوق المحلي') }}">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold">{{ _("العنوان (إنجليزي)") }}</label>
+                    <input type="text" id="stationAddressEn" class="form-control" dir="ltr"
+                           placeholder="Example: Local Market">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold">{{ _("رقم الهاتف") }}</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light fw-bold">+249</span>
+                        <input type="tel" id="stationPhone" class="form-control" placeholder="912345678" maxlength="9"
+                               oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 9)">
+                    </div>
+                </div>
+                <div id="modalMessage"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ _("إلغاء") }}</button>
+                <button type="button" class="btn btn-primary" id="saveStationBtn" onclick="saveStation()">
+                    <i class="fas fa-save me-2"></i>{{ _("حفظ") }}
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: تأكيد الحذف -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title"><i class="fas fa-exclamation-triangle me-2"></i>{{ _("تأكيد الحذف") }}</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>{{ _("هل أنت متأكد من حذف المحطة") }} <strong id="deleteStationName"></strong>؟</p>
+                <input type="hidden" id="deleteStationId">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ _("إلغاء") }}</button>
+                <button type="button" class="btn btn-danger" onclick="confirmDelete()">
+                    <i class="fas fa-trash me-2"></i>{{ _("حذف نهائي") }}
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+const LANG = "{{ lang }}";
+let stationModal, deleteModal;
+let allStations = [];
+let allCities = [];
+
+document.addEventListener('DOMContentLoaded', async function () {
+    stationModal = new bootstrap.Modal(document.getElementById('stationModal'));
+    deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+
+    //  تهيئة TableManager
+    TableManager.init({
+        containerId: 'stationsTableContainer',
+        paginationId: 'paginationContainer',
+        totalCountId: 'totalCount',
+        emptyIcon: 'fa-map-marker-alt',
+        emptyTitle: '{{ _("لا توجد محطات") }}',
+        emptyMessage: '{{ _("ابدأ بإضافة محطة جديدة") }}',
+        searchFields: ['name', 'name_en', 'city.name', 'city.name_en', 'address', 'address_en', 'phone'],
+        columns: [
+            { title: '#', width: '60', render: (item, idx) => idx },
+            { title: '{{ _("اسم المحطة") }}', render: (item) => {
+                const name = (LANG === 'en' && item.name_en) ? item.name_en : item.name;
+                return `<strong>${name}</strong>`;
+            }},
+            { title: '{{ _("المدينة") }}', render: (item) => {
+                if (!item.city) return '-';
+                const cityName = (LANG === 'en' && item.city.name_en) ? item.city.name_en : item.city.name;
+                return `<span class="badge bg-primary">${cityName} (${item.city.code})</span>`;
+            }},
+            { title: '{{ _("الهاتف") }}', render: (item) => `<small>${item.phone || '-'}</small>` },
+            { title: '{{ _("العنوان") }}', render: (item) => {
+                const addr = (LANG === 'en' && item.address_en) ? item.address_en : (item.address || '-');
+                return `<small class="text-muted">${addr}</small>`;
+            }},
+            { title: '{{ _("الإجراءات") }}', width: '120', render: (item) => `
+                <div class="d-flex gap-1 flex-nowrap justify-content-center">
+                    <button class="btn btn-sm btn-outline-primary"
+                            onclick="openEditModal(${item.id})" title="{{ _('تعديل') }}">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-danger"
+                            onclick="openDeleteModal(${item.id})" title="{{ _('حذف') }}">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            `}
+        ]
+    });
+
+    //  ربط البحث + حجم الصفحة
+    document.getElementById('searchInput').addEventListener('input', () => TableManager.applyFilters());
+    document.getElementById('pageSize').addEventListener('change', () => {
+        TableManager.currentPage = 1;
+        TableManager.render();
+    });
+
+    await loadCities();
+    await loadStations();
+});
+
+async function loadCities() {
+    try {
+        const response = await fetch('/stations/cities');
+        allCities = await response.json();
+
+        // ترتيب أبجدي
+        allCities.sort((a, b) => {
+            const nameA = (LANG === 'en' && a.name_en) ? a.name_en : a.name;
+            const nameB = (LANG === 'en' && b.name_en) ? b.name_en : b.name;
+            return nameA.localeCompare(nameB, LANG === 'ar' ? 'ar' : 'en');
+        });
+
+        const select = document.getElementById('stationCity');
+        select.innerHTML = '<option value="">{{ _("اختر المدينة") }}</option>';
+        allCities.forEach(city => {
+            const displayName = (LANG === 'en' && city.name_en) ? city.name_en : city.name;
+            select.innerHTML += `<option value="${city.id}">${displayName} (${city.code})</option>`;
+        });
+    } catch (error) {
+        console.error('Error loading cities:', error);
+    }
+}
+
+async function loadStations() {
+    try {
+        const response = await fetch('/stations/');
+        allStations = await response.json();
+
+        // ترتيب أبجدي حسب اسم المحطة
+        allStations.sort((a, b) => {
+            const nameA = (LANG === 'en' && a.name_en) ? a.name_en : a.name;
+            const nameB = (LANG === 'en' && b.name_en) ? b.name_en : b.name;
+            return nameA.localeCompare(nameB, LANG === 'ar' ? 'ar' : 'en');
+        });
+
+        TableManager.setData(allStations);
+    } catch (error) {
+        console.error('Error loading stations:', error);
+        document.getElementById('stationsTableContainer').innerHTML =
+            '<div class="alert alert-danger m-3">{{ _("فشل تحميل المحطات") }}: ' + error.message + '</div>';
+    }
+}
+
+function openAddModal() {
+    document.getElementById('stationId').value = '';
+    document.getElementById('stationCity').value = '';
+    document.getElementById('stationName').value = '';
+    document.getElementById('stationNameEn').value = '';
+    document.getElementById('stationAddress').value = '';
+    document.getElementById('stationAddressEn').value = '';
+    document.getElementById('stationPhone').value = '';
+    document.getElementById('modalMessage').innerHTML = '';
+    stationModal.show();
+}
+
+function openEditModal(id) {
+    const station = allStations.find(s => s.id === id);
+    if (!station) return;
+
+    document.getElementById('stationId').value = station.id;
+    document.getElementById('stationCity').value = station.city_id || '';
+    document.getElementById('stationName').value = station.name || '';
+    document.getElementById('stationNameEn').value = station.name_en || '';
+    document.getElementById('stationAddress').value = station.address || '';
+    document.getElementById('stationAddressEn').value = station.address_en || '';
+
+    let phone = station.phone || '';
+    if (phone.startsWith('+249')) phone = phone.substring(4);
+    document.getElementById('stationPhone').value = phone;
+
+    document.getElementById('modalMessage').innerHTML = '';
+    stationModal.show();
+}
+
+async function saveStation() {
+    const id = document.getElementById('stationId').value;
+    const cityId = document.getElementById('stationCity').value;
+    const name = document.getElementById('stationName').value.trim();
+    const nameEn = document.getElementById('stationNameEn').value.trim() || null;
+    const address = document.getElementById('stationAddress').value.trim();
+    const addressEn = document.getElementById('stationAddressEn').value.trim() || null;
+    const phone = document.getElementById('stationPhone').value.trim();
+    const messageDiv = document.getElementById('modalMessage');
+    const saveBtn = document.getElementById('saveStationBtn');
+
+    if (!cityId) {
+        messageDiv.innerHTML = '<div class="alert alert-danger">{{ _("الرجاء اختيار المدينة") }}</div>';
+        return;
+    }
+    if (!name) {
+        messageDiv.innerHTML = '<div class="alert alert-danger">{{ _("الرجاء إدخال اسم المحطة") }}</div>';
+        return;
+    }
+
+    try {
+        saveBtn.disabled = true;
+        saveBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>{{ _("جاري الحفظ...") }}';
+        messageDiv.innerHTML = '';
+
+        let response;
+        const payload = {
+            name: name,
+            name_en: nameEn,
+            city_id: parseInt(cityId),
+            address: address || null,
+            address_en: addressEn,
+            phone: phone ? `+249${phone}` : null
+        };
+
+        if (id) {
+            response = await fetch(`/stations/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+        } else {
+            response = await fetch('/stations/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+        }
+
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.detail || '{{ _("فشل الحفظ") }}');
+        }
+
+        messageDiv.innerHTML = '<div class="alert alert-success"> {{ _("تم الحفظ بنجاح!") }}</div>';
+        setTimeout(async () => {
+            stationModal.hide();
+            await loadStations();
+        }, 800);
+
+    } catch (error) {
+        messageDiv.innerHTML = '<div class="alert alert-danger"> ' + error.message + '</div>';
+    } finally {
+        saveBtn.disabled = false;
+        saveBtn.innerHTML = '<i class="fas fa-save me-2"></i>{{ _("حفظ") }}';
+    }
+}
+
+function openDeleteModal(id) {
+    const station = allStations.find(s => s.id === id);
+    if (!station) return;
+
+    document.getElementById('deleteStationId').value = station.id;
+    document.getElementById('deleteStationName').textContent = station.name;
+    deleteModal.show();
+}
+
+async function confirmDelete() {
+    const id = document.getElementById('deleteStationId').value;
+    try {
+        const response = await fetch(`/stations/${id}`, { method: 'DELETE' });
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.detail || '{{ _("فشل الحذف") }}');
+        }
+        deleteModal.hide();
+        await loadStations();
+    } catch (error) {
+        alert(' ' + error.message);
+    }
+}
+</script>
+{% endblock %}

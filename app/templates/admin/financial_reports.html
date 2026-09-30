@@ -1,0 +1,940 @@
+{% extends "admin/base_admin.html" %}
+
+{% block title %}{{ _("التقارير المالية") }} - BusCore{% endblock %}
+{% block page_title %}{{ _("التقارير المالية") }}{% endblock %}
+
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <p class="text-muted mb-0">{{ _("تقارير الإيرادات والمصروفات والأرباح") }}</p>
+    <div>
+        <button class="btn btn-danger me-1" onclick="exportPDF()">
+            <i class="fas fa-file-pdf me-2"></i>{{ _("تصدير PDF") }}
+        </button>
+        <button class="btn btn-success" onclick="exportReport()">
+            <i class="fas fa-file-excel me-2"></i>{{ _("تصدير Excel") }}
+        </button>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm mb-3">
+    <div class="card-body">
+        <div class="row g-2 align-items-end">
+            <div class="col-md-3">
+                <label class="form-label small mb-1 fw-bold">{{ _("من تاريخ") }}</label>
+                <input type="date" id="reportFrom" class="form-control">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label small mb-1 fw-bold">{{ _("إلى تاريخ") }}</label>
+                <input type="date" id="reportTo" class="form-control">
+            </div>
+            <div class="col-md-3">
+                <button class="btn btn-primary w-100" onclick="generateReport()">
+                    <i class="fas fa-search me-1"></i> {{ _("عرض التقرير") }}
+                </button>
+            </div>
+            <div class="col-md-3">
+                <div class="btn-group w-100" role="group">
+                    <button class="btn btn-outline-primary" onclick="quickRange('today')">{{ _("اليوم") }}</button>
+                    <button class="btn btn-outline-primary" onclick="quickRange('week')">{{ _("الأسبوع") }}</button>
+                    <button class="btn btn-outline-primary" onclick="quickRange('month')">{{ _("الشهر") }}</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm" style="border-{% if lang == 'ar' %}right{% else %}left{% endif %}: 4px solid #198754;">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <small class="text-muted">{{ _("إجمالي الإيرادات") }}</small>
+                        <h3 class="mb-0 fw-bold text-success" id="totalRevenue">0</h3>
+                        <small class="text-muted" id="bookingsCount">0 {{ _("حجز") }}</small>
+                    </div>
+                    <i class="fas fa-arrow-up fa-2x text-success" style="opacity: 0.3;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm" style="border-{% if lang == 'ar' %}right{% else %}left{% endif %}: 4px solid #dc3545;">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <small class="text-muted">{{ _("إجمالي المصروفات") }}</small>
+                        <h3 class="mb-0 fw-bold text-danger" id="totalExpenses">0</h3>
+                        <small class="text-muted" id="expensesCount">0 {{ _("مصروف") }}</small>
+                    </div>
+                    <i class="fas fa-arrow-down fa-2x text-danger" style="opacity: 0.3;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm" id="profitCard" style="border-{% if lang == 'ar' %}right{% else %}left{% endif %}: 4px solid #0d6efd;">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <small class="text-muted">{{ _("صافي الربح") }}</small>
+                        <h3 class="mb-0 fw-bold text-primary" id="netProfit">0</h3>
+                        <small class="text-muted" id="profitMargin">0%</small>
+                    </div>
+                    <i class="fas fa-chart-line fa-2x text-primary" style="opacity: 0.3;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm" style="border-{% if lang == 'ar' %}right{% else %}left{% endif %}: 4px solid #6c757d;">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <small class="text-muted">{{ _("الفترة") }}</small>
+                        <h6 class="mb-0 fw-bold" id="periodDisplay" style="font-size: 0.85rem;">-</h6>
+                    </div>
+                    <i class="fas fa-calendar-alt fa-2x text-secondary" style="opacity: 0.3;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-header bg-white">
+        <h5 class="mb-0 fw-bold"><i class="fas fa-chart-pie me-2 text-primary"></i>{{ _("تفصيل المصروفات حسب التصنيف") }}</h5>
+    </div>
+    <div class="card-body">
+        <div id="expenseBreakdownContainer">
+            <div class="text-center py-4">
+                <div class="spinner-border text-primary"></div>
+                <p class="mt-2 text-muted">{{ _("جاري التحميل...") }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm">
+    <div class="card-header bg-white">
+        <h5 class="mb-0 fw-bold"><i class="fas fa-list me-2 text-primary"></i>{{ _("المصروفات التفصيلية في الفترة") }}</h5>
+    </div>
+    <div class="card-body">
+        <div id="expensesListContainer">
+            <p class="text-muted text-center py-4">{{ _("اختر فترة ثم اضغط عرض التقرير") }}</p>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+const LANG = "{{ lang }}";
+let currentReport = null;
+
+document.addEventListener('DOMContentLoaded', function() {
+    const now = new Date();
+    const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
+    document.getElementById('reportFrom').value = formatDateInput(firstDay);
+    document.getElementById('reportTo').value = formatDateInput(now);
+    generateReport();
+});
+
+function formatDateInput(d) {
+    return d.toISOString().slice(0, 10);
+}
+
+function quickRange(type) {
+    const now = new Date();
+    let from;
+    if (type === 'today') from = now;
+    else if (type === 'week') { from = new Date(now); from.setDate(from.getDate() - 7); }
+    else if (type === 'month') from = new Date(now.getFullYear(), now.getMonth(), 1);
+    document.getElementById('reportFrom').value = formatDateInput(from);
+    document.getElementById('reportTo').value = formatDateInput(now);
+    generateReport();
+}
+
+async function generateReport() {
+    const from = document.getElementById('reportFrom').value;
+    const to = document.getElementById('reportTo').value;
+    if (!from || !to) { alert('{{ _("الرجاء اختيار الفترة") }}'); return; }
+    try {
+        const url = `/expenses/reports/full?date_from=${from}T00:00:00&date_to=${to}T23:59:59`;
+        const res = await fetch(url);
+        if (!res.ok) throw new Error('{{ _("فشل تحميل التقرير") }}');
+        currentReport = await res.json();
+        renderReport(currentReport);
+    } catch (e) {
+        console.error(e);
+        alert('❌ ' + e.message);
+    }
+}
+
+function renderReport(report) {
+    const s = report.summary;
+    document.getElementById('totalRevenue').textContent = formatCurrency(s.total_revenue);
+    document.getElementById('totalExpenses').textContent = formatCurrency(s.total_expenses);
+    document.getElementById('netProfit').textContent = formatCurrency(s.net_profit);
+    document.getElementById('bookingsCount').textContent = s.bookings_count + ' {{ _("حجز") }}';
+    document.getElementById('expensesCount').textContent = s.expenses_count + ' {{ _("مصروف") }}';
+
+    const revenue = parseFloat(s.total_revenue) || 0;
+    const profit = parseFloat(s.net_profit) || 0;
+    const margin = revenue > 0 ? (profit / revenue * 100) : 0;
+    document.getElementById('profitMargin').textContent = margin.toFixed(1) + '%';
+
+    const profitCard = document.getElementById('profitCard');
+    if (profit < 0) {
+        profitCard.style.borderRightColor = '#dc3545';
+        profitCard.style.borderLeftColor = '#dc3545';
+        document.getElementById('netProfit').className = 'mb-0 fw-bold text-danger';
+    } else {
+        profitCard.style.borderRightColor = '#198754';
+        profitCard.style.borderLeftColor = '#198754';
+        document.getElementById('netProfit').className = 'mb-0 fw-bold text-success';
+    }
+
+    document.getElementById('periodDisplay').textContent =
+        formatDateShort(s.period_start) + ' → ' + formatDateShort(s.period_end);
+
+    renderBreakdown(report.expense_breakdown);
+    loadDetailedExpenses();
+}
+
+function renderBreakdown(breakdown) {
+    const container = document.getElementById('expenseBreakdownContainer');
+    if (!breakdown || breakdown.length === 0) {
+        container.innerHTML = `<p class="text-muted text-center py-4">{{ _("لا توجد مصروفات في هذه الفترة") }}</p>`;
+        return;
+    }
+    const total = breakdown.reduce((s, item) => s + parseFloat(item.total_amount || 0), 0);
+    let html = '<div class="table-responsive"><table class="table table-hover align-middle">';
+    html += `<thead class="table-light"><tr>
+        <th width="60">#</th>
+        <th>{{ _("التصنيف") }}</th>
+        <th width="140">{{ _("عدد المصروفات") }}</th>
+        <th width="180">{{ _("الإجمالي") }}</th>
+        <th width="120">{{ _("النسبة") }}</th>
+    </tr></thead><tbody>`;
+
+    breakdown.forEach((item, index) => {
+        const name = (LANG === 'en' && item.category_name_en) ? item.category_name_en : item.category_name;
+        const amount = parseFloat(item.total_amount) || 0;
+        const pct = total > 0 ? (amount / total * 100) : 0;
+        html += `<tr>
+            <td>${index + 1}</td>
+            <td><i class="fas ${item.icon || 'fa-receipt'} text-primary me-2"></i><strong>${name}</strong></td>
+            <td><span class="badge bg-secondary">${item.count}</span></td>
+            <td><strong class="text-danger">${formatCurrency(amount)}</strong></td>
+            <td><div class="progress" style="height: 20px;"><div class="progress-bar bg-primary" style="width: ${pct}%;">${pct.toFixed(1)}%</div></div></td>
+        </tr>`;
+    });
+    html += `<tfoot class="table-light"><tr>
+        <th colspan="2" class="text-end">{{ _("الإجمالي") }}:</th>
+        <th>${breakdown.reduce((s, i) => s + i.count, 0)}</th>
+        <th class="text-danger"><strong>${formatCurrency(total)}</strong></th>
+        <th>100%</th>
+    </tr></tfoot></tbody></table></div>`;
+    container.innerHTML = html;
+}
+
+async function loadDetailedExpenses() {
+    const from = document.getElementById('reportFrom').value;
+    const to = document.getElementById('reportTo').value;
+    const container = document.getElementById('expensesListContainer');
+    try {
+        const url = `/expenses/?limit=500&date_from=${from}T00:00:00&date_to=${to}T23:59:59`;
+        const res = await fetch(url);
+        const expenses = await res.json();
+        if (expenses.length === 0) {
+            container.innerHTML = `<p class="text-muted text-center py-4">{{ _("لا توجد مصروفات في هذه الفترة") }}</p>`;
+            return;
+        }
+        let html = '<div class="table-responsive"><table class="table table-sm table-hover">';
+        html += `<thead class="table-light"><tr>
+            <th width="40">#</th><th>{{ _("التصنيف") }}</th><th>{{ _("الوصف") }}</th>
+            <th width="130">{{ _("المبلغ") }}</th><th width="120">{{ _("التاريخ") }}</th>
+        </tr></thead><tbody>`;
+        expenses.forEach((exp, index) => {
+            const cat = exp.category || {};
+            const catName = (LANG === 'en' && cat.name_en) ? cat.name_en : (cat.name || '-');
+            html += `<tr>
+                <td>${index + 1}</td>
+                <td><i class="fas ${cat.icon || 'fa-receipt'} text-primary me-1"></i> ${catName}</td>
+                <td><small>${exp.description || '-'}</small></td>
+                <td class="text-danger"><strong>${formatCurrency(exp.amount)}</strong></td>
+                <td><small>${formatDateShort(exp.expense_date)}</small></td>
+            </tr>`;
+        });
+        html += '</tbody></table></div>';
+        container.innerHTML = html;
+    } catch (e) {
+        container.innerHTML = `<div class="alert alert-danger">${e.message}</div>`;
+    }
+}
+
+function formatDateShort(dateString) {
+    if (!dateString) return '-';
+    const d = new Date(dateString);
+    if (LANG === 'ar') {
+        const months = ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+        return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
+    }
+    return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+}
+
+function formatCurrency(amount) {
+    const num = parseFloat(amount) || 0;
+    const locale = LANG === 'ar' ? 'ar-SD' : 'en-SD';
+    return new Intl.NumberFormat(locale, {
+        style: 'currency', currency: 'SDG', minimumFractionDigits: 0
+    }).format(num);
+}
+
+function formatNumber(amount) {
+    const num = parseFloat(amount) || 0;
+    return new Intl.NumberFormat('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(num);
+}
+
+function exportReport() {
+    if (!currentReport) { alert('{{ _("الرجاء عرض التقرير أولًا") }}'); return; }
+    const s = currentReport.summary;
+    let csv = '{{ _("تقرير مالي") }}\n';
+    csv += `{{ _("من") }},${document.getElementById('reportFrom').value}\n`;
+    csv += `{{ _("إلى") }},${document.getElementById('reportTo').value}\n\n`;
+    csv += `{{ _("إجمالي الإيرادات") }},${s.total_revenue}\n`;
+    csv += `{{ _("إجمالي المصروفات") }},${s.total_expenses}\n`;
+    csv += `{{ _("صافي الربح") }},${s.net_profit}\n`;
+    csv += `{{ _("عدد الحجوزات") }},${s.bookings_count}\n`;
+    csv += `{{ _("عدد المصروفات") }},${s.expenses_count}\n\n`;
+    csv += '{{ _("تفصيل المصروفات") }}\n';
+    csv += '{{ _("التصنيف") }},{{ _("العدد") }},{{ _("الإجمالي") }}\n';
+    (currentReport.expense_breakdown || []).forEach(item => {
+        const name = (LANG === 'en' && item.category_name_en) ? item.category_name_en : item.category_name;
+        csv += `"${name}",${item.count},${item.total_amount}\n`;
+    });
+    const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `financial_report_${document.getElementById('reportFrom').value}.csv`;
+    link.click();
+}
+
+async function exportPDF() {
+    if (!currentReport) { alert('{{ _("الرجاء عرض التقرير أولًا") }}'); return; }
+
+    const s = currentReport.summary;
+    const fromDate = document.getElementById('reportFrom').value;
+    const toDate = document.getElementById('reportTo').value;
+    const breakdown = currentReport.expense_breakdown || [];
+
+    let settings = {};
+    try { const r = await fetch('/settings/'); settings = await r.json(); } catch (e) {}
+
+    const companyName = (LANG === 'ar')
+        ? (settings.company_name || 'BusCore')
+        : (settings.company_name_en || settings.company_name || 'BusCore');
+    const companyNameSec = (LANG === 'ar')
+        ? (settings.company_name_en || '')
+        : (settings.company_name || '');
+
+    const revenue = parseFloat(s.total_revenue) || 0;
+    const expenses = parseFloat(s.total_expenses) || 0;
+    const profit = parseFloat(s.net_profit) || 0;
+    const margin = revenue > 0 ? (profit / revenue * 100) : 0;
+    const totalBreakdown = breakdown.reduce((sum, i) => sum + parseFloat(i.total_amount || 0), 0);
+
+    const reportRef = `FR-${fromDate.replace(/-/g, '')}-${toDate.replace(/-/g, '')}`;
+    const issueDate = new Date().toLocaleDateString(LANG === 'ar' ? 'ar-SA' : 'en-GB');
+    const issueTime = new Date().toLocaleTimeString(LANG === 'ar' ? 'ar-SA' : 'en-GB', { hour: '2-digit', minute: '2-digit' });
+
+    const breakdownRows = breakdown.map((item, i) => {
+        const name = (LANG === 'en' && item.category_name_en) ? item.category_name_en : item.category_name;
+        const amt = parseFloat(item.total_amount) || 0;
+        const pct = totalBreakdown > 0 ? (amt / totalBreakdown * 100) : 0;
+        return `<tr>
+            <td class="c">${i + 1}</td>
+            <td>${name}</td>
+            <td class="c">${item.count}</td>
+            <td class="n">${formatNumber(amt)}</td>
+            <td class="n">${pct.toFixed(1)}%</td>
+        </tr>`;
+    }).join('');
+
+    const currencyLabel = 'SDG';
+
+    const html = `<!DOCTYPE html>
+<html lang="${LANG}" dir="${LANG === 'ar' ? 'rtl' : 'ltr'}">
+<head>
+<meta charset="UTF-8">
+<title>${reportRef}</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+        font-family: 'Cairo', 'Inter', Arial, sans-serif;
+        background: white;
+        color: #1a1a1a;
+        font-size: 10pt;
+        line-height: 1.5;
+    }
+    .page {
+        width: 210mm;
+        min-height: 297mm;
+        padding: 12mm 15mm;
+        margin: 0 auto;
+        background: white;
+        position: relative;
+    }
+
+    /* ══════ Header ══════ */
+    .doc-header {
+        border-bottom: 3px solid #1a3a6e;
+        padding-bottom: 10px;
+        margin-bottom: 8px;
+    }
+    .header-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 20px;
+    }
+    .brand-block {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex: 1;
+    }
+    .brand-logo {
+        width: 48px;
+        height: 48px;
+        object-fit: contain;
+        border-radius: 4px;
+    }
+    .brand-logo-icon {
+        width: 48px;
+        height: 48px;
+        background: #1a3a6e;
+        color: white;
+        border-radius: 4px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 22px;
+        font-weight: 900;
+    }
+    .brand-text h1 {
+        font-size: 13pt;
+        font-weight: 800;
+        color: #1a3a6e;
+        line-height: 1.1;
+    }
+    .brand-text .en {
+        font-size: 9pt;
+        color: #666;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+    }
+    .doc-title-block {
+        text-align: ${LANG === 'ar' ? 'left' : 'right'};
+    }
+    .doc-title {
+        font-size: 14pt;
+        font-weight: 800;
+        color: #1a3a6e;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+    .doc-title-en {
+        font-size: 8pt;
+        color: #888;
+        letter-spacing: 3px;
+        text-transform: uppercase;
+        margin-top: 2px;
+    }
+    .doc-meta-top {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 8px;
+        padding-top: 6px;
+        border-top: 1px solid #e5e5e5;
+        font-size: 8.5pt;
+        color: #444;
+    }
+    .doc-meta-top .item strong { color: #1a1a1a; font-weight: 700; }
+    .doc-meta-top .item .label { color: #888; margin-${LANG === 'ar' ? 'left' : 'right'}: 4px; }
+
+    /* ══════ Period Bar ══════ */
+    .period-bar {
+        background: #f5f7fa;
+        border: 1px solid #e0e6ed;
+        border-radius: 4px;
+        padding: 10px 16px;
+        margin: 12px 0;
+        display: flex;
+        justify-content: space-around;
+        gap: 16px;
+    }
+    .period-item {
+        text-align: center;
+        flex: 1;
+    }
+    .period-item .label {
+        font-size: 7.5pt;
+        color: #888;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 2px;
+    }
+    .period-item .value {
+        font-size: 10pt;
+        font-weight: 700;
+        color: #1a1a1a;
+    }
+
+    /* ══════ Summary Cards ══════ */
+    .summary-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 8px;
+        margin: 14px 0;
+    }
+    .sum-card {
+        border: 1px solid #e0e6ed;
+        border-radius: 4px;
+        padding: 10px 12px;
+        background: white;
+    }
+    .sum-card .label {
+        font-size: 7.5pt;
+        color: #888;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 4px;
+    }
+    .sum-card .value {
+        font-size: 13pt;
+        font-weight: 800;
+        font-family: 'Inter', 'Courier New', monospace;
+        letter-spacing: -0.5px;
+        line-height: 1.1;
+    }
+    .sum-card .sub {
+        font-size: 7.5pt;
+        color: #888;
+        margin-top: 3px;
+    }
+    .sum-card.revenue { border-top: 3px solid #1a7a4a; }
+    .sum-card.revenue .value { color: #1a7a4a; }
+    .sum-card.expenses { border-top: 3px solid #b02418; }
+    .sum-card.expenses .value { color: #b02418; }
+    .sum-card.profit { border-top: 3px solid ${profit >= 0 ? '#1a3a6e' : '#b02418'}; }
+    .sum-card.profit .value { color: ${profit >= 0 ? '#1a3a6e' : '#b02418'}; }
+    .sum-card.info { border-top: 3px solid #666; }
+    .sum-card.info .value { color: #333; font-size: 10pt; }
+
+    /* ══════ Section ══════ */
+    .section {
+        margin-top: 18px;
+        page-break-inside: avoid;
+    }
+    .section-header {
+        background: #1a3a6e;
+        color: white;
+        padding: 7px 14px;
+        font-size: 10pt;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .section-header .sub {
+        font-size: 8pt;
+        opacity: 0.85;
+        font-weight: 400;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    /* ══════ Table ══════ */
+    table.fin {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 9.5pt;
+    }
+    table.fin thead th {
+        background: #eef2f7;
+        color: #1a3a6e;
+        font-size: 8pt;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        padding: 8px 10px;
+        text-align: ${LANG === 'ar' ? 'right' : 'left'};
+        border-bottom: 2px solid #1a3a6e;
+    }
+    table.fin thead th.n,
+    table.fin thead th.c { text-align: ${LANG === 'ar' ? 'left' : 'right'}; }
+    table.fin thead th.c { text-align: center !important; }
+    table.fin tbody td {
+        padding: 8px 10px;
+        border-bottom: 1px solid #eaecef;
+        color: #1a1a1a;
+    }
+    table.fin tbody tr:nth-child(even) { background: #fafbfc; }
+    table.fin td.n {
+        text-align: ${LANG === 'ar' ? 'left' : 'right'};
+        font-family: 'Inter', 'Courier New', monospace;
+        font-weight: 600;
+    }
+    table.fin td.c { text-align: center; color: #555; }
+    table.fin tfoot td {
+        padding: 10px;
+        border-top: 2px solid #1a3a6e;
+        background: #f5f7fa;
+        font-weight: 800;
+        font-size: 10pt;
+    }
+    table.fin tfoot td.n {
+        text-align: ${LANG === 'ar' ? 'left' : 'right'};
+        font-family: 'Inter', 'Courier New', monospace;
+    }
+
+    /* ══════ P&L Table ══════ */
+    table.pnl {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 10pt;
+        border: 1px solid #e0e6ed;
+    }
+    table.pnl td {
+        padding: 9px 14px;
+        border-bottom: 1px solid #eaecef;
+    }
+    table.pnl td.acc { color: #444; }
+    table.pnl td.acc .code { color: #888; font-size: 8.5pt; margin-${LANG === 'ar' ? 'left' : 'right'}: 6px; font-family: monospace; }
+    table.pnl td.n {
+        text-align: ${LANG === 'ar' ? 'left' : 'right'};
+        font-family: 'Inter', 'Courier New', monospace;
+        font-weight: 700;
+        width: 140px;
+        white-space: nowrap;
+    }
+    table.pnl tr.section-row td {
+        background: #1a3a6e;
+        color: white;
+        font-weight: 700;
+        font-size: 9.5pt;
+        padding: 7px 14px;
+    }
+    table.pnl tr.subtotal td {
+        background: #eef2f7;
+        font-weight: 800;
+        border-top: 1px solid #1a3a6e;
+        border-bottom: 1px solid #1a3a6e;
+    }
+    table.pnl tr.grand-total td {
+        background: #1a3a6e;
+        color: white;
+        font-weight: 800;
+        font-size: 11pt;
+        padding: 12px 14px;
+        border: none;
+    }
+    table.pnl tr.grand-total td.n { color: white; }
+
+    /* ══════ Notes ══════ */
+    .notes-box {
+        background: #fafbfc;
+        border: 1px solid #e0e6ed;
+        border-${LANG === 'ar' ? 'right' : 'left'}: 4px solid #1a3a6e;
+        padding: 10px 14px;
+        font-size: 8.5pt;
+        color: #444;
+        margin-top: 12px;
+        border-radius: 3px;
+    }
+    .notes-box .title {
+        font-weight: 800;
+        color: #1a3a6e;
+        margin-bottom: 4px;
+        font-size: 9pt;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    .notes-box ol { margin: 4px 0 0; padding-${LANG === 'ar' ? 'right' : 'left'}: 20px; }
+    .notes-box li { margin-bottom: 2px; }
+
+    /* ══════ Signatures ══════ */
+    .signatures {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 24px;
+        margin-top: 40px;
+        padding-top: 16px;
+        border-top: 1px solid #ddd;
+    }
+    .sig-box {
+        text-align: center;
+    }
+    .sig-box .role {
+        font-size: 8.5pt;
+        color: #666;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-bottom: 35px;
+        font-weight: 700;
+    }
+    .sig-box .line {
+        border-bottom: 1.5px solid #1a1a1a;
+        margin-bottom: 4px;
+        height: 1px;
+    }
+    .sig-box .name {
+        font-size: 8pt;
+        color: #888;
+    }
+
+    /* ══════ Footer ══════ */
+    .doc-footer {
+        margin-top: 30px;
+        padding-top: 10px;
+        border-top: 2px solid #1a3a6e;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 7.5pt;
+        color: #666;
+    }
+    .doc-footer .contacts {
+        display: flex;
+        gap: 14px;
+        flex-wrap: wrap;
+    }
+    .doc-footer .contacts span { display: inline-flex; align-items: center; gap: 3px; }
+    .doc-footer .page-num {
+        font-weight: 700;
+        color: #1a3a6e;
+    }
+    .doc-footer .company-name {
+        color: #1a3a6e;
+        font-weight: 700;
+    }
+
+    @media print {
+        @page { size: A4 portrait; margin: 0; }
+        body { padding: 0; background: white; }
+        .page { margin: 0; padding: 12mm 15mm; min-height: auto; }
+        .page * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+        .section { page-break-inside: avoid; }
+        .signatures { page-break-inside: avoid; }
+    }
+</style>
+</head>
+<body>
+<div class="page">
+
+    <!-- ══════════ HEADER ══════════ -->
+    <div class="doc-header">
+        <div class="header-top">
+            <div class="brand-block">
+                ${settings.company_logo
+                    ? `<img src="${settings.company_logo}" class="brand-logo" alt="Logo">`
+                    : `<div class="brand-logo-icon">B</div>`}
+                <div class="brand-text">
+                    <h1>${companyName}</h1>
+                    <div class="en">${companyNameSec}</div>
+                </div>
+            </div>
+            <div class="doc-title-block">
+                <div class="doc-title">${LANG === 'ar' ? 'التقرير المالي' : 'Financial Report'}</div>
+                <div class="doc-title-en">Financial Report</div>
+            </div>
+        </div>
+        <div class="doc-meta-top">
+            <div class="item"><span class="label">${LANG === 'ar' ? 'رقم التقرير:' : 'Report No:'}</span><strong>${reportRef}</strong></div>
+            <div class="item"><span class="label">${LANG === 'ar' ? 'تاريخ الإصدار:' : 'Issue Date:'}</span><strong>${issueDate} — ${issueTime}</strong></div>
+            <div class="item"><span class="label">${LANG === 'ar' ? 'العملة:' : 'Currency:'}</span><strong>${currencyLabel}</strong></div>
+        </div>
+    </div>
+
+    <!-- ══════════ PERIOD BAR ══════════ -->
+    <div class="period-bar">
+        <div class="period-item">
+            <div class="label">${LANG === 'ar' ? 'من تاريخ' : 'From Date'}</div>
+            <div class="value">${fromDate}</div>
+        </div>
+        <div class="period-item">
+            <div class="label">${LANG === 'ar' ? 'إلى تاريخ' : 'To Date'}</div>
+            <div class="value">${toDate}</div>
+        </div>
+        <div class="period-item">
+            <div class="label">${LANG === 'ar' ? 'عدد الحجوزات' : 'Bookings'}</div>
+            <div class="value">${s.bookings_count}</div>
+        </div>
+        <div class="period-item">
+            <div class="label">${LANG === 'ar' ? 'عدد المصروفات' : 'Expenses'}</div>
+            <div class="value">${s.expenses_count}</div>
+        </div>
+    </div>
+
+    <!-- ══════════ EXECUTIVE SUMMARY ══════════ -->
+    <div class="summary-grid">
+        <div class="sum-card revenue">
+            <div class="label">${LANG === 'ar' ? 'إجمالي الإيرادات' : 'Total Revenue'}</div>
+            <div class="value">${formatNumber(revenue)}</div>
+            <div class="sub">${currencyLabel}</div>
+        </div>
+        <div class="sum-card expenses">
+            <div class="label">${LANG === 'ar' ? 'إجمالي المصروفات' : 'Total Expenses'}</div>
+            <div class="value">${formatNumber(expenses)}</div>
+            <div class="sub">${currencyLabel}</div>
+        </div>
+        <div class="sum-card profit">
+            <div class="label">${LANG === 'ar' ? 'صافي الربح' : 'Net Profit'}</div>
+            <div class="value">${formatNumber(profit)}</div>
+            <div class="sub">${margin.toFixed(1)}% ${LANG === 'ar' ? 'هامش' : 'Margin'}</div>
+        </div>
+        <div class="sum-card info">
+            <div class="label">${LANG === 'ar' ? 'الفترة' : 'Period'}</div>
+            <div class="value">${Math.ceil((new Date(toDate) - new Date(fromDate)) / (1000*60*60*24)) + 1} ${LANG === 'ar' ? 'يوم' : 'days'}</div>
+            <div class="sub">${s.bookings_count + s.expenses_count} ${LANG === 'ar' ? 'حركة' : 'entries'}</div>
+        </div>
+    </div>
+
+    <!-- ══════════ INCOME STATEMENT (P&L) ══════════ -->
+    <div class="section">
+        <div class="section-header">
+            <span>${LANG === 'ar' ? 'قائمة الدخل' : 'Income Statement'}</span>
+            <span class="sub">Statement of Profit & Loss</span>
+        </div>
+        <table class="pnl">
+            <tr class="section-row"><td colspan="2">${LANG === 'ar' ? 'الإيرادات' : 'REVENUE'}</td></tr>
+            <tr>
+                <td class="acc"><span class="code">4001</span>${LANG === 'ar' ? 'إيرادات الحجوزات' : 'Ticket Sales Revenue'}</td>
+                <td class="n">${formatNumber(revenue)}</td>
+            </tr>
+            <tr class="subtotal">
+                <td>${LANG === 'ar' ? 'إجمالي الإيرادات' : 'Total Revenue'}</td>
+                <td class="n">${formatNumber(revenue)}</td>
+            </tr>
+
+            <tr class="section-row"><td colspan="2">${LANG === 'ar' ? 'المصروفات' : 'EXPENSES'}</td></tr>
+            ${breakdown.length > 0 ? breakdown.map((item, i) => {
+                const name = (LANG === 'en' && item.category_name_en) ? item.category_name_en : item.category_name;
+                const amt = parseFloat(item.total_amount) || 0;
+                const code = '500' + (i + 1);
+                return `<tr>
+                    <td class="acc"><span class="code">${code}</span>${name}</td>
+                    <td class="n">${formatNumber(amt)}</td>
+                </tr>`;
+            }).join('') : `<tr><td class="acc" colspan="2" style="text-align:center;color:#888;padding:14px;">${LANG === 'ar' ? 'لا توجد مصروفات' : 'No expenses'}</td></tr>`}
+            <tr class="subtotal">
+                <td>${LANG === 'ar' ? 'إجمالي المصروفات' : 'Total Expenses'}</td>
+                <td class="n">${formatNumber(expenses)}</td>
+            </tr>
+
+            <tr class="grand-total">
+                <td>${LANG === 'ar' ? 'صافي الربح (الخسارة)' : 'NET PROFIT (LOSS)'}</td>
+                <td class="n">${formatNumber(profit)}</td>
+            </tr>
+        </table>
+    </div>
+
+    <!-- ══════════ EXPENSE BREAKDOWN ══════════ -->
+    ${breakdown.length > 0 ? `
+    <div class="section">
+        <div class="section-header">
+            <span>${LANG === 'ar' ? 'تفصيل المصروفات حسب التصنيف' : 'Expense Breakdown by Category'}</span>
+            <span class="sub">Expense Analysis</span>
+        </div>
+        <table class="fin">
+            <thead>
+                <tr>
+                    <th style="width:40px;text-align:center">#</th>
+                    <th>${LANG === 'ar' ? 'التصنيف' : 'Category'}</th>
+                    <th style="width:100px;text-align:center">${LANG === 'ar' ? 'عدد الحركات' : 'Count'}</th>
+                    <th class="n" style="width:140px">${LANG === 'ar' ? 'الإجمالي' : 'Amount'}</th>
+                    <th class="n" style="width:80px">${LANG === 'ar' ? 'النسبة' : '%'}</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${breakdownRows}
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td colspan="2">${LANG === 'ar' ? 'الإجمالي' : 'TOTAL'}</td>
+                    <td class="c">${breakdown.reduce((s, i) => s + i.count, 0)}</td>
+                    <td class="n">${formatNumber(totalBreakdown)}</td>
+                    <td class="n">100%</td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+    ` : ''}
+
+    <!-- ══════════ NOTES ══════════ -->
+    <div class="notes-box">
+        <div class="title">${LANG === 'ar' ? 'ملاحظات محاسبية' : 'Accounting Notes'}</div>
+        <ol>
+            <li>${LANG === 'ar' ? 'الإيرادات محسوبة من الحجوزات المؤكدة (غير الملغاة) في الفترة المحددة.' : 'Revenue is calculated from confirmed (non-cancelled) bookings within the specified period.'}</li>
+            <li>${LANG === 'ar' ? 'المصروفات تشمل جميع الحركات المسجلة، بما فيها الرواتب والسلف والمكافآت.' : 'Expenses include all recorded transactions, including salaries, advances, and bonuses.'}</li>
+            <li>${LANG === 'ar' ? 'تم إعداد التقرير تلقائيًا بواسطة نظام BusCore.' : 'This report was automatically generated by the BusCore system.'}</li>
+            <li>${LANG === 'ar' ? 'جميع المبالغ بالجنيه السوداني (SDG).' : 'All amounts are in Sudanese Pounds (SDG).'}</li>
+        </ol>
+    </div>
+
+    <!-- ══════════ SIGNATURES ══════════ -->
+    <div class="signatures">
+        <div class="sig-box">
+            <div class="role">${LANG === 'ar' ? 'أعدّه' : 'Prepared by'}</div>
+            <div class="line"></div>
+            <div class="name">${LANG === 'ar' ? 'الاسم / التوقيع' : 'Name / Signature'}</div>
+        </div>
+        <div class="sig-box">
+            <div class="role">${LANG === 'ar' ? 'راجعه' : 'Reviewed by'}</div>
+            <div class="line"></div>
+            <div class="name">${LANG === 'ar' ? 'الاسم / التوقيع' : 'Name / Signature'}</div>
+        </div>
+        <div class="sig-box">
+            <div class="role">${LANG === 'ar' ? 'اعتمده' : 'Approved by'}</div>
+            <div class="line"></div>
+            <div class="name">${LANG === 'ar' ? 'الاسم / التوقيع' : 'Name / Signature'}</div>
+        </div>
+    </div>
+
+    <!-- ══════════ FOOTER ══════════ -->
+    <div class="doc-footer">
+        <div class="company-name">${companyName}</div>
+        <div class="contacts">
+            ${settings.company_phone ? `<span>☎ ${settings.company_phone}</span>` : ''}
+            ${settings.company_email ? `<span>✉ ${settings.company_email}</span>` : ''}
+        </div>
+        <div class="page-num">${LANG === 'ar' ? 'صفحة 1 من 1' : 'Page 1 of 1'}</div>
+    </div>
+
+</div>
+
+<script>
+    window.onload = function() {
+        setTimeout(function() { window.print(); }, 600);
+    };
+<\\/script>
+</body>
+</html>`;
+
+    const printWindow = window.open('', '_blank');
+    printWindow.document.write(html);
+    printWindow.document.close();
+}
+
+window.generateReport = generateReport;
+window.quickRange = quickRange;
+window.exportReport = exportReport;
+window.exportPDF = exportPDF;
+</script>
+{% endblock %}

@@ -1,0 +1,567 @@
+{% extends "admin/base_admin.html" %}
+
+{% block title %}{{ _("إدارة العملاء") }} - BusCore{% endblock %}
+{% block page_title %}{{ _("إدارة العملاء") }}{% endblock %}
+
+{% block content %}
+
+<!-- بطاقات إحصائية -->
+<div class="row g-3 mb-3">
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm" style="border-{% if lang == 'ar' %}right{% else %}left{% endif %}: 4px solid #0d6efd;">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <small class="text-muted">{{ _("إجمالي العملاء") }}</small>
+                        <h3 class="mb-0 fw-bold" id="totalCustomers">0</h3>
+                    </div>
+                    <i class="fas fa-users fa-2x text-primary" style="opacity: 0.3;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm" style="border-{% if lang == 'ar' %}right{% else %}left{% endif %}: 4px solid #ffc107;">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <small class="text-muted">{{ _("عملاء VIP") }}</small>
+                        <h3 class="mb-0 fw-bold text-warning" id="vipCustomers">0</h3>
+                    </div>
+                    <i class="fas fa-crown fa-2x text-warning" style="opacity: 0.3;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm" style="border-{% if lang == 'ar' %}right{% else %}left{% endif %}: 4px solid #198754;">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <small class="text-muted">{{ _("عملاء نشطون") }}</small>
+                        <h3 class="mb-0 fw-bold text-success" id="activeCustomers">0</h3>
+                    </div>
+                    <i class="fas fa-user-check fa-2x text-success" style="opacity: 0.3;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- أدوات -->
+<div class="card border-0 shadow-sm mb-3">
+    <div class="card-body">
+        <div class="row g-2 align-items-center">
+            <div class="col-md-4">
+                <div class="input-group">
+                    <span class="input-group-text bg-light"><i class="fas fa-search"></i></span>
+                    <input type="text" id="searchInput" class="form-control"
+                        placeholder="{{ _('بحث بالاسم أو الهاتف أو البريد...') }}" oninput="filterCustomers()">
+                </div>
+            </div>
+            <div class="col-md-3">
+                <select id="statusFilter" class="form-select" onchange="filterCustomers()">
+                    <option value="">{{ _("جميع الحالات") }}</option>
+                    <option value="active">{{ _("نشط") }}</option>
+                    <option value="inactive">{{ _("معطّل") }}</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <select id="vipFilter" class="form-select" onchange="filterCustomers()">
+                    <option value="">{{ _("الكل") }}</option>
+                    <option value="vip"> {{ _("VIP فقط") }}</option>
+                    <option value="normal">{{ _("عادي") }}</option>
+                </select>
+            </div>
+            <div class="col-md-3 text-end">
+                <button class="btn btn-outline-secondary" onclick="loadCustomers()">
+                    <i class="fas fa-sync-alt"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- جدول العملاء -->
+<div class="card border-0 shadow-sm">
+    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+        <h5 class="mb-0 fw-bold">
+            <i class="fas fa-users me-2 text-primary"></i>{{ _("قائمة العملاء") }}
+            <span class="badge bg-primary ms-2" id="filteredCount">0</span>
+        </h5>
+    </div>
+    <div class="card-body p-0" id="customersContainer">
+        <div class="text-center py-5">
+            <div class="spinner-border text-primary"></div>
+            <p class="mt-2 text-muted">{{ _("جاري التحميل...") }}</p>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: إضافة / تعديل عميل -->
+<div class="modal fade" id="customerModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="customerModalTitle">
+                    <i class="fas fa-user-edit me-2"></i>{{ _("تعديل عميل") }}
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="customerForm">
+                    <input type="hidden" id="customerId">
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">{{ _("الاسم الكامل") }} *</label>
+                            <input type="text" id="customerName" class="form-control" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">{{ _("رقم الهاتف") }} *</label>
+                            <input type="text" id="customerPhone" class="form-control" dir="ltr" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">{{ _("البريد الإلكتروني") }}</label>
+                            <input type="email" id="customerEmail" class="form-control" dir="ltr">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">{{ _("رقم الإثبات") }}</label>
+                            <input type="text" id="customerIdNumber" class="form-control">
+                        </div>
+                        <div class="col-md-12">
+                            <label class="form-label">{{ _("ملاحظات") }}</label>
+                            <textarea id="customerNotes" class="form-control" rows="2"></textarea>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="customerIsVip">
+                                <label class="form-check-label" for="customerIsVip">
+                                     {{ _("عميل VIP") }}
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="customerIsActive" checked>
+                                <label class="form-check-label" for="customerIsActive">
+                                    {{ _("نشط") }}
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ _("إلغاء") }}</button>
+                <button type="button" class="btn btn-primary" onclick="saveCustomer()">
+                    <i class="fas fa-save me-1"></i>{{ _("حفظ") }}
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: تفاصيل العميل -->
+<div class="modal fade" id="detailsModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-info text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-user me-2"></i>{{ _("تفاصيل العميل") }}
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="detailsContent"></div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ _("إغلاق") }}</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.vip-badge {
+    background: linear-gradient(135deg, #ffc107, #ffb300);
+    color: #212529;
+    padding: 3px 10px;
+    border-radius: 50px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+.status-badge-cust {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 50px;
+    font-size: 0.7rem;
+    font-weight: 700;
+}
+.status-active-cust {
+    background: #d1e7dd;
+    color: #0f5132;
+}
+.status-inactive-cust {
+    background: #e2e3e5;
+    color: #41464b;
+}
+.customer-name {
+    font-weight: 700;
+    color: #212529;
+}
+.customer-phone {
+    font-family: 'Courier New', monospace;
+    font-size: 0.82rem;
+    color: #0d6efd;
+}
+</style>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+const LANG = "{{ lang }}";
+let customerModal;
+let detailsModal;
+let allCustomers = [];
+let filteredCustomers = [];
+
+document.addEventListener('DOMContentLoaded', async function() {
+    customerModal = new bootstrap.Modal(document.getElementById('customerModal'));
+    detailsModal = new bootstrap.Modal(document.getElementById('detailsModal'));
+    await loadCustomers();
+});
+
+async function loadCustomers() {
+    try {
+        const res = await fetch('/customers/');
+        if (!res.ok) {
+            if (res.status === 401) {
+                document.getElementById('customersContainer').innerHTML =
+                    `<div class="alert alert-warning m-3">{{ _("يجب تسجيل الدخول لعرض العملاء") }}</div>`;
+                return;
+            }
+            throw new Error('HTTP ' + res.status);
+        }
+        allCustomers = await res.json();
+        updateStats();
+        filterCustomers();
+    } catch (e) {
+        console.error(e);
+        document.getElementById('customersContainer').innerHTML =
+            `<div class="alert alert-danger m-3">{{ _("فشل تحميل العملاء") }}: ${e.message}</div>`;
+    }
+}
+
+function updateStats() {
+    const total = allCustomers.length;
+    const vip = allCustomers.filter(c => c.is_vip).length;
+    const active = allCustomers.filter(c => c.is_active).length;
+
+    document.getElementById('totalCustomers').textContent = total;
+    document.getElementById('vipCustomers').textContent = vip;
+    document.getElementById('activeCustomers').textContent = active;
+}
+
+function filterCustomers() {
+    const search = document.getElementById('searchInput').value.toLowerCase().trim();
+    const status = document.getElementById('statusFilter').value;
+    const vip = document.getElementById('vipFilter').value;
+
+    filteredCustomers = allCustomers.filter(c => {
+        if (search) {
+            const name = (c.full_name || '').toLowerCase();
+            const phone = (c.phone || '').toLowerCase();
+            const email = (c.email || '').toLowerCase();
+            if (!name.includes(search) && !phone.includes(search) && !email.includes(search)) return false;
+        }
+        if (status === 'active' && !c.is_active) return false;
+        if (status === 'inactive' && c.is_active) return false;
+        if (vip === 'vip' && !c.is_vip) return false;
+        if (vip === 'normal' && c.is_vip) return false;
+        return true;
+    });
+
+    renderCustomers();
+}
+
+function renderCustomers() {
+    const container = document.getElementById('customersContainer');
+    document.getElementById('filteredCount').textContent = filteredCustomers.length;
+
+    if (filteredCustomers.length === 0) {
+        container.innerHTML = `
+            <div class="text-center py-5">
+                <i class="fas fa-users fa-4x text-muted mb-3"></i>
+                <h5>{{ _("لا يوجد عملاء") }}</h5>
+                <p class="text-muted">{{ _("لم يتم العثور على أي عميل") }}</p>
+            </div>`;
+        return;
+    }
+
+    let html = '<div class="table-responsive"><table class="table table-hover align-middle mb-0">';
+    html += `
+        <thead class="table-light">
+            <tr>
+                <th width="50">#</th>
+                <th>{{ _("الاسم") }}</th>
+                <th width="140">{{ _("الهاتف") }}</th>
+                <th width="80" class="text-center">{{ _("حجوزات") }}</th>
+                <th width="80" class="text-center">{{ _("تذاكر") }}</th>
+                <th width="70" class="text-center">{{ _("رضع") }}</th>
+                <th width="130">{{ _("إجمالي الإنفاق") }}</th>
+                <th width="120">{{ _("الإجراءات") }}</th>
+            </tr>
+        </thead>
+        <tbody>`;
+
+    filteredCustomers.forEach((c, idx) => {
+
+        html += `
+        <tr>
+            <td>${idx + 1}</td>
+            <td>
+                <div class="customer-name">${c.full_name || '-'}</div>
+                ${c.is_vip ? '<span class="vip-badge mt-1"> VIP</span>' : ''}
+            </td>
+            <td><span class="customer-phone">${c.phone || '-'}</span></td>
+            <td class="text-center"><span class="badge bg-primary">${c.total_bookings || 0}</span></td>
+            <td class="text-center"><span class="badge bg-success">${c.total_tickets || 0}</span></td>
+            <td class="text-center"><span class="badge bg-warning text-dark">${c.total_infants || 0}</span></td>
+            <td><strong class="text-success">${formatCurrency(c.total_spent || 0)}</strong></td>
+            <td>
+                <div class="d-flex gap-1">
+                    <button class="btn btn-sm btn-outline-info" onclick="showDetails(${c.id})" title="{{ _('تفاصيل') }}">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-primary" onclick="openEditModal(${c.id})" title="{{ _('تعديل') }}">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    ${c.is_active ? `
+                        <button class="btn btn-sm btn-outline-danger" onclick="deactivateCustomer(${c.id})" title="{{ _('تعطيل') }}">
+                            <i class="fas fa-ban"></i>
+                        </button>
+                    ` : `
+                        <button class="btn btn-sm btn-outline-success" onclick="reactivateCustomer(${c.id})" title="{{ _('تنشيط') }}">
+                            <i class="fas fa-check"></i>
+                        </button>
+                    `}
+                </div>
+            </td>
+        </tr>`;
+    });
+
+    html += '</tbody></table></div>';
+    container.innerHTML = html;
+}
+
+function openEditModal(id) {
+    const c = allCustomers.find(x => x.id === id);
+    if (!c) return;
+
+    document.getElementById('customerModalTitle').innerHTML = '<i class="fas fa-edit me-2"></i>{{ _("تعديل عميل") }}';
+    document.getElementById('customerId').value = c.id;
+    document.getElementById('customerName').value = c.full_name || '';
+    document.getElementById('customerPhone').value = c.phone || '';
+    document.getElementById('customerEmail').value = c.email || '';
+    document.getElementById('customerIdNumber').value = c.id_number || '';
+    document.getElementById('customerNotes').value = c.notes || '';
+    document.getElementById('customerIsVip').checked = c.is_vip;
+    document.getElementById('customerIsActive').checked = c.is_active;
+
+    customerModal.show();
+}
+
+async function saveCustomer() {
+    const id = document.getElementById('customerId').value;
+    const data = {
+        full_name: document.getElementById('customerName').value.trim(),
+        phone: document.getElementById('customerPhone').value.trim(),
+        email: document.getElementById('customerEmail').value.trim() || null,
+        id_number: document.getElementById('customerIdNumber').value.trim() || null,
+        notes: document.getElementById('customerNotes').value.trim() || null,
+        is_vip: document.getElementById('customerIsVip').checked,
+        is_active: document.getElementById('customerIsActive').checked
+    };
+
+    if (!data.full_name || !data.phone) {
+        alert('{{ _("الرجاء إدخال الاسم ورقم الهاتف") }}');
+        return;
+    }
+
+    try {
+        let res;
+        if (id) {
+            res = await fetch(`/customers/${id}`, {
+                method: 'PUT',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(data)
+            });
+        } else {
+            res = await fetch('/customers/', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(data)
+            });
+        }
+
+        if (!res.ok) {
+            const err = await res.json();
+            throw new Error(err.detail || '{{ _("خطأ في الحفظ") }}');
+        }
+
+        customerModal.hide();
+        await loadCustomers();
+    } catch (e) {
+        alert(' ' + e.message);
+    }
+}
+
+async function deactivateCustomer(id) {
+    if (!confirm('{{ _("هل تريد تعطيل هذا العميل؟") }}')) return;
+
+    try {
+        const res = await fetch(`/customers/${id}`, {method: 'DELETE'});
+        if (!res.ok) {
+            const err = await res.json();
+            throw new Error(err.detail || '{{ _("خطأ") }}');
+        }
+        await loadCustomers();
+    } catch (e) {
+        alert(' ' + e.message);
+    }
+}
+
+async function reactivateCustomer(id) {
+    try {
+        const res = await fetch(`/customers/${id}`, {
+            method: 'PUT',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({is_active: true})
+        });
+        if (!res.ok) throw new Error('{{ _("خطأ") }}');
+        await loadCustomers();
+    } catch (e) {
+        alert(' ' + e.message);
+    }
+}
+
+function showDetails(id) {
+    const c = allCustomers.find(x => x.id === id);
+    if (!c) return;
+
+    document.getElementById('detailsContent').innerHTML = `
+        <div class="row g-3">
+            <div class="col-md-6">
+                <div class="card border-0 bg-light">
+                    <div class="card-body">
+                        <small class="text-muted">{{ _("الاسم") }}</small>
+                        <h5 class="mb-0">${c.full_name}</h5>
+                        ${c.is_vip ? '<span class="vip-badge mt-2"> VIP</span>' : ''}
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card border-0 bg-light">
+                    <div class="card-body">
+                        <small class="text-muted">{{ _("الهاتف") }}</small>
+                        <h5 class="mb-0" dir="ltr">${c.phone}</h5>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card border-0 bg-light">
+                    <div class="card-body">
+                        <small class="text-muted">{{ _("البريد الإلكتروني") }}</small>
+                        <h6 class="mb-0" dir="ltr">${c.email || ''}</h6>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card border-0 bg-light">
+                    <div class="card-body">
+                        <small class="text-muted">{{ _("رقم الإثبات") }}</small>
+                        <h6 class="mb-0">${c.id_number || ''}</h6>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card border-0 bg-light text-center">
+                    <div class="card-body">
+                        <small class="text-muted">{{ _("إجمالي الحجوزات") }}</small>
+                        <h3 class="mb-0 text-info">${c.total_bookings || 0}</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card border-0 bg-light text-center">
+                    <div class="card-body">
+                        <small class="text-muted">{{ _("إجمالي الإنفاق") }}</small>
+                        <h3 class="mb-0 text-success">${formatCurrency(c.total_spent || 0)}</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card border-0 bg-light text-center">
+                    <div class="card-body">
+                        <small class="text-muted">{{ _("تاريخ التسجيل") }}</small>
+                        <h6 class="mb-0">${formatShortDate(c.created_at)}</h6>
+                    </div>
+                </div>
+            </div>
+            ${c.last_booking_at ? `
+                <div class="col-12">
+                    <div class="alert alert-info mb-0">
+                        <i class="fas fa-clock me-2"></i>
+                        {{ _("آخر حجز") }}: ${formatDateTime(c.last_booking_at)}
+                    </div>
+                </div>
+            ` : ''}
+            ${c.notes ? `
+                <div class="col-12">
+                    <div class="card border-0 bg-light">
+                        <div class="card-body">
+                            <small class="text-muted">{{ _("ملاحظات") }}</small>
+                            <p class="mb-0">${c.notes}</p>
+                        </div>
+                    </div>
+                </div>
+            ` : ''}
+        </div>`;
+
+    detailsModal.show();
+}
+
+function formatCurrency(amount) {
+    if (!amount && amount !== 0) return '0 SDG';
+    const locale = LANG === 'ar' ? 'ar-SD' : 'en-SD';
+    return new Intl.NumberFormat(locale, {
+        style: 'currency',
+        currency: 'SDG',
+        minimumFractionDigits: 0
+    }).format(amount);
+}
+
+function formatShortDate(d) {
+    if (!d) return '';
+    const date = new Date(d);
+    return `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`;
+}
+
+function formatDateTime(d) {
+    if (!d) return '';
+    const date = new Date(d);
+    return date.toLocaleString(LANG === 'ar' ? 'ar-SA' : 'en-GB');
+}
+
+window.loadCustomers = loadCustomers;
+window.filterCustomers = filterCustomers;
+window.openEditModal = openEditModal;
+window.saveCustomer = saveCustomer;
+window.deactivateCustomer = deactivateCustomer;
+window.reactivateCustomer = reactivateCustomer;
+window.showDetails = showDetails;
+</script>
+{% endblock %}

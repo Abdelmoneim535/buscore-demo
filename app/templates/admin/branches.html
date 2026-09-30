@@ -1,0 +1,829 @@
+{% extends "admin/base_admin.html" %}
+
+{% block title %}{{ _("إدارة الفروع") }} - BusCore{% endblock %}
+{% block page_title %}{{ _("إدارة الفروع") }}{% endblock %}
+
+{% block content %}
+
+<!-- بطاقات إحصائية -->
+<div class="row g-3 mb-3">
+    <div class="col-md-6">
+        <div class="card border-0 shadow-sm" style="border-{% if lang == 'ar' %}right{% else %}left{% endif %}: 4px solid #0d6efd;">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <small class="text-muted">{{ _("إجمالي الفروع") }}</small>
+                        <h3 class="mb-0 fw-bold" id="totalBranches">0</h3>
+                    </div>
+                    <i class="fas fa-building fa-2x text-primary" style="opacity: 0.3;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card border-0 shadow-sm" style="border-{% if lang == 'ar' %}right{% else %}left{% endif %}: 4px solid #198754;">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <small class="text-muted">{{ _("فروع نشطة") }}</small>
+                        <h3 class="mb-0 fw-bold text-success" id="activeBranches">0</h3>
+                    </div>
+                    <i class="fas fa-check-circle fa-2x text-success" style="opacity: 0.3;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+</div>
+
+<!-- أدوات -->
+<div class="card border-0 shadow-sm mb-3">
+    <div class="card-body">
+        <div class="row g-2 align-items-center mb-2">
+            <div class="col-md-4">
+                <div class="input-group">
+                    <span class="input-group-text bg-light"><i class="fas fa-search"></i></span>
+                    <input type="text" id="searchInput" class="form-control"
+                        placeholder="{{ _('بحث بالاسم أو الكود...') }}" oninput="filterBranches()">
+                </div>
+            </div>
+            <div class="col-md-3">
+                <select id="statusFilter" class="form-select" onchange="filterBranches()">
+                    <option value="">{{ _("جميع الحالات") }}</option>
+                    <option value="active">{{ _("نشط") }}</option>
+                    <option value="inactive">{{ _("معطّل") }}</option>
+                </select>
+            </div>
+            <div class="col-md-5 text-end">
+                <button class="btn btn-primary" onclick="openAddModal()">
+                    <i class="fas fa-plus me-1"></i>{{ _("إضافة فرع") }}
+                </button>
+                <button class="btn btn-outline-secondary" onclick="loadBranches()">
+                    <i class="fas fa-sync-alt"></i>
+                </button>
+            </div>
+        </div>
+        <div class="d-flex justify-content-between align-items-center">
+            <div class="btn-group btn-group-sm" role="group">
+                <button type="button" class="btn btn-outline-primary" id="viewCards" onclick="switchView('cards')">
+                    <i class="fas fa-th-large me-1"></i>{{ _("بطاقات") }}
+                </button>
+                <button type="button" class="btn btn-outline-primary" id="viewTable" onclick="switchView('table')">
+                    <i class="fas fa-list me-1"></i>{{ _("جدول") }}
+                </button>
+            </div>
+            <small class="text-muted" id="resultsCount"></small>
+        </div>
+    </div>
+</div>
+
+<!-- قائمة الفروع -->
+<div id="branchesContainer">
+    <div class="text-center py-5">
+        <div class="spinner-border text-primary"></div>
+        <p class="mt-2 text-muted">{{ _("جاري التحميل...") }}</p>
+    </div>
+</div>
+
+<!-- Modal: إضافة / تعديل فرع -->
+<div class="modal fade" id="branchModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="branchModalTitle">
+                    <i class="fas fa-building me-2"></i>{{ _("إضافة فرع") }}
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="branchForm">
+                    <input type="hidden" id="branchId">
+
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label">{{ _("كود الفرع") }} *</label>
+                            <input type="text" id="branchCode" class="form-control" placeholder="BR-003" required>
+                        </div>
+                        <div class="col-md-8">
+                            <label class="form-label">{{ _("اسم الفرع (عربي)") }} *</label>
+                            <input type="text" id="branchName" class="form-control" required>
+                        </div>
+                        <div class="col-md-12">
+                            <label class="form-label">{{ _("اسم الفرع (إنجليزي)") }}</label>
+                            <input type="text" id="branchNameEn" class="form-control" dir="ltr">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">{{ _("المدينة") }}</label>
+                            <select id="branchCity" class="form-select">
+                                <option value="">{{ _("اختر المدينة") }}</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">{{ _("الهاتف") }}</label>
+                            <input type="text" id="branchPhone" class="form-control" dir="ltr">
+                        </div>
+                        <div class="col-md-12">
+                            <label class="form-label">{{ _("البريد الإلكتروني") }}</label>
+                            <input type="email" id="branchEmail" class="form-control" dir="ltr">
+                        </div>
+                        <div class="col-md-12">
+                            <label class="form-label">{{ _("العنوان (عربي)") }}</label>
+                            <input type="text" id="branchAddress" class="form-control">
+                        </div>
+                        <div class="col-md-12">
+                            <label class="form-label">{{ _("العنوان (إنجليزي)") }}</label>
+                            <input type="text" id="branchAddressEn" class="form-control" dir="ltr">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">{{ _("اسم المدير") }}</label>
+                            <input type="text" id="branchManager" class="form-control">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">{{ _("هاتف المدير") }}</label>
+                            <input type="text" id="branchManagerPhone" class="form-control" dir="ltr">
+                        </div>
+                        <div class="col-md-12">
+                            <label class="form-label">{{ _("ملاحظات") }}</label>
+                            <textarea id="branchNotes" class="form-control" rows="2"></textarea>
+                        </div>
+                        <div class="col-md-12">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="branchIsActive" checked>
+                                <label class="form-check-label" for="branchIsActive">
+                                    {{ _("نشط") }}
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ _("إلغاء") }}</button>
+                <button type="button" class="btn btn-primary" onclick="saveBranch()">
+                    <i class="fas fa-save me-1"></i>{{ _("حفظ") }}
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.branch-card {
+    border-radius: 12px;
+    border: 1px solid #e9ecef;
+    transition: all 0.2s;
+    overflow: hidden;
+}
+.branch-card:hover {
+    box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+    transform: translateY(-2px);
+}
+.branch-card.inactive {
+    opacity: 0.6;
+    background: #f8f9fa;
+}
+.branch-header {
+    background: linear-gradient(135deg, #0d6efd, #0a58ca);
+    color: white;
+    padding: 16px 20px;
+    position: relative;
+}
+.branch-header.inactive {
+    background: linear-gradient(135deg, #6c757d, #495057);
+}
+.branch-code {
+    font-family: 'Courier New', monospace;
+    font-size: 0.75rem;
+    background: rgba(255,255,255,0.25);
+    padding: 3px 10px;
+    border-radius: 6px;
+    display: inline-block;
+    margin-bottom: 6px;
+}
+.branch-name {
+    font-weight: 800;
+    font-size: 1.1rem;
+    margin-bottom: 2px;
+}
+.branch-name-en {
+    font-size: 0.85rem;
+    opacity: 0.85;
+}
+.branch-status-badge {
+    position: absolute;
+    top: 12px;
+    {% if lang == 'ar' %}left{% else %}right{% endif %}: 12px;
+    font-size: 0.7rem;
+    padding: 4px 10px;
+    border-radius: 50px;
+    font-weight: 700;
+}
+.branch-status-active {
+    background: rgba(25, 135, 84, 0.95);
+    color: white;
+}
+.branch-status-inactive {
+    background: rgba(108, 117, 125, 0.95);
+    color: white;
+}
+.branch-body {
+    padding: 16px 20px;
+    background: white;
+}
+.branch-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 0;
+    font-size: 0.85rem;
+    color: #495057;
+}
+.branch-info i {
+    width: 18px;
+    text-align: center;
+    color: #6c757d;
+}
+.branch-actions {
+    padding: 10px 20px;
+    background: white;
+    border-top: 1px solid #e9ecef;
+    display: flex;
+    gap: 6px;
+    justify-content: flex-end;
+}
+
+/*  */
+/* Table View */
+/*  */
+.branches-table-wrapper {
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+}
+.branches-table-wrapper .table {
+    margin: 0;
+}
+.branches-table-wrapper .table thead th {
+    background: #f8f9fa;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #6c757d;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 12px 16px;
+    border-bottom: 2px solid #e9ecef;
+    white-space: nowrap;
+}
+.branches-table-wrapper .table tbody td {
+    padding: 12px 16px;
+    font-size: 0.85rem;
+    vertical-align: middle;
+    border-bottom: 1px solid #f0f0f0;
+}
+.branches-table-wrapper .table tbody tr:hover {
+    background: #f8fafc;
+}
+.branch-code-cell {
+    font-family: 'Courier New', monospace;
+    font-weight: 700;
+    color: #0d6efd;
+    background: #e7f1ff;
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-size: 0.72rem;
+    display: inline-block;
+}
+.status-badge-sm {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 50px;
+    font-size: 0.7rem;
+    font-weight: 700;
+}
+.status-active {
+    background: #d1e7dd;
+    color: #0f5132;
+}
+.status-inactive {
+    background: #e2e3e5;
+    color: #41464b;
+}
+
+/* Pagination */
+.pagination-wrapper {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    background: #f8f9fa;
+    border-top: 1px solid #e9ecef;
+}
+.pagination-info {
+    font-size: 0.8rem;
+    color: #6c757d;
+}
+.pagination-controls {
+    display: flex;
+    gap: 4px;
+}
+.pagination-controls button {
+    min-width: 32px;
+    height: 32px;
+    border: 1px solid #dee2e6;
+    background: white;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+.pagination-controls button:hover:not(:disabled) {
+    background: #e7f1ff;
+    border-color: #0d6efd;
+    color: #0d6efd;
+}
+.pagination-controls button.active {
+    background: #0d6efd;
+    border-color: #0d6efd;
+    color: white;
+    font-weight: 700;
+}
+.pagination-controls button:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+</style>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+const LANG = "{{ lang }}";
+let branchModal;
+let allBranches = [];
+let allCities = [];
+let filteredBranches = [];
+let currentView = 'cards';  // cards أو table
+let currentPage = 1;
+const PER_PAGE_CARDS = 6;   // 6 بطاقات في الصفحة
+const PER_PAGE_TABLE = 20;  // 20 صف في الجدول
+
+document.addEventListener('DOMContentLoaded', async function() {
+    branchModal = new bootstrap.Modal(document.getElementById('branchModal'));
+
+    // استرجاع العرض المحفوظ
+    const savedView = localStorage.getItem('branches_view') || 'cards';
+    currentView = savedView;
+    updateViewButtons();
+
+    await loadCities();
+    await loadBranches();
+});
+
+async function loadCities() {
+    try {
+        const res = await fetch('/stations/cities');
+        allCities = await res.json();
+        const select = document.getElementById('branchCity');
+        select.innerHTML = '<option value="">{{ _("اختر المدينة") }}</option>';
+        allCities.forEach(city => {
+            const name = (LANG === 'en' && city.name_en) ? city.name_en : city.name;
+            select.innerHTML += `<option value="${city.id}">${name}</option>`;
+        });
+    } catch (e) {
+        console.error('Failed to load cities:', e);
+    }
+}
+
+async function loadBranches() {
+    try {
+        const res = await fetch('/branches/');
+        allBranches = await res.json();
+        updateStats();
+        renderBranches(allBranches);
+    } catch (e) {
+        console.error(e);
+        document.getElementById('branchesContainer').innerHTML =
+            `<div class="alert alert-danger m-3">{{ _("فشل تحميل الفروع") }}: ${e.message}</div>`;
+    }
+}
+
+function updateStats() {
+    const total = allBranches.length;
+    const active = allBranches.filter(b => b.is_active).length;
+
+    document.getElementById('totalBranches').textContent = total;
+    document.getElementById('activeBranches').textContent = active;
+}
+
+function switchView(view) {
+    currentView = view;
+    currentPage = 1;
+    localStorage.setItem('branches_view', view);
+    updateViewButtons();
+    renderCurrentView();
+}
+
+function updateViewButtons() {
+    document.getElementById('viewCards').classList.toggle('active', currentView === 'cards');
+    document.getElementById('viewTable').classList.toggle('active', currentView === 'table');
+}
+
+function renderCurrentView() {
+    if (currentView === 'cards') {
+        renderCardsView();
+    } else {
+        renderTableView();
+    }
+}
+
+function renderBranches(branches) {
+    // حفظ الفروع المفلترة
+    filteredBranches = branches;
+    document.getElementById('resultsCount').textContent = `${branches.length} {{ _("فرع") }}`;
+    currentPage = 1;
+    renderCurrentView();
+}
+
+function renderCardsView() {
+    const container = document.getElementById('branchesContainer');
+    const branches = filteredBranches;
+
+    if (branches.length === 0) {
+        container.innerHTML = `
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center py-5">
+                    <i class="fas fa-building fa-4x text-muted mb-3"></i>
+                    <h5>{{ _("لا توجد فروع") }}</h5>
+                    <p class="text-muted">{{ _("ابدأ بإضافة فرع جديد") }}</p>
+                    <button class="btn btn-primary" onclick="openAddModal()">
+                        <i class="fas fa-plus me-1"></i>{{ _("إضافة فرع") }}
+                    </button>
+                </div>
+            </div>`;
+        return;
+    }
+
+    // ترقيم الصفحات
+    const totalPages = Math.ceil(branches.length / PER_PAGE_CARDS);
+    if (currentPage > totalPages) currentPage = totalPages;
+    const start = (currentPage - 1) * PER_PAGE_CARDS;
+    const end = start + PER_PAGE_CARDS;
+    const pageBranches = branches.slice(start, end);
+
+    let html = '<div class="row g-3">';
+    pageBranches.forEach(b => {
+        const statusClass = b.is_active ? 'active' : 'inactive';
+        const statusText = b.is_active ? '{{ _("نشط") }}' : '{{ _("معطّل") }}';
+        const statusBadgeClass = b.is_active ? 'branch-status-active' : 'branch-status-inactive';
+
+        const city = allCities.find(c => c.id === b.city_id);
+        const cityName = city ? ((LANG === 'en' && city.name_en) ? city.name_en : city.name) : '';
+
+        html += `
+        <div class="col-md-6 col-lg-4">
+            <div class="branch-card ${statusClass === 'inactive' ? 'inactive' : ''}">
+                <div class="branch-header ${statusClass === 'inactive' ? 'inactive' : ''}">
+                    <span class="branch-status-badge ${statusBadgeClass}">${statusText}</span>
+                    <div class="branch-code">${b.code}</div>
+                    <div class="branch-name">${b.name}</div>
+                    ${b.name_en ? `<div class="branch-name-en">${b.name_en}</div>` : ''}
+                </div>
+                <div class="branch-body">
+                    ${city ? `<div class="branch-info"><i class="fas fa-map-marker-alt"></i><span>${cityName}</span></div>` : ''}
+                    ${b.phone ? `<div class="branch-info"><i class="fas fa-phone"></i><span dir="ltr">${b.phone}</span></div>` : ''}
+                    ${b.email ? `<div class="branch-info"><i class="fas fa-envelope"></i><span dir="ltr">${b.email}</span></div>` : ''}
+                    ${b.manager_name ? `<div class="branch-info"><i class="fas fa-user-tie"></i><span>${b.manager_name}</span></div>` : ''}
+                </div>
+
+                <div class="branch-actions">
+                    <button class="btn btn-sm btn-outline-primary" onclick="openEditModal(${b.id})" title="{{ _('تعديل') }}">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    ${b.is_active ? `
+                        <button class="btn btn-sm btn-outline-danger" onclick="deactivateBranch(${b.id})" title="{{ _('تعطيل') }}">
+                            <i class="fas fa-ban"></i>
+                        </button>
+                    ` : `
+                        <button class="btn btn-sm btn-outline-success" onclick="reactivateBranch(${b.id})" title="{{ _('تنشيط') }}">
+                            <i class="fas fa-check"></i>
+                        </button>
+                    `}
+                </div>
+            </div>
+        </div>`;
+    });
+    html += '</div>';
+
+    // Pagination للبطاقات
+    if (totalPages > 1) {
+        html += renderPagination(totalPages);
+    }
+
+    container.innerHTML = html;
+
+}
+
+// 
+// Table View
+// 
+function renderTableView() {
+    const container = document.getElementById('branchesContainer');
+    const branches = filteredBranches;
+
+    if (branches.length === 0) {
+        container.innerHTML = `
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center py-5">
+                    <i class="fas fa-building fa-4x text-muted mb-3"></i>
+                    <h5>{{ _("لا توجد فروع") }}</h5>
+                </div>
+            </div>`;
+        return;
+    }
+
+    const totalPages = Math.ceil(branches.length / PER_PAGE_TABLE);
+    if (currentPage > totalPages) currentPage = totalPages;
+    const start = (currentPage - 1) * PER_PAGE_TABLE;
+    const end = start + PER_PAGE_TABLE;
+    const pageBranches = branches.slice(start, end);
+
+    let html = '<div class="branches-table-wrapper">';
+    html += '<div class="table-responsive">';
+    html += '<table class="table table-hover">';
+    html += `
+        <thead>
+            <tr>
+                <th width="50">#</th>
+                <th width="90">{{ _("الكود") }}</th>
+                <th>{{ _("الاسم") }}</th>
+                <th>{{ _("المدينة") }}</th>
+                <th>{{ _("الهاتف") }}</th>
+                <th>{{ _("المدير") }}</th>
+                <th width="80">{{ _("الحالة") }}</th>
+                <th width="160">{{ _("الإجراءات") }}</th>
+            </tr>
+        </thead>
+        <tbody>`;
+
+    pageBranches.forEach((b, idx) => {
+        const rowNum = start + idx + 1;
+        const city = allCities.find(c => c.id === b.city_id);
+        const cityName = city ? ((LANG === 'en' && city.name_en) ? city.name_en : city.name) : '';
+        const statusClass = b.is_active ? 'status-active' : 'status-inactive';
+        const statusText = b.is_active ? '{{ _("نشط") }}' : '{{ _("معطّل") }}';
+
+        html += `
+        <tr>
+            <td>${rowNum}</td>
+            <td><span class="branch-code-cell">${b.code}</span></td>
+            <td>
+                <strong>${b.name}</strong>
+                ${b.name_en ? `<br><small class="text-muted">${b.name_en}</small>` : ''}
+            </td>
+            <td>${cityName}</td>
+            <td><small dir="ltr">${b.phone || ''}</small></td>
+            <td><small>${b.manager_name || ''}</small></td>
+            <td><span class="status-badge-sm ${statusClass}">${statusText}</span></td>
+            <td>
+                <div class="d-flex gap-1">
+                    <button class="btn btn-sm btn-outline-primary" onclick="openEditModal(${b.id})" title="{{ _('تعديل') }}">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    ${b.is_active ? `
+                        <button class="btn btn-sm btn-outline-danger" onclick="deactivateBranch(${b.id})" title="{{ _('تعطيل') }}">
+                            <i class="fas fa-ban"></i>
+                        </button>
+                    ` : `
+                        <button class="btn btn-sm btn-outline-success" onclick="reactivateBranch(${b.id})" title="{{ _('تنشيط') }}">
+                            <i class="fas fa-check"></i>
+                        </button>
+                    `}
+                </div>
+            </td>
+        </tr>`;
+    });
+
+    html += '</tbody></table></div>';
+
+    // Pagination
+    if (totalPages > 1) {
+        html += renderPagination(totalPages);
+    }
+
+    html += '</div>';
+    container.innerHTML = html;
+
+}
+
+// 
+// Pagination
+// 
+function renderPagination(totalPages) {
+    const perPage = currentView === 'cards' ? PER_PAGE_CARDS : PER_PAGE_TABLE;
+    const total = filteredBranches.length;
+    const start = (currentPage - 1) * perPage + 1;
+    const end = Math.min(currentPage * perPage, total);
+
+    let html = '<div class="pagination-wrapper">';
+    html += `<div class="pagination-info">{{ _("عرض") }} ${start}-${end} {{ _("من") }} ${total}</div>`;
+    html += '<div class="pagination-controls">';
+
+    // السابق
+    html += `<button onclick="goToPage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>
+        <i class="fas fa-chevron-{% if lang == 'ar' %}right{% else %}left{% endif %}"></i>
+    </button>`;
+
+    // أرقام الصفحات
+    const maxVisible = 5;
+    let startPage = Math.max(1, currentPage - Math.floor(maxVisible / 2));
+    let endPage = Math.min(totalPages, startPage + maxVisible - 1);
+
+    if (endPage - startPage + 1 < maxVisible) {
+        startPage = Math.max(1, endPage - maxVisible + 1);
+    }
+
+    if (startPage > 1) {
+        html += `<button onclick="goToPage(1)">1</button>`;
+        if (startPage > 2) html += `<button disabled>...</button>`;
+    }
+
+    for (let i = startPage; i <= endPage; i++) {
+        html += `<button onclick="goToPage(${i})" class="${i === currentPage ? 'active' : ''}">${i}</button>`;
+    }
+
+    if (endPage < totalPages) {
+        if (endPage < totalPages - 1) html += `<button disabled>...</button>`;
+        html += `<button onclick="goToPage(${totalPages})">${totalPages}</button>`;
+    }
+
+    // التالي
+    html += `<button onclick="goToPage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}>
+        <i class="fas fa-chevron-{% if lang == 'ar' %}left{% else %}right{% endif %}"></i>
+    </button>`;
+
+    html += '</div></div>';
+    return html;
+}
+
+function goToPage(page) {
+    const perPage = currentView === 'cards' ? PER_PAGE_CARDS : PER_PAGE_TABLE;
+    const totalPages = Math.ceil(filteredBranches.length / perPage);
+    if (page < 1 || page > totalPages) return;
+    currentPage = page;
+    renderCurrentView();
+    // scroll to top
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function filterBranches() {
+    const search = document.getElementById('searchInput').value.toLowerCase().trim();
+    const status = document.getElementById('statusFilter').value;
+
+    const filtered = allBranches.filter(b => {
+        if (search) {
+            const code = (b.code || '').toLowerCase();
+            const name = (b.name || '').toLowerCase();
+            const nameEn = (b.name_en || '').toLowerCase();
+            if (!code.includes(search) && !name.includes(search) && !nameEn.includes(search)) return false;
+        }
+        if (status === 'active' && !b.is_active) return false;
+        if (status === 'inactive' && b.is_active) return false;
+        return true;
+    });
+
+    renderBranches(filtered);
+}
+
+function openAddModal() {
+    document.getElementById('branchModalTitle').innerHTML = '<i class="fas fa-building me-2"></i>{{ _("إضافة فرع") }}';
+    document.getElementById('branchForm').reset();
+    document.getElementById('branchId').value = '';
+    document.getElementById('branchIsActive').checked = true;
+    branchModal.show();
+}
+
+function openEditModal(id) {
+    const b = allBranches.find(x => x.id === id);
+    if (!b) return;
+
+    document.getElementById('branchModalTitle').innerHTML = '<i class="fas fa-edit me-2"></i>{{ _("تعديل فرع") }}';
+    document.getElementById('branchId').value = b.id;
+    document.getElementById('branchCode').value = b.code || '';
+    document.getElementById('branchName').value = b.name || '';
+    document.getElementById('branchNameEn').value = b.name_en || '';
+    document.getElementById('branchCity').value = b.city_id || '';
+    document.getElementById('branchPhone').value = b.phone || '';
+    document.getElementById('branchEmail').value = b.email || '';
+    document.getElementById('branchAddress').value = b.address || '';
+    document.getElementById('branchAddressEn').value = b.address_en || '';
+    document.getElementById('branchManager').value = b.manager_name || '';
+    document.getElementById('branchManagerPhone').value = b.manager_phone || '';
+    document.getElementById('branchNotes').value = b.notes || '';
+    document.getElementById('branchIsActive').checked = b.is_active;
+
+    branchModal.show();
+}
+
+async function saveBranch() {
+    const id = document.getElementById('branchId').value;
+    const data = {
+        code: document.getElementById('branchCode').value.trim(),
+        name: document.getElementById('branchName').value.trim(),
+        name_en: document.getElementById('branchNameEn').value.trim() || null,
+        city_id: document.getElementById('branchCity').value ? parseInt(document.getElementById('branchCity').value) : null,
+        phone: document.getElementById('branchPhone').value.trim() || null,
+        email: document.getElementById('branchEmail').value.trim() || null,
+        address: document.getElementById('branchAddress').value.trim() || null,
+        address_en: document.getElementById('branchAddressEn').value.trim() || null,
+        manager_name: document.getElementById('branchManager').value.trim() || null,
+        manager_phone: document.getElementById('branchManagerPhone').value.trim() || null,
+        notes: document.getElementById('branchNotes').value.trim() || null,
+        is_active: document.getElementById('branchIsActive').checked
+    };
+
+    if (!data.code || !data.name) {
+        alert('{{ _("الرجاء إدخال الكود والاسم") }}');
+        return;
+    }
+
+    try {
+        let res;
+        if (id) {
+            // تعديل
+            res = await fetch(`/branches/${id}`, {
+                method: 'PUT',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(data)
+            });
+        } else {
+            // إضافة
+            res = await fetch('/branches/', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(data)
+            });
+        }
+
+        if (!res.ok) {
+            const err = await res.json();
+            throw new Error(err.detail || 'خطأ في الحفظ');
+        }
+
+        branchModal.hide();
+        await loadBranches();
+    } catch (e) {
+        alert(' ' + e.message);
+    }
+}
+
+async function deactivateBranch(id) {
+    if (!confirm('{{ _("هل تريد تعطيل هذا الفرع؟") }}')) return;
+
+    try {
+        const res = await fetch(`/branches/${id}`, {method: 'DELETE'});
+        if (!res.ok) {
+            const err = await res.json();
+            throw new Error(err.detail || 'خطأ');
+        }
+        await loadBranches();
+    } catch (e) {
+        alert(' ' + e.message);
+    }
+}
+
+async function reactivateBranch(id) {
+    try {
+        const res = await fetch(`/branches/${id}`, {
+            method: 'PUT',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({is_active: true})
+        });
+        if (!res.ok) throw new Error('خطأ');
+        await loadBranches();
+    } catch (e) {
+        alert(' ' + e.message);
+    }
+}
+
+function formatCurrency(amount) {
+    if (!amount && amount !== 0) return '0 SDG';
+    const locale = LANG === 'ar' ? 'ar-SD' : 'en-SD';
+    return new Intl.NumberFormat(locale, {
+        style: 'currency',
+        currency: 'SDG',
+        minimumFractionDigits: 0
+    }).format(amount);
+}
+
+window.loadBranches = loadBranches;
+window.switchView = switchView;
+window.goToPage = goToPage;
+window.filterBranches = filterBranches;
+window.openAddModal = openAddModal;
+window.openEditModal = openEditModal;
+window.saveBranch = saveBranch;
+window.deactivateBranch = deactivateBranch;
+window.reactivateBranch = reactivateBranch;
+</script>
+{% endblock %}

@@ -1,0 +1,3163 @@
+
+
+msgid ""
+msgstr ""
+
+msgid "سافر بكل راحة وأمان"
+msgstr "Travel in Comfort and Safety"
+
+msgid "احجز تذكرتك الإلكترونية خلال دقيقة واحدة"
+msgstr "Book your e-ticket in one minute"
+
+msgid "احجز تذكرتك الآن"
+msgstr "Book your ticket now"
+
+msgid "الرئيسية"
+msgstr "Home"
+
+msgid "البحث"
+msgstr "Search"
+
+msgid "أسطولنا"
+msgstr "Our Fleet"
+
+msgid "لوحة التحكم"
+msgstr "Dashboard"
+
+msgid "تسجيل الدخول"
+msgstr "Login"
+
+msgid "من"
+msgstr "of"
+
+msgid "إلى"
+msgstr "To"
+
+msgid "تاريخ السفر"
+msgstr "Travel Date"
+
+msgid "اختر محطة المغادرة"
+msgstr "Select departure station"
+
+msgid "اختر محطة الوصول"
+msgstr "Select arrival station"
+
+msgid "ابحث عن الرحلات"
+msgstr "Search for trips"
+
+msgid "الوجهات الشهيرة"
+msgstr "Popular Destinations"
+
+msgid "اكتشف أكثر الوجهات المفضلة لدى المسافرين"
+msgstr "Discover the most preferred destinations for travelers"
+
+msgid "الخرطوم"
+msgstr "Khartoum"
+
+msgid "العاصمة"
+msgstr "The Capital"
+
+msgid "بورتسودان"
+msgstr "Port Sudan"
+
+msgid "الميناء"
+msgstr "The Port"
+
+msgid "عطبرة"
+msgstr "Atbara"
+
+msgid "مدينة الحديد"
+msgstr "City of Iron"
+
+msgid "الأبيض"
+msgstr "El Obeid"
+
+msgid "مدينة الصمغ"
+msgstr "City of Gum"
+
+msgid "كيف تحجز في 3 خطوات؟"
+msgstr "How to book in 3 steps?"
+
+msgid "بسيطة وسريعة وآمنة"
+msgstr "Simple, fast and secure"
+
+msgid "ابحث عن رحلتك"
+msgstr "Search for your trip"
+
+msgid "حدد محطة المغادرة والوصول والتاريخ"
+msgstr "Set departure, arrival station and date"
+
+msgid "اختر مقعدك"
+msgstr "Choose your seat"
+
+msgid "اختر المقاعد المناسبة وأدخل بياناتك"
+msgstr "Pick the right seats and enter your details"
+
+msgid "أكمل الحجز"
+msgstr "Complete the booking"
+
+msgid "استلم تذكرتك الإلكترونية فوراً"
+msgstr "Receive your e-ticket instantly"
+
+msgid "عروض خاصة"
+msgstr "Special Offers"
+
+msgid "استفد من أفضل العروض"
+msgstr "Take advantage of the best offers"
+
+msgid "خصم 20% للحجز المبكر"
+msgstr "20% off for early booking"
+
+msgid "احجز قبل 7 أيام واحصل على خصم 20%"
+msgstr "Book 7 days early and get 20% off"
+
+msgid "عرض العائلة"
+msgstr "Family Offer"
+
+msgid "احجز 3 تذاكر واحصل على الرابعة مجاناً"
+msgstr "Book 3 tickets and get the 4th free"
+
+msgid "استفد الآن"
+msgstr "Get it now"
+
+msgid "حجز آمن"
+msgstr "Secure Booking"
+
+msgid "نظام دفع محمي"
+msgstr "Protected payment system"
+
+msgid "دعم 24/7"
+msgstr "24/7 Support"
+
+msgid "جاهزون للمساعدة"
+msgstr "Always ready to help"
+
+msgid "حجز من الجوال"
+msgstr "Mobile Booking"
+
+msgid "يعمل على جميع الأجهزة"
+msgstr "Works on all devices"
+
+msgid "خدمة موثوقة"
+msgstr "Trusted Service"
+
+msgid "آلاف الحجوزات الناجحة"
+msgstr "Thousands of successful bookings"
+
+msgid "نتائج البحث"
+msgstr "Search Results"
+
+msgid "جاري البحث عن الرحلات..."
+msgstr "Searching for trips..."
+
+msgid "الرجاء تحديد محطة المغادرة والوصول والتاريخ"
+msgstr "Please specify departure station, arrival station and date"
+
+msgid "لا توجد رحلات متاحة"
+msgstr "No trips available"
+
+msgid "حاول تغيير التاريخ أو اختيار مسار آخر"
+msgstr "Try changing the date or choosing another route"
+
+msgid "بحث جديد"
+msgstr "New Search"
+
+msgid "مقعد متاح"
+msgstr "Available Seat"
+
+msgid "مكتمل"
+msgstr "Full"
+
+msgid "رقم الحافلة"
+msgstr "Bus Number"
+
+msgid "السعر"
+msgstr "Price"
+
+msgid "اختر هذه الرحلة"
+msgstr "Select this trip"
+
+msgid "غير متاح"
+msgstr "Not available"
+
+msgid "حدث خطأ"
+msgstr "An error occurred"
+
+msgid "لوحة التحكم الإدارية"
+msgstr "Admin Panel"
+
+msgid "لوحة التحكم الرئيسية"
+msgstr "Main Dashboard"
+
+msgid "المدن"
+msgstr "Cities"
+
+msgid "المحطات"
+msgstr "Stations"
+
+msgid "المسارات"
+msgstr "Routes"
+
+msgid "الرحلات"
+msgstr "Trips"
+
+msgid "الحافلات"
+msgstr "Buses"
+
+msgid "الحجوزات"
+msgstr "Bookings"
+
+msgid "المستخدمون"
+msgstr "Users"
+
+msgid "خريطة النظام"
+msgstr "System Map"
+
+msgid "إعدادات الشركة"
+msgstr "Company Settings"
+
+msgid "الموقع الرئيسي"
+msgstr "Main Site"
+
+msgid "تسجيل الخروج"
+msgstr "Logout"
+
+msgid "مدير النظام"
+msgstr "System Admin"
+
+msgid "هل تريد تسجيل الخروج؟"
+msgstr "Do you want to logout?"
+
+msgid "ليس لديك صلاحيات للوصول إلى لوحة التحكم"
+msgstr "You do not have permission to access the dashboard"
+
+msgid "(مدير)"
+msgstr "(Admin)"
+
+msgid "إجمالي المدن"
+msgstr "Total Cities"
+
+msgid "إجمالي المحطات"
+msgstr "Total Stations"
+
+msgid "إجمالي الرحلات"
+msgstr "Total Trips"
+
+msgid "إجمالي الحجوزات"
+msgstr "Total Bookings"
+
+msgid "آخر الحجوزات"
+msgstr "Recent Bookings"
+
+msgid "عرض الكل"
+msgstr "View All"
+
+msgid "جاري التحميل..."
+msgstr "Loading..."
+
+msgid "لا توجد حجوزات بعد"
+msgstr "No bookings yet"
+
+msgid "رقم الحجز"
+msgstr "Booking Ref"
+
+msgid "الراكب"
+msgstr "Passenger"
+
+msgid "الحالة"
+msgstr "Status"
+
+msgid "المبلغ"
+msgstr "Amount"
+
+msgid "ج.س"
+msgstr "SDG"
+
+msgid "إدارة المدن"
+msgstr "Manage Cities"
+
+msgid "إدارة جميع المدن المتاحة في النظام"
+msgstr "Manage all cities available in the system"
+
+msgid "إضافة مدينة جديدة"
+msgstr "Add New City"
+
+msgid "قائمة المدن"
+msgstr "Cities List"
+
+msgid "اسم المدينة"
+msgstr "City Name"
+
+msgid "مثال: الخرطوم"
+msgstr "Example: Khartoum"
+
+msgid "كود IATA"
+msgstr "IATA Code"
+
+msgid "مثال: KRT"
+msgstr "Example: KRT"
+
+msgid "3 أحرف إنجليزية فقط"
+msgstr "3 English letters only"
+
+msgid "إلغاء"
+msgstr "Cancel"
+
+msgid "حفظ"
+msgstr "Save"
+
+msgid "تأكيد الحذف"
+msgstr "Confirm Delete"
+
+msgid "هل أنت متأكد من حذف المدينة"
+msgstr "Are you sure you want to delete the city"
+
+msgid "لا يمكن حذف مدينة تحتوي على محطات مرتبطة بها."
+msgstr "Cannot delete a city that has stations linked to it."
+
+msgid "حذف نهائي"
+msgstr "Delete Permanently"
+
+msgid "لا توجد مدن بعد"
+msgstr "No cities yet"
+
+msgid "ابدأ بإضافة مدينة جديدة"
+msgstr "Start by adding a new city"
+
+msgid "تاريخ الإضافة"
+msgstr "Created At"
+
+msgid "الإجراءات"
+msgstr "Actions"
+
+msgid "تعديل"
+msgstr "Edit"
+
+msgid "تعديل المدينة"
+msgstr "Edit City"
+
+msgid "فشل تحميل المدن"
+msgstr "Failed to load cities"
+
+msgid "الرجاء إدخال اسم المدينة"
+msgstr "Please enter the city name"
+
+msgid "الرجاء إدخال كود IATA مكون من 3 أحرف"
+msgstr "Please enter a 3-letter IATA code"
+
+msgid "جاري الحفظ..."
+msgstr "Saving..."
+
+msgid "التعديل غير متاح حالياً، يمكنك الحذف وإعادة الإضافة"
+msgstr "Editing is not available yet, you can delete and re-add"
+
+msgid "فشل الحفظ"
+msgstr "Save failed"
+
+msgid "تم الحفظ بنجاح!"
+msgstr "Saved successfully!"
+
+msgid "فشل الحذف"
+msgstr "Delete failed"
+
+msgid "إدارة المحطات"
+msgstr "Manage Stations"
+
+msgid "إدارة جميع المحطات المرتبطة بالمدن"
+msgstr "Manage all stations linked to cities"
+
+msgid "إضافة محطة جديدة"
+msgstr "Add New Station"
+
+msgid "قائمة المحطات"
+msgstr "Stations List"
+
+msgid "المدينة"
+msgstr "City"
+
+msgid "اختر المدينة"
+msgstr "Select City"
+
+msgid "اسم المحطة"
+msgstr "Station Name"
+
+msgid "مثال: محطة الخرطوم - الميناء البري"
+msgstr "Example: Khartoum Station - Dry Port"
+
+msgid "العنوان"
+msgstr "Address"
+
+msgid "مثال: السوق المحلي"
+msgstr "Example: Local Market"
+
+msgid "رقم الهاتف"
+msgstr "Phone Number"
+
+msgid "هل أنت متأكد من حذف المحطة"
+msgstr "Are you sure you want to delete the station"
+
+msgid "لا توجد محطات بعد"
+msgstr "No stations yet"
+
+msgid "ابدأ بإضافة محطة جديدة"
+msgstr "Start by adding a new station"
+
+msgid "الهاتف"
+msgstr "Phone"
+
+msgid "الرجاء اختيار المدينة"
+msgstr "Please select a city"
+
+msgid "الرجاء إدخال اسم المحطة"
+msgstr "Please enter the station name"
+
+msgid "فشل تحميل المحطات"
+msgstr "Failed to load stations"
+
+msgid "إدارة المسارات"
+msgstr "Manage Routes"
+
+msgid "إدارة المسارات بين المحطات"
+msgstr "Manage routes between stations"
+
+msgid "إضافة مسار جديد"
+msgstr "Add New Route"
+
+msgid "قائمة المسارات"
+msgstr "Routes List"
+
+msgid "محطة المغادرة"
+msgstr "Departure Station"
+
+msgid "محطة الوصول"
+msgstr "Arrival Station"
+
+msgid "كود المسار"
+msgstr "Route Code"
+
+msgid "مثال: KRT-PZU-001"
+msgstr "Example: KRT-PZU-001"
+
+msgid "يُنصح باستخدام أكواد المدن + رقم تسلسلي"
+msgstr "It is recommended to use city codes + serial number"
+
+msgid "المسافة (كم)"
+msgstr "Distance (km)"
+
+msgid "مثال: 800"
+msgstr "Example: 800"
+
+msgid "معاينة المسار:"
+msgstr "Route Preview:"
+
+msgid "إضافة سعر للمسار"
+msgstr "Add Price for Route"
+
+msgid "المسار:"
+msgstr "Route:"
+
+msgid "السعر (ج.س)"
+msgstr "Price (SDG)"
+
+msgid "مثال: 25000"
+msgstr "Example: 25000"
+
+msgid "تاريخ التفعيل"
+msgstr "Effective Date"
+
+msgid "سيتم تطبيق هذا السعر على الرحلات من هذا التاريخ فصاعداً"
+msgstr "This price will apply to trips from this date onward"
+
+msgid "حفظ السعر"
+msgstr "Save Price"
+
+msgid "هل أنت متأكد من حذف المسار"
+msgstr "Are you sure you want to delete the route"
+
+msgid "لا توجد مسارات بعد"
+msgstr "No routes yet"
+
+msgid "ابدأ بإضافة مسار جديد"
+msgstr "Start by adding a new route"
+
+msgid "الكود"
+msgstr "Code"
+
+msgid "المسار"
+msgstr "Route"
+
+msgid "المسافة"
+msgstr "Distance"
+
+msgid "كم"
+msgstr "km"
+
+msgid "إضافة سعر"
+msgstr "Add Price"
+
+msgid "سعر"
+msgstr "Price"
+
+msgid "حذف"
+msgstr "Delete"
+
+msgid "محطة"
+msgstr "Station"
+
+msgid "فشل تحميل المسارات"
+msgstr "Failed to load routes"
+
+msgid "الرجاء اختيار محطة المغادرة"
+msgstr "Please select the departure station"
+
+msgid "الرجاء اختيار محطة الوصول"
+msgstr "Please select the arrival station"
+
+msgid "لا يمكن أن تكون محطة المغادرة والوصول متطابقتين"
+msgstr "Departure and arrival stations cannot be the same"
+
+msgid "الرجاء إدخال كود المسار"
+msgstr "Please enter the route code"
+
+msgid "تم حفظ المسار بنجاح!"
+msgstr "Route saved successfully!"
+
+msgid "الرجاء إدخال سعر صحيح"
+msgstr "Please enter a valid price"
+
+msgid "الرجاء اختيار تاريخ التفعيل"
+msgstr "Please select the effective date"
+
+msgid "تم حفظ السعر بنجاح!"
+msgstr "Price saved successfully!"
+
+msgid "فشل الحذف. قد يكون المسار مرتبطاً برحلات."
+msgstr "Delete failed. The route may be linked to trips."
+
+msgid "إدارة الرحلات"
+msgstr "Manage Trips"
+
+msgid "جدولة وإدارة رحلات الحافلات"
+msgstr "Schedule and manage bus trips"
+
+msgid "إضافة رحلة جديدة"
+msgstr "Add New Trip"
+
+msgid "رحلات نشطة"
+msgstr "Active Trips"
+
+msgid "رحلات قادمة"
+msgstr "Upcoming Trips"
+
+msgid "بحث بكود المسار أو رقم اللوحة..."
+msgstr "Search by route code or plate number..."
+
+msgid "جميع الحالات"
+msgstr "All Statuses"
+
+msgid "نشطة فقط"
+msgstr "Active Only"
+
+msgid "متوقفة فقط"
+msgstr "Inactive Only"
+
+msgid "جميع التواريخ"
+msgstr "All Dates"
+
+msgid "اليوم"
+msgstr "Today"
+
+msgid "غداً"
+msgstr "Tomorrow"
+
+msgid "هذا الأسبوع"
+msgstr "This Week"
+
+msgid "القادمة"
+msgstr "Upcoming"
+
+msgid "قائمة الرحلات"
+msgstr "Trips List"
+
+msgid "الحافلة"
+msgstr "Bus"
+
+msgid "اختر المسار"
+msgstr "Select Route"
+
+msgid "اختر الحافلة"
+msgstr "Select Bus"
+
+msgid "تاريخ ووقت المغادرة"
+msgstr "Departure Date & Time"
+
+msgid "تاريخ ووقت الوصول (تقديري)"
+msgstr "Arrival Date & Time (estimated)"
+
+msgid "معاينة الرحلة:"
+msgstr "Trip Preview:"
+
+msgid "تحذير:"
+msgstr "Warning:"
+
+msgid "حفظ الرحلة"
+msgstr "Save Trip"
+
+msgid "تفاصيل الرحلة"
+msgstr "Trip Details"
+
+msgid "إغلاق"
+msgstr "Close"
+
+msgid "هل أنت متأكد من حذف هذه الرحلة؟"
+msgstr "Are you sure you want to delete this trip?"
+
+msgid "لا يمكن حذف رحلة تحتوي على حجوزات."
+msgstr "Cannot delete a trip that has bookings."
+
+msgid "لا توجد رحلات"
+msgstr "No trips"
+
+msgid "المغادرة"
+msgstr "Departure"
+
+msgid "الوصول"
+msgstr "Arrival"
+
+msgid "المقاعد"
+msgstr "Seats"
+
+msgid "نشطة"
+msgstr "Active"
+
+msgid "متوقفة"
+msgstr "Inactive"
+
+msgid "تفاصيل"
+msgstr "Details"
+
+msgid "إيقاف"
+msgstr "Pause"
+
+msgid "تفعيل"
+msgstr "Activate"
+
+msgid "مقعد"
+msgstr "Seat"
+
+msgid "الحافلة مشغولة من"
+msgstr "The bus is busy from"
+
+msgid "حتى"
+msgstr "until"
+
+msgid "الحافلة:"
+msgstr "Bus:"
+
+msgid "عدد المقاعد:"
+msgstr "Number of seats:"
+
+msgid "الرجاء اختيار المسار"
+msgstr "Please select a route"
+
+msgid "الرجاء اختيار الحافلة"
+msgstr "Please select a bus"
+
+msgid "الرجاء تحديد وقت المغادرة"
+msgstr "Please select the departure time"
+
+msgid "تعارض في المواعيد!"
+msgstr "Schedule conflict!"
+
+msgid "الحافلة مشغولة في رحلة أخرى من"
+msgstr "The bus is busy on another trip from"
+
+msgid "تم حفظ الرحلة بنجاح!"
+msgstr "Trip saved successfully!"
+
+msgid "الوصول المتوقع"
+msgstr "Expected Arrival"
+
+msgid "غير محدد"
+msgstr "Not specified"
+
+msgid "إجمالي المقاعد"
+msgstr "Total Seats"
+
+msgid "المقاعد المتاحة"
+msgstr "Available Seats"
+
+msgid "فشل التحديث"
+msgstr "Update failed"
+
+msgid "فشل تحميل الرحلات"
+msgstr "Failed to load trips"
+
+msgid "إدارة البصات"
+msgstr "Manage Buses"
+
+msgid "إدارة أسطول البصات الخاص بالشركة"
+msgstr "Manage the company's bus fleet"
+
+msgid "إضافة بص جديد"
+msgstr "Add New Bus"
+
+msgid "إجمالي البصات"
+msgstr "Total Buses"
+
+msgid "بصات نشطة"
+msgstr "Active Buses"
+
+msgid "بصات متوقفة"
+msgstr "Inactive Buses"
+
+msgid "قائمة البصات"
+msgstr "Buses List"
+
+msgid "الصورة"
+msgstr "Image"
+
+msgid "رقم اللوحة"
+msgstr "Plate Number"
+
+msgid "مثال: ب-1234"
+msgstr "Example: B-1234"
+
+msgid "الموديل"
+msgstr "Model"
+
+msgid "مثال: YUTONG / Mercedes"
+msgstr "Example: YUTONG / Mercedes"
+
+msgid "عدد المقاعد"
+msgstr "Seats Count"
+
+msgid "مثال: 55"
+msgstr "Example: 55"
+
+msgid "سنة الصنع"
+msgstr "Year of Manufacture"
+
+msgid "مثال: 2022"
+msgstr "Example: 2022"
+
+msgid "اللون"
+msgstr "Color"
+
+msgid "مثال: أبيض"
+msgstr "Example: White"
+
+msgid "صورة الباص"
+msgstr "Bus Image"
+
+msgid "مسار محلي أو رابط خارجي"
+msgstr "Local path or external URL"
+
+msgid "فيديو الباص"
+msgstr "Bus Video"
+
+msgid "البص نشط (متاح للرحلات)"
+msgstr "Bus is active (available for trips)"
+
+msgid "تعديل البص"
+msgstr "Edit Bus"
+
+msgid "هل أنت متأكد من حذف البص"
+msgstr "Are you sure you want to delete the bus"
+
+msgid "لا يمكن حذف بص مرتبط برحلات موجودة."
+msgstr "Cannot delete a bus that has existing trips."
+
+msgid "لا توجد بصات بعد"
+msgstr "No buses yet"
+
+msgid "ابدأ بإضافة بص جديد"
+msgstr "Start by adding a new bus"
+
+msgid "يوجد فيديو"
+msgstr "Has video"
+
+msgid "فشل تحميل البصات"
+msgstr "Failed to load buses"
+
+msgid "الرجاء إدخال رقم اللوحة"
+msgstr "Please enter the plate number"
+
+msgid "الرجاء إدخال الموديل"
+msgstr "Please enter the model"
+
+msgid "الرجاء إدخال عدد مقاعد صحيح"
+msgstr "Please enter a valid number of seats"
+
+msgid "السنة"
+msgstr "Year"
+
+msgid "إدارة الحجوزات"
+msgstr "Manage Bookings"
+
+msgid "حجوزات مؤكدة"
+msgstr "Confirmed Bookings"
+
+msgid "إجمالي الإيرادات"
+msgstr "Total Revenue"
+
+msgid "بحث برقم الحجز أو الاسم أو الهاتف..."
+msgstr "Search by booking ref, name or phone..."
+
+msgid "تاريخ الحجز"
+msgstr "Booking Date"
+
+msgid "كشف الركاب"
+msgstr "Passenger Manifest"
+
+msgid "تصدير Excel"
+msgstr "Export Excel"
+
+msgid "قائمة الحجوزات"
+msgstr "Bookings List"
+
+msgid "تفاصيل الحجز"
+msgstr "Booking Details"
+
+msgid "طباعة التذكرة"
+msgstr "Print Ticket"
+
+msgid "تأكيد الحجز"
+msgstr "Booking Confirmation"
+
+msgid "هل تريد تأكيد الحجز"
+msgstr "Do you want to confirm the booking"
+
+msgid "تأكيد"
+msgstr "Confirm"
+
+msgid "إلغاء الحجز"
+msgstr "Cancel Booking"
+
+msgid "هل أنت متأكد من إلغاء الحجز"
+msgstr "Are you sure you want to cancel the booking"
+
+msgid "سبب الإلغاء (اختياري)"
+msgstr "Cancellation reason (optional)"
+
+msgid "مثال: طلب العميل"
+msgstr "Example: customer request"
+
+msgid "تراجع"
+msgstr "Back"
+
+msgid "كشف الركاب (المنفستو)"
+msgstr "Passenger Manifest"
+
+msgid "اختر الرحلة"
+msgstr "Select Trip"
+
+msgid "اختر رحلة لعرض كشف الركاب"
+msgstr "Select a trip to view the passenger manifest"
+
+msgid "طباعة المنفستو"
+msgstr "Print Manifest"
+
+msgid "لا توجد حجوزات"
+msgstr "No bookings found"
+
+msgid "لم يتم العثور على أي حجوزات"
+msgstr "No bookings found"
+
+msgid "منتهي"
+msgstr "Expired"
+
+msgid "الإثبات"
+msgstr "ID"
+
+msgid "لا يوجد"
+msgstr "None"
+
+msgid "نوع الحجز"
+msgstr "Booking Type"
+
+msgid "أونلاين"
+msgstr "Online"
+
+msgid "مكتب"
+msgstr "Office"
+
+msgid "الأمتعة الإضافية"
+msgstr "Extra Luggage"
+
+msgid "شنطة مجانية"
+msgstr "Free bag"
+
+msgid "شنطة صغيرة"
+msgstr "Small bag"
+
+msgid "شنطة متوسطة"
+msgstr "Medium bag"
+
+msgid "صندوق كبير"
+msgstr "Large box"
+
+msgid "كجم"
+msgstr "kg"
+
+msgid "فشل التأكيد"
+msgstr "Confirm failed"
+
+msgid "فشل الإلغاء"
+msgstr "Cancel failed"
+
+msgid "لا توجد حجوزات على هذه الرحلة"
+msgstr "No bookings on this trip"
+
+msgid "كشف ركاب الحافلة"
+msgstr "Bus Passenger Manifest"
+
+msgid "رقم الكشف:"
+msgstr "Manifest No:"
+
+msgid "تاريخ الإصدار:"
+msgstr "Issue Date:"
+
+msgid "التاريخ والوقت"
+msgstr "Date & Time"
+
+msgid "السعة الكلية"
+msgstr "Total Capacity"
+
+msgid "راكب بالغ"
+msgstr "Adult Passenger"
+
+msgid "طفل رضيع"
+msgstr "Infant"
+
+msgid "مقعد محجوز"
+msgstr "Booked Seat"
+
+msgid "الركاب البالغون"
+msgstr "Adult Passengers"
+
+msgid "اسم الراكب"
+msgstr "Passenger Name"
+
+msgid "المقعد"
+msgstr "Seat"
+
+msgid "التوقيع"
+msgstr "Signature"
+
+msgid "لا يوجد ركاب بالغون"
+msgstr "No adult passengers"
+
+msgid "معلق"
+msgstr "Pending"
+
+msgid "الأطفال الرضع (مجاناً - بدون مقعد)"
+msgstr "Infants (Free - No Seat)"
+
+msgid "اسم الطفل"
+msgstr "Child Name"
+
+msgid "هاتف المرافق"
+msgstr "Companion Phone"
+
+msgid "العمر"
+msgstr "Age"
+
+msgid "أقل من سنتين"
+msgstr "Under 2 years"
+
+msgid "ملاحظات هامة:"
+msgstr "Important Notes:"
+
+msgid "على قائد الحافلة التحقق من هوية كل راكب قبل الصعود."
+msgstr "The bus driver must verify the identity of each passenger before boarding."
+
+msgid "الأطفال الرضع يسافرون مجاناً بدون مقعد ويجب أن يكونوا برفقة أحد الوالدين."
+msgstr "Infants travel free without a seat and must be accompanied by a parent."
+
+msgid "يجب التأكد من عدد الركاب الفعلي ومطابقته مع الكشف قبل الانطلاق."
+msgstr "The actual passenger count must be verified against the manifest before departure."
+
+msgid "في حالة وجود راكب غير مسجل، يتم إبلاغ الإدارة فوراً."
+msgstr "If an unregistered passenger is found, management must be notified immediately."
+
+msgid "توقيع قائد الحافلة"
+msgstr "Bus Driver Signature"
+
+msgid "الاسم:"
+msgstr "Name:"
+
+msgid "توقيع المشرف / المدير"
+msgstr "Supervisor / Manager Signature"
+
+msgid "جميع الحقوق محفوظة"
+msgstr "All rights reserved"
+
+msgid "فشل تحميل المنفستو"
+msgstr "Failed to load manifest"
+
+msgid "فشل تحميل الحجوزات"
+msgstr "Failed to load bookings"
+
+msgid "تذكرة"
+msgstr "Tickets"
+
+msgid "تذكرة سفر"
+msgstr "Travel Ticket"
+
+msgid "رقم التذكرة:"
+msgstr "Ticket No:"
+
+msgid "الراكب:"
+msgstr "Passenger:"
+
+msgid "الهاتف:"
+msgstr "Phone:"
+
+msgid "التاريخ:"
+msgstr "Date:"
+
+msgid "المقاعد:"
+msgstr "Seats:"
+
+msgid "المبلغ:"
+msgstr "Amount:"
+
+msgid "شكراً لثقتكم"
+msgstr "Thank you for your trust"
+
+msgid "الاسم"
+msgstr "Name"
+
+msgid "قيد الانتظار"
+msgstr "Pending"
+
+msgid "مؤكد"
+msgstr "Confirmed"
+
+msgid "ملغي"
+msgstr "Cancelled"
+
+msgid "طباعة"
+msgstr "Print"
+
+msgid "إدارة المستخدمين"
+msgstr "Manage Users"
+
+msgid "إدارة حسابات الموظفين والمديرين"
+msgstr "Manage staff and admin accounts"
+
+msgid "إضافة مستخدم جديد"
+msgstr "Add New User"
+
+msgid "إجمالي المستخدمين"
+msgstr "Total Users"
+
+msgid "مستخدمون نشطون"
+msgstr "Active Users"
+
+msgid "مديرو النظام"
+msgstr "System Admins"
+
+msgid "قائمة المستخدمين"
+msgstr "Users List"
+
+msgid "اسم المستخدم"
+msgstr "Username"
+
+msgid "مثال: ahmed_admin"
+msgstr "Example: ahmed_admin"
+
+msgid "البريد الإلكتروني"
+msgstr "Email"
+
+msgid "كلمة المرور"
+msgstr "Password"
+
+msgid "أدخل كلمة المرور"
+msgstr "Enter password"
+
+msgid "على الأقل 6 أحرف"
+msgstr "At least 6 characters"
+
+msgid "تأكيد كلمة المرور"
+msgstr "Confirm Password"
+
+msgid "أعد إدخال كلمة المرور"
+msgstr "Re-enter password"
+
+msgid "مدير نظام (صلاحيات كاملة)"
+msgstr "System Admin (full permissions)"
+
+msgid "الحساب نشط"
+msgstr "Account is active"
+
+msgid "تعديل المستخدم"
+msgstr "Edit User"
+
+msgid "اتركه فارغاً إذا كنت لا تريد تغيير كلمة المرور"
+msgstr "Leave it empty if you don't want to change the password"
+
+msgid "هل أنت متأكد من حذف المستخدم"
+msgstr "Are you sure you want to delete the user"
+
+msgid "هذا الإجراء لا يمكن التراجع عنه."
+msgstr "This action cannot be undone."
+
+msgid "لا يوجد مستخدمون بعد"
+msgstr "No users yet"
+
+msgid "ابدأ بإضافة مستخدم جديد"
+msgstr "Start by adding a new user"
+
+msgid "الصلاحية"
+msgstr "Role"
+
+msgid "مدير"
+msgstr "Admin"
+
+msgid "موظف"
+msgstr "Staff"
+
+msgid "نشط"
+msgstr "Active"
+
+msgid "متوقف"
+msgstr "Inactive"
+
+msgid "أنت"
+msgstr "You"
+
+msgid "فشل تحميل المستخدمين"
+msgstr "Failed to load users"
+
+msgid "الرجاء إدخال اسم المستخدم"
+msgstr "Please enter the username"
+
+msgid "الرجاء إدخال البريد الإلكتروني"
+msgstr "Please enter the email"
+
+msgid "الرجاء إدخال كلمة المرور"
+msgstr "Please enter the password"
+
+msgid "كلمة المرور يجب أن تكون 6 أحرف على الأقل"
+msgstr "Password must be at least 6 characters"
+
+msgid "كلمتا المرور غير متطابقتين"
+msgstr "Passwords do not match"
+
+msgid "المواقع"
+msgstr "Locations"
+
+msgid "العمليات"
+msgstr "Operations"
+
+msgid "الإدارة"
+msgstr "Administration"
+
+msgid "الحجوزات + المنفستو"
+msgstr "Bookings + Manifest"
+
+msgid "وثائق API"
+msgstr "API Docs"
+
+msgid "نظرة عامة سريعة"
+msgstr "Quick Overview"
+
+msgid "مدن"
+msgstr "Cities"
+
+msgid "محطات"
+msgstr "Stations"
+
+msgid "حافلات"
+msgstr "Buses"
+
+msgid "رحلات"
+msgstr "Trips"
+
+msgid "حجوزات"
+msgstr "bookings"
+
+msgid "مستخدمون"
+msgstr "Users"
+
+msgid "ملاحظة:"
+msgstr "Note:"
+
+msgid "أي تعديل هنا سيظهر"
+msgstr "Any change here will appear"
+
+msgid "فوراً"
+msgstr "immediately"
+
+msgid "في التذاكر، الموقع، والمنفستو."
+msgstr "in tickets, website, and manifest."
+
+msgid "معلومات الشركة"
+msgstr "Company Information"
+
+msgid "اسم الشركة (عربي)"
+msgstr "Company Name (Arabic)"
+
+msgid "اسم الشركة (إنجليزي)"
+msgstr "Company Name (English)"
+
+msgid "الموقع الإلكتروني"
+msgstr "Website"
+
+msgid "رابط الشعار (Logo URL)"
+msgstr "Logo URL"
+
+msgid "مثال: /static/images/logo.png"
+msgstr "Example: /static/images/logo.png"
+
+msgid "السجل التجاري"
+msgstr "Commercial Register"
+
+msgid "الرقم الضريبي"
+msgstr "Tax Number"
+
+msgid "إعدادات التذكرة"
+msgstr "Ticket Settings"
+
+msgid "نص الفوتر"
+msgstr "Footer Text"
+
+msgid "تعليمات الراكب"
+msgstr "Passenger Instructions"
+
+msgid "كل سطر = تعليمة منفصلة"
+msgstr "Each line = separate instruction"
+
+msgid "نص الضمان"
+msgstr "Warranty Text"
+
+msgid "معلومات الدفع"
+msgstr "Payment Information"
+
+msgid "اسم البنك"
+msgstr "Bank Name"
+
+msgid "رقم الحساب"
+msgstr "Account Number"
+
+msgid "اسم صاحب الحساب"
+msgstr "Account Holder Name"
+
+msgid "الدعم الفني"
+msgstr "Technical Support"
+
+msgid "هاتف الدعم"
+msgstr "Support Phone"
+
+msgid "واتساب"
+msgstr "WhatsApp"
+
+msgid "حفظ الإعدادات"
+msgstr "Save Settings"
+
+msgid "إعادة تحميل"
+msgstr "Reload"
+
+msgid "تم حفظ الإعدادات بنجاح! ستظهر التعديلات فوراً في التذاكر والموقع."
+msgstr "Settings saved successfully! Changes will appear immediately in tickets and website."
+
+msgid "العنوان (عربي)"
+msgstr "Address (Arabic)"
+
+msgid "العنوان (إنجليزي)"
+msgstr "Address (English)"
+
+msgid "نص الفوتر (عربي)"
+msgstr "Footer Text (Arabic)"
+
+msgid "نص الفوتر (إنجليزي)"
+msgstr "Footer Text (English)"
+
+msgid "تعليمات الراكب (عربي)"
+msgstr "Passenger Instructions (Arabic)"
+
+msgid "تعليمات الراكب (إنجليزي)"
+msgstr "Passenger Instructions (English)"
+
+msgid "نص الضمان (عربي)"
+msgstr "Warranty Text (Arabic)"
+
+msgid "نص الضمان (إنجليزي)"
+msgstr "Warranty Text (English)"
+
+msgid "اسم البنك (عربي)"
+msgstr "Bank Name (Arabic)"
+
+msgid "اسم البنك (إنجليزي)"
+msgstr "Bank Name (English)"
+
+msgid "اسم صاحب الحساب (عربي)"
+msgstr "Account Holder Name (Arabic)"
+
+msgid "اسم صاحب الحساب (إنجليزي)"
+msgstr "Account Holder Name (English)"
+
+msgid "أسطولنا - البصات"
+msgstr "Our Fleet - Buses"
+
+msgid "أسطولنا من البصات الحديثة"
+msgstr "Our Fleet of Modern Buses"
+
+msgid "سافر بأمان وراحة مع أحدث البصات المجهزة"
+msgstr "Travel in safety and comfort with our modern buses"
+
+msgid "تعرف على أسطولنا"
+msgstr "Meet Our Fleet"
+
+msgid "بصات حديثة مجهزة بأحدث وسائل الراحة"
+msgstr "Modern buses equipped with the latest amenities"
+
+msgid "لماذا تختار السفر معنا؟"
+msgstr "Why choose to travel with us?"
+
+msgid "أمان تام"
+msgstr "Complete Safety"
+
+msgid "بصات حديثة + سائقون مدربون"
+msgstr "Modern buses + trained drivers"
+
+msgid "تكييف مركزي"
+msgstr "Central A/C"
+
+msgid "راحة تامة في جميع الأوقات"
+msgstr "Complete comfort at all times"
+
+msgid "واي فاي مجاني"
+msgstr "Free Wi-Fi"
+
+msgid "ابقَ متصلاً خلال رحلتك"
+msgstr "Stay connected during your trip"
+
+msgid "مقاعد مريحة"
+msgstr "Comfortable Seats"
+
+msgid "مقاعد واسعة وقابلة للاستلقاء"
+msgstr "Wide reclining seats"
+
+msgid "شركة النقل"
+msgstr "Transport Co."
+
+msgid "لا توجد بصات متاحة حالياً"
+msgstr "No buses available currently"
+
+msgid "شاهد الفيديو"
+msgstr "Watch Video"
+
+msgid "مكيف"
+msgstr "A/C"
+
+msgid "تسجيل الدخول للنظام"
+msgstr "Sign in to the system"
+
+msgid "أدخل اسم المستخدم"
+msgstr "Enter username"
+
+msgid "العودة للصفحة الرئيسية"
+msgstr "Back to home page"
+
+msgid "الرجاء إدخال اسم المستخدم وكلمة المرور"
+msgstr "Please enter username and password"
+
+msgid "جاري الدخول..."
+msgstr "Logging in..."
+
+msgid "تم تسجيل الدخول بنجاح!"
+msgstr "Logged in successfully!"
+
+msgid "تم تسجيل الدخول"
+msgstr "Logged in"
+
+msgid "فشل تسجيل الدخول"
+msgstr "Login failed"
+
+msgid "اسم المستخدم أو كلمة المرور غير صحيحة"
+msgstr "Incorrect username or password"
+
+msgid "حجز التذكرة"
+msgstr "Book Ticket"
+
+msgid "تاريخ المغادرة"
+msgstr "Departure Date"
+
+msgid "سعر التذكرة"
+msgstr "Ticket Price"
+
+msgid "عدد المسافرين"
+msgstr "Passengers Count"
+
+msgid "البالغين"
+msgstr "Adults"
+
+msgid "كل بالغ يحتاج مقعداً"
+msgstr "Each adult needs a seat"
+
+msgid "الأطفال الرضع"
+msgstr "Infants"
+
+msgid "مجاناً - بدون مقعد (أقل من سنتين)"
+msgstr "Free - No seat (under 2 years)"
+
+msgid "اختر مقاعد البالغين"
+msgstr "Choose adult seats"
+
+msgid "متاح"
+msgstr "available"
+
+msgid "مختار"
+msgstr "Selected"
+
+msgid "محجوز"
+msgstr "Booked"
+
+msgid "بيانات البالغين"
+msgstr "Adult Information"
+
+msgid "بيانات الأطفال الرضع"
+msgstr "Infant Information"
+
+msgid "مجاناً بدون مقعد"
+msgstr "Free without seat"
+
+msgid "الأمتعة"
+msgstr "Luggage"
+
+msgid "شنطة مجانية 40 كجم"
+msgstr "Free bag 40 kg"
+
+msgid "شنطة مجانية:"
+msgstr "Free bag:"
+
+msgid "تشمل كل تذكرة شنطة واحدة بوزن يصل إلى"
+msgstr "Each ticket includes one bag up to"
+
+msgid "أمتعة إضافية (اختيارية)"
+msgstr "Extra luggage (optional)"
+
+msgid "ملخص الحجز"
+msgstr "Booking Summary"
+
+msgid "عدد البالغين"
+msgstr "Adults Count"
+
+msgid "الإجمالي"
+msgstr "Total"
+
+msgid "الاسم الكامل"
+msgstr "Full Name"
+
+msgid "أدخل الاسم"
+msgstr "Enter name"
+
+msgid "العمر (سنة)"
+msgstr "Age (years)"
+
+msgid "مثال: 30"
+msgstr "Example: 30"
+
+msgid "نوع الإثبات"
+msgstr "ID Type"
+
+msgid "اختر"
+msgstr "Choose"
+
+msgid "جواز سفر"
+msgstr "Passport"
+
+msgid "بطاقة شخصية"
+msgstr "National ID"
+
+msgid "رقم الإثبات"
+msgstr "ID Number"
+
+msgid "الرقم"
+msgstr "Number"
+
+msgid "البريد الإلكتروني (اختياري)"
+msgstr "Email (optional)"
+
+msgid "الطفل الرضيع"
+msgstr "Infant"
+
+msgid "أدخل اسم الطفل"
+msgstr "Enter child name"
+
+msgid "العمر (بالشهور)"
+msgstr "Age (months)"
+
+msgid "مثال: 8"
+msgstr "Example: 8"
+
+msgid "أقل من 24 شهراً"
+msgstr "Less than 24 months"
+
+msgid "فشل تحميل المقاعد"
+msgstr "Failed to load seats"
+
+msgid "لا يمكنك اختيار أكثر من"
+msgstr "You cannot select more than"
+
+msgid "لا توجد خيارات أمتعة إضافية حالياً"
+msgstr "No extra luggage options currently"
+
+msgid "مجاناً"
+msgstr "Free"
+
+msgid "فشل تحميل الأمتعة"
+msgstr "Failed to load luggage"
+
+msgid "الرجاء إدخال اسم الراكب"
+msgstr "Please enter passenger name"
+
+msgid "الرجاء إدخال 9 أرقام للراكب"
+msgstr "Please enter 9 digits for passenger"
+
+msgid "عمره أقل من سنتين. أضفه في قسم الأطفال الرضع"
+msgstr "under 2 years old. Add them to the infants section"
+
+msgid "الرجاء إدخال اسم الطفل"
+msgstr "Please enter child name"
+
+msgid "الطفل"
+msgstr "Child"
+
+msgid "عمره 24 شهراً أو أكثر. أضفه كراكب بالغ بمقعد"
+msgstr "is 24 months or older. Add as adult passenger with seat"
+
+msgid "عدد المقاعد لا يطابق عدد البالغين"
+msgstr "Seats count does not match adults count"
+
+msgid "جاري الحجز..."
+msgstr "Booking..."
+
+msgid "تم الحجز بنجاح!"
+msgstr "Booked successfully!"
+
+msgid "فشل الحجز"
+msgstr "Booking failed"
+
+msgid "تم حجز تذاكرك بنجاح!"
+msgstr "Your tickets have been booked successfully!"
+
+msgid "احتفظ بالتذكرة وأظهرها عند الصعود"
+msgstr "Keep the ticket and show it at boarding"
+
+msgid "قيد التأكيد"
+msgstr "Pending confirmation"
+
+msgid "غير مدفوع"
+msgstr "Unpaid"
+
+msgid "متوقع"
+msgstr "Expected"
+
+msgid "امسح للتحقق"
+msgstr "Scan to verify"
+
+msgid "الحضور قبل 30 دقيقة"
+msgstr "Arrive 30 minutes early"
+
+msgid "إحضار الهوية"
+msgstr "Bring your ID"
+
+msgid "الأمتعة 40 كجم"
+msgstr "Luggage 40 kg"
+
+msgid "شكراً لثقتكم بنا"
+msgstr "Thank you for your trust"
+
+msgid "طفل رضيع - رقم الحجز:"
+msgstr "Infant - Booking Ref:"
+
+msgid "مجاني"
+msgstr "Free"
+
+msgid "اسم المدينة (عربي)"
+msgstr "City Name (Arabic)"
+
+msgid "اسم المدينة (إنجليزي)"
+msgstr "City Name (English)"
+
+msgid "اسم المحطة (عربي)"
+msgstr "Station Name (Arabic)"
+
+msgid "اسم المحطة (إنجليزي)"
+msgstr "Station Name (English)"
+
+msgid "اللون (عربي)"
+msgstr "Color (Arabic)"
+
+msgid "اللون (إنجليزي)"
+msgstr "Color (English)"
+
+msgid "إدارة الأمتعة"
+msgstr "Manage Luggage"
+
+msgid "إدارة أنواع الأمتعة والأسعار المتاحة"
+msgstr "Manage luggage types and available prices"
+
+msgid "إضافة أمتعة جديدة"
+msgstr "Add New Luggage"
+
+msgid "الشنطة المجانية (40 كجم) تكون مضمّنة مع كل تذكرة. الفئات الأخرى اختيارية ومدفوعة."
+msgstr "The free bag (40 kg) is included with every ticket. Other categories are optional and paid."
+
+msgid "قائمة الأمتعة"
+msgstr "Luggage List"
+
+msgid "نوع الأمتعة"
+msgstr "Luggage Type"
+
+msgid "مجانية"
+msgstr "Free"
+
+msgid "صغيرة"
+msgstr "Small"
+
+msgid "متوسطة"
+msgstr "Medium"
+
+msgid "كبيرة"
+msgstr "Large"
+
+msgid "إضافية"
+msgstr "Extra"
+
+msgid "الوزن (كجم)"
+msgstr "Weight (kg)"
+
+msgid "مثال: 40"
+msgstr "Example: 40"
+
+msgid "مثال: 5000"
+msgstr "Example: 5000"
+
+msgid "مجانية (بدون سعر)"
+msgstr "Free (no price)"
+
+msgid "الكمية المسموحة"
+msgstr "Allowed Quantity"
+
+msgid "عدد القطع المسموح بها من هذا النوع"
+msgstr "Number of pieces allowed for this type"
+
+msgid "لا توجد أنواع أمتعة بعد"
+msgstr "No luggage types yet"
+
+msgid "ابدأ بإضافة نوع جديد"
+msgstr "Start by adding a new type"
+
+msgid "النوع"
+msgstr "Type"
+
+msgid "الوزن"
+msgstr "Weight"
+
+msgid "الكمية"
+msgstr "Quantity"
+
+msgid "تعديل الأمتعة"
+msgstr "Edit Luggage"
+
+msgid "هل أنت متأكد من حذف هذا النوع من الأمتعة؟"
+msgstr "Are you sure you want to delete this luggage type?"
+
+msgid "لا يمكن حذف أمتعة مرتبطة بحجوزات موجودة."
+msgstr "Cannot delete luggage linked to existing bookings."
+
+msgid "الرجاء إدخال وزن صحيح"
+msgstr "Please enter a valid weight"
+
+msgid "المصروفات"
+msgstr "Expenses"
+
+msgid "تسجيل وإدارة جميع مصروفات الشركة"
+msgstr "Record and manage all company expenses"
+
+msgid "إضافة مصروف جديد"
+msgstr "Add New Expense"
+
+msgid "التصنيف"
+msgstr "Category"
+
+msgid "جميع التصنيفات"
+msgstr "All Categories"
+
+msgid "اختر التصنيف"
+msgstr "Select Category"
+
+msgid "من تاريخ"
+msgstr "From Date"
+
+msgid "إلى تاريخ"
+msgstr "To Date"
+
+msgid "إعادة تعيين"
+msgstr "Reset"
+
+msgid "إجمالي المصروفات"
+msgstr "Total Expenses"
+
+msgid "عدد المصروفات"
+msgstr "Expenses Count"
+
+msgid "متوسط المصروف"
+msgstr "Average Expense"
+
+msgid "قائمة المصروفات"
+msgstr "Expenses List"
+
+msgid "المبلغ (ج.س)"
+msgstr "Amount (SDG)"
+
+msgid "تاريخ المصروف"
+msgstr "Expense Date"
+
+msgid "طريقة الدفع"
+msgstr "Payment Method"
+
+msgid "نقدًا"
+msgstr "Cash"
+
+msgid "تحويل بنكي"
+msgstr "Bank Transfer"
+
+msgid "شيك"
+msgstr "Cheque"
+
+msgid "بنكي"
+msgstr "Bank"
+
+msgid "الوصف / ملاحظات"
+msgstr "Description / Notes"
+
+msgid "تفاصيل المصروف..."
+msgstr "Expense details..."
+
+msgid "الوصف"
+msgstr "Description"
+
+msgid "التاريخ"
+msgstr "Date"
+
+msgid "تعديل المصروف"
+msgstr "Edit Expense"
+
+msgid "هل أنت متأكد من حذف هذا المصروف؟"
+msgstr "Are you sure you want to delete this expense?"
+
+msgid "لا توجد مصروفات"
+msgstr "No expenses"
+
+msgid "ابدأ بإضافة مصروف جديد"
+msgstr "Start by adding a new expense"
+
+msgid "فشل تحميل المصروفات"
+msgstr "Failed to load expenses"
+
+msgid "الرجاء اختيار التصنيف"
+msgstr "Please select a category"
+
+msgid "الرجاء إدخال مبلغ صحيح"
+msgstr "Please enter a valid amount"
+
+msgid "الرجاء تحديد التاريخ"
+msgstr "Please select a date"
+
+msgid "التقارير المالية"
+msgstr "Financial Reports"
+
+msgid "تقارير الإيرادات والمصروفات والأرباح"
+msgstr "Revenue, Expenses and Profit Reports"
+
+msgid "عرض التقرير"
+msgstr "Generate Report"
+
+msgid "الأسبوع"
+msgstr "Week"
+
+msgid "الشهر"
+msgstr "Month"
+
+msgid "صافي الربح"
+msgstr "Net Profit"
+
+msgid "الفترة"
+msgstr "Period"
+
+msgid "حجز"
+msgstr "Booking"
+
+msgid "مصروف"
+msgstr "expenses"
+
+msgid "تفصيل المصروفات حسب التصنيف"
+msgstr "Expense Breakdown by Category"
+
+msgid "لا توجد مصروفات في هذه الفترة"
+msgstr "No expenses in this period"
+
+msgid "النسبة"
+msgstr "Percentage"
+
+msgid "المصروفات التفصيلية في الفترة"
+msgstr "Detailed Expenses in Period"
+
+msgid "اختر فترة ثم اضغط عرض التقرير"
+msgstr "Select a period and click Generate Report"
+
+msgid "الرجاء اختيار الفترة"
+msgstr "Please select a period"
+
+msgid "فشل تحميل التقرير"
+msgstr "Failed to load report"
+
+msgid "الرجاء عرض التقرير أولًا"
+msgstr "Please generate the report first"
+
+msgid "تقرير مالي"
+msgstr "Financial Report"
+
+msgid "تصنيفات المصروفات"
+msgstr "Expense Categories"
+
+msgid "إدارة تصنيفات المصروفات (وقود، رواتب، صيانة...)"
+msgstr "Manage expense categories (fuel, salaries, maintenance...)"
+
+msgid "إضافة تصنيف جديد"
+msgstr "Add New Category"
+
+msgid "قائمة التصنيفات"
+msgstr "Categories List"
+
+msgid "الأيقونة"
+msgstr "Icon"
+
+msgid "الاسم (إنجليزي)"
+msgstr "Name (English)"
+
+msgid "اسم التصنيف (عربي)"
+msgstr "Category Name (Arabic)"
+
+msgid "اسم التصنيف (إنجليزي)"
+msgstr "Category Name (English)"
+
+msgid "من FontAwesome — مثل: fa-gas-pump, fa-users, fa-tools"
+msgstr "From FontAwesome — e.g., fa-gas-pump, fa-users, fa-tools"
+
+msgid "لا توجد تصنيفات بعد"
+msgstr "No categories yet"
+
+msgid "ابدأ بإضافة تصنيف جديد"
+msgstr "Start by adding a new category"
+
+msgid "تعديل التصنيف"
+msgstr "Edit Category"
+
+msgid "الرجاء إدخال اسم التصنيف"
+msgstr "Please enter category name"
+
+msgid "فشل تحميل التصنيفات"
+msgstr "Failed to load categories"
+
+msgid "لا يمكن حذف تصنيف مرتبط بمصروفات."
+msgstr "Cannot delete a category linked to expenses."
+
+msgid "هل أنت متأكد من حذف التصنيف"
+msgstr "Are you sure you want to delete category"
+
+msgid "تصدير PDF"
+msgstr "Export PDF"
+
+msgid "طباعة التقرير"
+msgstr "Print Report"
+
+msgid "تاريخ الإصدار"
+msgstr "Issue Date"
+
+msgid "حركة"
+msgstr "entries"
+
+msgid "إدارة العاملين"
+msgstr "Manage Employees"
+
+msgid "إدارة الموظفين والسائقين ورواتبهم"
+msgstr "Manage employees, drivers and their salaries"
+
+msgid "إضافة موظف جديد"
+msgstr "Add New Employee"
+
+msgid "إجمالي الموظفين"
+msgstr "Total Employees"
+
+msgid "موظفون نشطون"
+msgstr "Active Employees"
+
+msgid "إجمالي الرواتب الشهرية"
+msgstr "Monthly Salaries Total"
+
+msgid "إجمالي السلف المتبقية"
+msgstr "Remaining Advances"
+
+msgid "بحث بالاسم أو الهاتف أو الوظيفة..."
+msgstr "Search by name, phone, or position..."
+
+msgid "النشطون فقط"
+msgstr "Active Only"
+
+msgid "المتوقفون فقط"
+msgstr "Inactive Only"
+
+msgid "قائمة الموظفين"
+msgstr "Employees List"
+
+msgid "الاسم الكامل (عربي)"
+msgstr "Full Name (Arabic)"
+
+msgid "الاسم الكامل (إنجليزي)"
+msgstr "Full Name (English)"
+
+msgid "الوظيفة (عربي)"
+msgstr "Position (Arabic)"
+
+msgid "الوظيفة (إنجليزي)"
+msgstr "Position (English)"
+
+msgid "مثال: سائق، محاسب، إداري"
+msgstr "Example: Driver, Accountant, Admin"
+
+msgid "رقم الهوية"
+msgstr "ID Number"
+
+msgid "تاريخ التعيين"
+msgstr "Hire Date"
+
+msgid "الراتب الأساسي (ج.س)"
+msgstr "Base Salary (SDG)"
+
+msgid "الراتب الأساسي"
+msgstr "Base Salary"
+
+msgid "الموظف نشط"
+msgstr "Employee is active"
+
+msgid "تعديل الموظف"
+msgstr "Edit Employee"
+
+msgid "الرجاء إدخال اسم الموظف"
+msgstr "Please enter employee name"
+
+msgid "هل أنت متأكد من حذف الموظف"
+msgstr "Are you sure you want to delete employee"
+
+msgid "سيتم حذف جميع حركاته المالية (رواتب، سلف، خصومات)."
+msgstr "All financial transactions (salaries, advances, deductions) will be deleted."
+
+msgid "لا يوجد موظفون بعد"
+msgstr "No employees yet"
+
+msgid "ابدأ بإضافة موظف جديد"
+msgstr "Start by adding a new employee"
+
+msgid "فشل تحميل الموظفين"
+msgstr "Failed to load employees"
+
+msgid "كشف حساب الموظف"
+msgstr "Employee Statement"
+
+msgid "العودة للعاملين"
+msgstr "Back to Employees"
+
+msgid "إضافة حركة مالية"
+msgstr "Add Transaction"
+
+msgid "كشف الحساب"
+msgstr "Statement"
+
+msgid "إضافة حركة"
+msgstr "Add Transaction"
+
+msgid "إجمالي الرواتب"
+msgstr "Total Salaries"
+
+msgid "إجمالي السلف"
+msgstr "Total Advances"
+
+msgid "إجمالي الخصومات"
+msgstr "Total Deductions"
+
+msgid "المكافآت"
+msgstr "Bonuses"
+
+msgid "الحركات المالية"
+msgstr "Transactions"
+
+msgid "نوع الحركة"
+msgstr "Transaction Type"
+
+msgid "راتب"
+msgstr "Salary"
+
+msgid "سلفة"
+msgstr "Advance"
+
+msgid "خصم"
+msgstr "Deduction"
+
+msgid "مكافأة"
+msgstr "Bonus"
+
+msgid "الفترة / ملاحظات"
+msgstr "Period / Notes"
+
+msgid "الدفع"
+msgstr "Payment"
+
+msgid "تعديل الحركة"
+msgstr "Edit Transaction"
+
+msgid "هل أنت متأكد من حذف هذه الحركة؟"
+msgstr "Are you sure you want to delete this transaction?"
+
+msgid "سيتم حذف المصروف المرتبط بها تلقائيًا."
+msgstr "The linked expense will be deleted automatically."
+
+msgid "لا توجد حركات مالية"
+msgstr "No transactions"
+
+msgid "ابدأ بإضافة راتب أو سلفة"
+msgstr "Start by adding salary or advance"
+
+msgid "الموظف غير موجود"
+msgstr "Employee not found"
+
+msgid "يناير"
+msgstr "January"
+
+msgid "فبراير"
+msgstr "February"
+
+msgid "مارس"
+msgstr "March"
+
+msgid "أبريل"
+msgstr "April"
+
+msgid "مايو"
+msgstr "May"
+
+msgid "يونيو"
+msgstr "June"
+
+msgid "يوليو"
+msgstr "July"
+
+msgid "أغسطس"
+msgstr "August"
+
+msgid "سبتمبر"
+msgstr "September"
+
+msgid "أكتوبر"
+msgstr "October"
+
+msgid "نوفمبر"
+msgstr "November"
+
+msgid "ديسمبر"
+msgstr "December"
+
+msgid "سلف موظفين"
+msgstr "Employee Advances"
+
+msgid "بدلات ومكافآت"
+msgstr "Bonuses"
+
+msgid "رقم الحجز (PNR)"
+msgstr "Booking No. (PNR)"
+
+msgid "يُستخدم للرجوع إلى هذا الحجز لاحقًا"
+msgstr "Use it to return to this booking later"
+
+msgid "طباعة كل التذاكر"
+msgstr "Print All Tickets"
+
+msgid "رقم الحجز:"
+msgstr "Booking No:"
+
+msgid "فشل الحجز الجماعي"
+msgstr "Group booking failed"
+
+msgid "رقم التذكرة"
+msgstr "Ticket No."
+
+msgid "لا يمكن اختيار تاريخ في الماضي"
+msgstr "Cannot select a past date"
+
+msgid "لا يمكن البحث عن رحلات في تاريخ سابق"
+msgstr "Cannot search for trips in a past date"
+
+msgid "انتهى وقت الحجز الإلكتروني"
+msgstr "Online Booking Window Closed"
+
+msgid "يرجى التواصل مع مكتب الحجز:"
+msgstr "Please contact the booking office:"
+
+msgid "الرحلات المتاحة تنطلق خلال أقل من ساعتين."
+msgstr "Available trips depart in less than 2 hours."
+
+msgid "لم يتبقَّ سوى ساعات قليلة على الانطلاق — يرجى التواصل مع مكتب الحجز"
+msgstr "Only a few hours left until departure — please contact the booking office"
+
+msgid "رقم الحجز (PNR):"
+msgstr "Booking No. (PNR):"
+
+msgid "طاقم الرحلة"
+msgstr "Trip Crew"
+
+msgid "السائق"
+msgstr "Driver"
+
+msgid "اختر السائق"
+msgstr "Select Driver"
+
+msgid "المساعد / المضيف"
+msgstr "Assistant / Host"
+
+msgid "اختر المساعد (اختياري)"
+msgstr "Select Assistant (optional)"
+
+msgid "مشغولون"
+msgstr "Busy"
+
+msgid "لا يوجد سائقون متاحون"
+msgstr "No drivers available"
+
+msgid "لا يوجد مساعدون متاحون"
+msgstr "No assistants available"
+
+msgid "المساعد:"
+msgstr "Assistant:"
+
+msgid "السائق:"
+msgstr "Driver:"
+
+msgid "إدارة الوظائف"
+msgstr "Manage Positions"
+
+msgid "إدارة الوظائف المتاحة في النظام"
+msgstr "Manage available positions in the system"
+
+msgid "إضافة وظيفة جديدة"
+msgstr "Add New Position"
+
+msgid "قائمة الوظائف"
+msgstr "Positions List"
+
+msgid "الفئة تحدد مكان ظهور الوظيفة في النظام:"
+msgstr "Category determines where the position appears in the system:"
+
+msgid "يظهر في قائمة السائقين عند إنشاء رحلة"
+msgstr "Appears in drivers list when creating a trip"
+
+msgid "يظهر في قائمة المساعدين عند إنشاء رحلة"
+msgstr "Appears in assistants list when creating a trip"
+
+msgid "لا يظهر في قوائم الرحلات"
+msgstr "Does not appear in trip lists"
+
+msgid "اسم الوظيفة (عربي)"
+msgstr "Position Name (Arabic)"
+
+msgid "اسم الوظيفة (إنجليزي)"
+msgstr "Position Name (English)"
+
+msgid "الفئة"
+msgstr "Category"
+
+msgid "الفئة تحدد مكان ظهور الوظيفة"
+msgstr "Category determines where the position appears"
+
+msgid "ترتيب العرض"
+msgstr "Sort Order"
+
+msgid "الأصغر يظهر أولًا"
+msgstr "Smallest appears first"
+
+msgid "من FontAwesome — مثال: fa-user-tie, fa-user-friends, fa-calculator"
+msgstr "From FontAwesome — e.g., fa-user-tie, fa-user-friends, fa-calculator"
+
+msgid "تعديل الوظيفة"
+msgstr "Edit Position"
+
+msgid "الرجاء إدخال اسم الوظيفة"
+msgstr "Please enter position name"
+
+msgid "هل أنت متأكد من حذف الوظيفة"
+msgstr "Are you sure you want to delete position"
+
+msgid "لا يمكن حذف وظيفة مرتبطة بموظفين."
+msgstr "Cannot delete a position linked to employees."
+
+msgid "لا توجد وظائف بعد"
+msgstr "No positions yet"
+
+msgid "ابدأ بإضافة وظيفة جديدة"
+msgstr "Start by adding a new position"
+
+msgid "فشل تحميل الوظائف"
+msgstr "Failed to load positions"
+
+msgid "الاسم (عربي)"
+msgstr "Name (Arabic)"
+
+msgid "الترتيب"
+msgstr "Order"
+
+msgid "مساعد"
+msgstr "Assistant"
+
+msgid "سائق"
+msgstr "Driver"
+
+msgid "سائقون"
+msgstr "Drivers"
+
+msgid "مساعدون"
+msgstr "Assistants"
+
+msgid "إداريون"
+msgstr "Administrators"
+
+msgid "أخرى"
+msgstr "Other"
+
+msgid "لإدارة الوظائف اذهب إلى"
+msgstr "To manage positions go to"
+
+msgid "إداري"
+msgstr "Administrator"
+
+msgid "مرحبًا بعودتك"
+msgstr "Welcome Back"
+
+msgid "سجّل دخولك للوصول إلى لوحة التحكم"
+msgstr "Sign in to access the dashboard"
+
+msgid "بحث سريع..."
+msgstr "Quick search..."
+
+msgid "بحث..."
+msgstr "Search..."
+
+msgid "صفحة"
+msgstr "page"
+
+msgid "لا توجد مدن مطابقة"
+msgstr "No matching cities"
+
+msgid "جرب البحث بكلمات أخرى"
+msgstr "Try searching with other keywords"
+
+msgid "عرض"
+msgstr "Showing"
+
+msgid "لا توجد بيانات"
+msgstr "No data"
+
+msgid "ابدأ بإضافة عناصر جديدة"
+msgstr "Start by adding new items"
+
+msgid "عنصر"
+msgstr "item"
+
+msgid "الرحلات المباشرة"
+msgstr "Live Trips"
+
+msgid "متابعة الرحلات المغادرة والقادمة اليوم"
+msgstr "Track today's departures and arrivals"
+
+msgid "آخر تحديث:"
+msgstr "Last update:"
+
+msgid "انطلقت"
+msgstr "Departed"
+
+msgid "تنطلق قريبًا"
+msgstr "Departing Soon"
+
+msgid "قادمة"
+msgstr "Upcoming"
+
+msgid "لاحقًا"
+msgstr "Later"
+
+msgid "انطلقت للتو"
+msgstr "Just Departed"
+
+msgid "انطلقت منذ"
+msgstr "Departed"
+
+msgid "الآن"
+msgstr "Now"
+
+msgid "بعد"
+msgstr "in"
+
+msgid "دقيقة"
+msgstr "min"
+
+msgid "ساعة"
+msgstr "hour"
+
+msgid "و"
+msgstr "and"
+
+msgid "رحلات المغادرة اليوم"
+msgstr "Today's Departures"
+
+msgid "رحلات الوصول اليوم"
+msgstr "Today's Arrivals"
+
+msgid "لا توجد رحلات اليوم"
+msgstr "No trips today"
+
+msgid "ستظهر الرحلات هنا عند إضافتها"
+msgstr "Trips will appear here once added"
+
+msgid "جاري التحديث..."
+msgstr "Updating..."
+
+msgid "منذ"
+msgstr "ago"
+
+msgid "هذا الشهر"
+msgstr "This Month"
+
+msgid "الكل"
+msgstr "All"
+
+msgid "حسب الرحلة"
+msgstr "By Trip"
+
+msgid "قائمة"
+msgstr "List"
+
+msgid "مقاعد"
+msgstr "seats"
+
+msgid "تطوير البرمجيات"
+msgstr "Software Development"
+
+msgid "(تصميم وبناء تطبيقات وأنظمة متكاملة)"
+msgstr "(Design & Building Integrated Applications & Systems)"
+
+msgid "التواصل"
+msgstr "Contact"
+
+msgid "الاتصال الهاتفي"
+msgstr "Phone Contact"
+
+msgid "راسلني مباشرة"
+msgstr "Contact me directly"
+
+msgid "راسلني"
+msgstr "Send Message"
+
+msgid "اتصال"
+msgstr "Call"
+
+msgid "فتح"
+msgstr "Open"
+
+msgid "السعودية"
+msgstr "Saudi Arabia"
+
+msgid "السودان"
+msgstr "Sudan"
+
+msgid "حقوق النشر والملكية الفكرية"
+msgstr "Copyright & Intellectual Property"
+
+msgid "عن المالك"
+msgstr "About the Owner"
+
+msgid "الدكتور عبدالمنعم علي محمد"
+msgstr "Dr. Abdelmoneim Ali Mohamed"
+
+msgid "أستاذ جامعي | رياضيات وإحصاء وتحليل بيانات وتطوير برمجيات"
+msgstr "University Professor | Mathematics, Statistics, Data Analysis & Software Development"
+
+msgid "المملكة العربية السعودية"
+msgstr "Saudi Arabia"
+
+msgid "دكتوراه في الإحصاء"
+msgstr "Ph.D. in Statistics"
+
+msgid "نبذة مختصرة"
+msgstr "Brief Biography"
+
+msgid "الدكتور عبدالمنعم علي محمد  أستاذ جامعي بخبرة أكاديمية وبحثية في السودان والمملكة العربية السعودية. متخصص في الرياضيات والإحصاء والتحليل الإحصائي وتحليل البيانات وتطوير البرمجيات. صمّم BusCore ليجمع بين الدقة الإحصائية والسهولة العملية، ليكون أداة متكاملة لإدارة الحافلات واتخاذ القرارات المبنية على البيانات."
+msgstr "Dr. Abdelmoneim Ali Mohamed  University Professor with academic and research experience in Sudan and Saudi Arabia. Specialized in Mathematics, Statistics, Statistical Analysis, Data Analysis, and Software Development. He designed BusCore to combine statistical precision with practical simplicity  an integrated tool for bus management and data-driven decision making."
+
+msgid "المؤهلات العلمية"
+msgstr "Academic Qualifications"
+
+msgid "بكالوريوس"
+msgstr "Bachelor"
+
+msgid "ماجستير"
+msgstr "Master"
+
+msgid "دكتوراه"
+msgstr "Ph.D."
+
+msgid "الرياضيات"
+msgstr "Mathematics"
+
+msgid "الإحصاء"
+msgstr "Statistics"
+
+msgid "الخبرة الجامعية"
+msgstr "Academic Experience"
+
+msgid "أستاذ جامعي"
+msgstr "University Professor"
+
+msgid "الاهتمامات البحثية"
+msgstr "Research Interests"
+
+msgid "التحليل الإحصائي"
+msgstr "Statistical Analysis"
+
+msgid "النمذجة والاستدلال الإحصائي"
+msgstr "Modeling & Statistical Inference"
+
+msgid "تحليل البيانات"
+msgstr "Data Analysis"
+
+msgid "استخلاص الرؤى واتخاذ القرارات"
+msgstr "Insights & Decision Making"
+
+msgid "تصميم وبناء تطبيقات متكاملة"
+msgstr "Design & Building Integrated Applications"
+
+msgid "رؤية البرنامج"
+msgstr "Program Vision"
+
+msgid "تمكين شركات النقل من اتخاذ قرارات مبنية على البيانات، من خلال نظام يجمع بين الدقة الإحصائية والسهولة العملية."
+msgstr "Empowering transport companies to make data-driven decisions, through a system that combines statistical precision with practical simplicity."
+
+msgid "صُمّم هذا البرنامج بواسطة الدكتور عبدالمنعم علي محمد."
+msgstr "This software was designed by Dr. Abdelmoneim Ali Mohamed."
+
+msgid "جميع الحقوق محفوظة  2026."
+msgstr "All rights reserved  2026."
+
+msgid "تنبيه قانوني:"
+msgstr "Legal Notice:"
+
+msgid "لا يحق لأي جهة أو فرد استخدام هذا البرنامج أو نسخه أو توزيعه أو تعديله."
+msgstr "No entity or individual is permitted to use, copy, distribute, or modify this software."
+
+msgid "لا يُسمح باستخدامه إلا بموافقة كتابية مسبقة من المالك."
+msgstr "It may not be used without prior written permission from the owner."
+
+msgid "الاستخدام غير المصرح به يُعرّض صاحبه للمساءلة القانونية."
+msgstr "Unauthorized use is subject to legal action."
+
+msgid "جميع العلامات التجارية والأسماء التجارية محمية بموجب القوانين المعمول بها."
+msgstr "All trademarks and trade names are protected by applicable laws."
+
+msgid "العودة للرئيسية"
+msgstr "Back to Home"
+
+msgid "احجز رحلتك"
+msgstr "Book Your Trip"
+
+msgid "المالك والمطور"
+msgstr "Owner & Developer"
+
+msgid "المصمم والمطور الرئيسي"
+msgstr "Designer & Lead Developer"
+
+msgid "السيرة الأكاديمية للمالك"
+msgstr "Owner's Academic Biography"
+
+msgid "المسمى الأكاديمي والاهتمامات"
+msgstr "Academic Title & Interests"
+
+msgid "الدكتور عبدالمنعم علي محمد أستاذ جامعي بخبرة أكاديمية وبحثية ممتدة في السودان والمملكة العربية السعودية، متخصص في الرياضيات والإحصاء وتحليل البيانات ومهتم بتطوير البرمجيات."
+msgstr "Dr. Abdelmoneim Ali Mohamed is a University Professor with extensive academic and research experience in Sudan and Saudi Arabia, specializing in Mathematics, Statistics, and Data Analysis, with a keen interest in Software Development."
+
+msgid "صمّم برنامج BusCore ليكون حلاً ذكياً وعملياً يلبي احتياجات كل من المسافر وشركات النقل؛ حيث يوفر على المسافر عناء الذهاب للشركات عبر إتاحة حجز التذاكر والدفع الإلكتروني المباشر من خلال تطبيق سهل، كما يُعفي الشركة من ضرورة التواجد الدائم للموظفين بالفروع واستقبال الزبائن. يمنح البرنامج إدارة الشركة تحكماً كاملاً للإطلاع على حركة الحجوزات عبر كل الفروع ومتابعة رحلات الحافلات لحظياً من شاشة موحدة، فضلاً عن تقليل الاعتماد على الوسطاء وتوفير نظام محاسبي آلي مرتبط بالنظام لضمان الإدارة المالية الدقيقة والفعالة."
+msgstr "BusCore was designed as a smart and practical solution that meets the needs of both travelers and transport companies. It saves travelers the hassle of visiting offices by enabling ticket booking and direct electronic payment through an easy-to-use application, while also relieving companies of the need for permanent staff presence at branches to receive customers. The system grants company management full control to monitor booking activity across all branches and track bus trips in real time from a unified dashboard, in addition to reducing reliance on intermediaries and providing an automated accounting system integrated with the platform to ensure accurate and efficient financial management."
+
+msgid "لماذا BusCore؟"
+msgstr "Why BusCore?"
+
+msgid "حل ذكي وعملي للمسافر وشركات النقل"
+msgstr "A smart, practical solution for travelers and transport companies"
+
+msgid "للمسافر"
+msgstr "For Travelers"
+
+msgid "حجز التذاكر إلكترونياً"
+msgstr "Book tickets online"
+
+msgid "الدفع الإلكتروني المباشر"
+msgstr "Direct electronic payment"
+
+msgid "توفير عناء الذهاب للشركات"
+msgstr "Save the hassle of visiting offices"
+
+msgid "تجربة سهلة وبسيطة"
+msgstr "Simple and easy experience"
+
+msgid "لشركة النقل"
+msgstr "For Transport Companies"
+
+msgid "تحكم كامل بحركة الحجوزات"
+msgstr "Full control over booking activity"
+
+msgid "متابعة الرحلات لحظياً"
+msgstr "Real-time trip tracking"
+
+msgid "تقليل الاعتماد على الوسطاء"
+msgstr "Reduce reliance on intermediaries"
+
+msgid "نظام محاسبي آلي متكامل"
+msgstr "Integrated automated accounting system"
+
+msgid "النتيجة:"
+msgstr "The Result:"
+
+msgid "إدارة مالية دقيقة وفعّالة، وإعفاء الشركة من التواجد الدائم للموظفين بالفروع، مع شاشة موحدة لكل الفروع."
+msgstr "Accurate and efficient financial management, relief from permanent staff presence at branches, and a unified dashboard for all branches."
+
+msgid "إعدادات النظام المحاسبي"
+msgstr "Accounting Settings"
+
+msgid "النظام المحاسبي"
+msgstr "Accounting System"
+
+msgid "اختر المستوى المناسب لشركتك  يمكنك الترقية في أي وقت"
+msgstr "Choose the appropriate tier for your company  you can upgrade anytime"
+
+msgid "المستوى الحالي"
+msgstr "Current Tier"
+
+msgid "المستوى"
+msgstr "Tier"
+
+msgid "بسيط"
+msgstr "Simple"
+
+msgid "متوسط"
+msgstr "Medium"
+
+msgid "كامل"
+msgstr "Full"
+
+msgid "للشركات الصغيرة  إيرادات ومصروفات فقط"
+msgstr "For small companies  revenue and expenses only"
+
+msgid "للشركات المتوسطة  قيود مزدوجة + تقارير"
+msgstr "For medium companies  double-entry + reports"
+
+msgid "للشركات الكبيرة  كل الميزات + تدقيق"
+msgstr "For large companies  all features + audit"
+
+msgid "الميزات"
+msgstr "Features"
+
+msgid "يمكنك تفعيل/تعطيل كل ميزة بشكل مستقل"
+msgstr "You can enable/disable each feature independently"
+
+msgid "القيود المزدوجة"
+msgstr "Double-Entry"
+
+msgid "دفتر اليومية"
+msgstr "Journal"
+
+msgid "دفتر الأستاذ"
+msgstr "General Ledger"
+
+msgid "ميزان المراجعة"
+msgstr "Trial Balance"
+
+msgid "الميزانية العمومية"
+msgstr "Balance Sheet"
+
+msgid "قائمة الدخل"
+msgstr "Income Statement"
+
+msgid "الإهلاك"
+msgstr "Depreciation"
+
+msgid "الفترات المحاسبية"
+msgstr "Fiscal Periods"
+
+msgid "سجل التدقيق"
+msgstr "Audit Log"
+
+msgid "مراكز التكلفة"
+msgstr "Cost Centers"
+
+msgid "الضرائب"
+msgstr "Tax"
+
+msgid "تعدد العملات"
+msgstr "Multi-Currency"
+
+msgid "اتركها 0 إذا لم تكن مطلوبة"
+msgstr "Leave as 0 if not required"
+
+msgid "ضريبة القيمة المضافة"
+msgstr "VAT"
+
+msgid "ضريبة الدخل"
+msgstr "Income Tax"
+
+msgid "ضريبة المبيعات"
+msgstr "Sales Tax"
+
+msgid "إعدادات أخرى"
+msgstr "Other Settings"
+
+msgid "العملة الأساسية"
+msgstr "Base Currency"
+
+msgid "جنيه سوداني"
+msgstr "Sudanese Pound"
+
+msgid "ريال سعودي"
+msgstr "Saudi Riyal"
+
+msgid "دولار أمريكي"
+msgstr "US Dollar"
+
+msgid "جنيه مصري"
+msgstr "Egyptian Pound"
+
+msgid "درهم إماراتي"
+msgstr "UAE Dirham"
+
+msgid "طريقة الإهلاك"
+msgstr "Depreciation Method"
+
+msgid "القسط الثابت"
+msgstr "Straight-Line"
+
+msgid "القسط المتناقص"
+msgstr "Declining Balance"
+
+msgid "وحدات الإنتاج"
+msgstr "Units of Production"
+
+msgid "طريقة المخزون"
+msgstr "Inventory Method"
+
+msgid "الوارد أولًا"
+msgstr "FIFO"
+
+msgid "الصادر أولًا"
+msgstr "LIFO"
+
+msgid "المتوسط المرجح"
+msgstr "Weighted Average"
+
+msgid "إعادة للافتراضي"
+msgstr "Reset to Default"
+
+msgid "تم حفظ الإعدادات بنجاح"
+msgstr "Settings saved successfully"
+
+msgid "هل تريد إعادة الإعدادات للافتراضي؟"
+msgstr "Do you want to reset to defaults?"
+
+msgid "تم إعادة الإعدادات للافتراضي"
+msgstr "Reset to defaults"
+
+msgid "فشل تحميل الإعدادات"
+msgstr "Failed to load settings"
+
+msgid "إعدادات المحاسبة"
+msgstr "Accounting Settings"
+
+msgid "خطأ في الحفظ"
+msgstr "Error saving"
+
+msgid "الحساب غير موجود"
+msgstr "Account not found"
+
+msgid "القيد غير موجود"
+msgstr "Entry not found"
+
+msgid "الفترة غير موجودة"
+msgstr "Period not found"
+
+msgid "الإعدادات غير موجودة"
+msgstr "Settings not found"
+
+msgid "المستوى غير معروف"
+msgstr "Unknown tier"
+
+msgid "القيد غير متوازن"
+msgstr "Entry not balanced"
+
+msgid "القيد يحتاج سطرين على الأقل"
+msgstr "Entry needs at least 2 lines"
+
+msgid "يمكن حذف المسودات فقط"
+msgstr "Only drafts can be deleted"
+
+msgid "لا يمكن تعديل قيد بحالة"
+msgstr "Cannot edit entry with status"
+
+msgid "لا يمكن ترحيل قيد بحالة"
+msgstr "Cannot post entry with status"
+
+msgid "لا يمكن عكس قيد غير مرحَّل"
+msgstr "Cannot reverse unposted entry"
+
+msgid "شجرة الحسابات"
+msgstr "Chart of Accounts"
+
+msgid "الفروع"
+msgstr "Branches"
+
+msgid "العملاء"
+msgstr "Customers"
+
+msgid "الفرع"
+msgstr "Branch"
+
+msgid "العميل"
+msgstr "Customer"
+
+msgid "إدارة العملاء"
+msgstr "Manage Customers"
+
+msgid "قائمة العملاء"
+msgstr "Customers List"
+
+msgid "إجمالي العملاء"
+msgstr "Total Customers"
+
+msgid "عملاء VIP"
+msgstr "VIP Customers"
+
+msgid "عملاء نشطون"
+msgstr "Active Customers"
+
+msgid "جديد هذا الشهر"
+msgstr "New This Month"
+
+msgid "تذاكر"
+msgstr "Tickets"
+
+msgid "رضع"
+msgstr "Infants"
+
+msgid "إجمالي الإنفاق"
+msgstr "Total Spent"
+
+msgid "البريد"
+msgstr "Email"
+
+msgid "بحث بالاسم أو الهاتف أو البريد..."
+msgstr "Search by name, phone, or email..."
+
+msgid "لا يوجد عملاء"
+msgstr "No customers found"
+
+msgid "لم يتم العثور على أي عميل"
+msgstr "No customers found"
+
+msgid "فشل تحميل العملاء"
+msgstr "Failed to load customers"
+
+msgid "إضافة عميل"
+msgstr "Add Customer"
+
+msgid "تعديل عميل"
+msgstr "Edit Customer"
+
+msgid "تفاصيل العميل"
+msgstr "Customer Details"
+
+msgid "هل تريد تعطيل هذا العميل؟"
+msgstr "Do you want to deactivate this customer?"
+
+msgid "عميل VIP"
+msgstr "VIP Customer"
+
+msgid "معطّل"
+msgstr "Inactive"
+
+msgid "إدارة الفروع"
+msgstr "Manage Branches"
+
+msgid "إجمالي الفروع"
+msgstr "Total Branches"
+
+msgid "فروع نشطة"
+msgstr "Active Branches"
+
+msgid "فرع"
+msgstr "Branch"
+
+msgid "فرع نشط"
+msgstr "Active Branch"
+
+msgid "إضافة فرع"
+msgstr "Add Branch"
+
+msgid "تعديل فرع"
+msgstr "Edit Branch"
+
+msgid "بحث بالاسم أو الكود..."
+msgstr "Search by name or code..."
+
+msgid "فرع جديد"
+msgstr "New Branch"
+
+msgid "اسم الفرع (عربي)"
+msgstr "Branch Name (Arabic)"
+
+msgid "اسم الفرع (إنجليزي)"
+msgstr "Branch Name (English)"
+
+msgid "اسم الفرع"
+msgstr "Branch Name"
+
+msgid "كود الفرع"
+msgstr "Branch Code"
+
+msgid "اسم المدير"
+msgstr "Manager Name"
+
+msgid "هاتف المدير"
+msgstr "Manager Phone"
+
+msgid "ملاحظات"
+msgstr "Notes"
+
+msgid "تعطيل"
+msgstr "Deactivate"
+
+msgid "تنشيط"
+msgstr "Reactivate"
+
+msgid "إحصائيات"
+msgstr "Statistics"
+
+msgid "إيراد"
+msgstr "Revenue"
+
+msgid "بطاقات"
+msgstr "Cards"
+
+msgid "جدول"
+msgstr "Table"
+
+msgid "هل تريد تعطيل هذا الفرع؟"
+msgstr "Do you want to deactivate this branch?"
+
+msgid "تم تعطيل الفرع"
+msgstr "Branch deactivated"
+
+msgid "تم تنشيط الفرع"
+msgstr "Branch reactivated"
+
+msgid "لا توجد فروع"
+msgstr "No branches found"
+
+msgid "ابدأ بإضافة فرع جديد"
+msgstr "Start by adding a new branch"
+
+msgid "الرجاء إدخال الاسم ورقم الهاتف"
+msgstr "Please enter name and phone"
+
+msgid "الرجاء إدخال الكود والاسم"
+msgstr "Please enter code and name"
+
+msgid "فشل تحميل الفروع"
+msgstr "Failed to load branches"
+
+msgid "فشل تحميل البيانات"
+msgstr "Failed to load data"
+
+msgid "خطأ"
+msgstr "Error"
+
+msgid "لا يمكن إضافة عميل يدويًا. العملاء يُسجَّلون تلقائيًا عند الحجز."
+msgstr "Cannot add customer manually. Customers are registered automatically when booking."
+
+msgid "فقط VIP"
+msgstr "VIP Only"
+
+msgid "VIP فقط"
+msgstr "VIP Only"
+
+msgid "عادي"
+msgstr "Regular"
+
+msgid "كل النشاطات"
+msgstr "All Activities"
+
+msgid "خامل +3 أشهر"
+msgstr "Inactive 3+ Months"
+
+msgid "نشط آخر 30 يوم"
+msgstr "Active Last 30 Days"
+
+msgid "الرحلة"
+msgstr "Trip"
+
+msgid "المحطة"
+msgstr "Station"
+
+msgid "الموظف"
+msgstr "Employee"
+
+msgid "الموظفون"
+msgstr "Employees"
+
+msgid "الوظيفة"
+msgstr "Position"
+
+msgid "الوظائف"
+msgstr "Positions"
+
+msgid "المستخدم"
+msgstr "User"
+
+msgid "الإعدادات"
+msgstr "Settings"
+
+msgid "التقارير"
+msgstr "Reports"
+
+msgid "الإيرادات"
+msgstr "Revenue"
+
+msgid "حساب"
+msgstr "Account"
+
+msgid "حسابات"
+msgstr "Accounts"
+
+msgid "إجمالي الحسابات"
+msgstr "Total Accounts"
+
+msgid "حسابات نشطة"
+msgstr "Active Accounts"
+
+msgid "حسابات نظامية"
+msgstr "System Accounts"
+
+msgid "حسابات مخصصة"
+msgstr "Custom Accounts"
+
+msgid "حساب نظامي"
+msgstr "System"
+
+msgid "الطبيعة"
+msgstr "Nature"
+
+msgid "أصول"
+msgstr "Assets"
+
+msgid "خصوم"
+msgstr "Liabilities"
+
+msgid "حقوق ملكية"
+msgstr "Equity"
+
+msgid "إيرادات"
+msgstr "Revenue"
+
+msgid "مصروفات"
+msgstr "Expenses"
+
+msgid "أصل"
+msgstr "Asset"
+
+msgid "حق ملكية"
+msgstr "Equity"
+
+msgid "مدين"
+msgstr "Debit"
+
+msgid "دائن"
+msgstr "Credit"
+
+msgid "جميع الأنواع"
+msgstr "All Types"
+
+msgid "إضافة حساب"
+msgstr "Add Account"
+
+msgid "تعديل حساب"
+msgstr "Edit Account"
+
+msgid "بحث بالكود أو الاسم..."
+msgstr "Search by code or name..."
+
+msgid "لا توجد حسابات"
+msgstr "No accounts found"
+
+msgid "لا توجد شجرة"
+msgstr "No tree found"
+
+msgid "فشل تحميل الحسابات"
+msgstr "Failed to load accounts"
+
+msgid "الرصيد"
+msgstr "Balance"
+
+msgid "الرصيد الافتتاحي"
+msgstr "Opening Balance"
+
+msgid "إجمالي المدين"
+msgstr "Total Debit"
+
+msgid "إجمالي الدائن"
+msgstr "Total Credit"
+
+msgid "حساب الأب"
+msgstr "Parent Account"
+
+msgid "بدون (حساب رئيسي)"
+msgstr "None (Root Account)"
+
+msgid "العملة"
+msgstr "Currency"
+
+msgid "تفعيل/تعطيل"
+msgstr "Toggle"
+
+msgid "شجرة"
+msgstr "Tree"
+
+msgid "نظامي"
+msgstr "System"
+
+msgid "مخصص"
+msgstr "Custom"
+
+msgid "مقفل"
+msgstr "Locked"
+
+msgid "Journal"
+msgstr "دفتر اليومية"
+
+msgid "إجمالي القيود"
+msgstr "Total Entries"
+
+msgid "قيود مرحّلة"
+msgstr "Posted Entries"
+
+msgid "مسودات"
+msgstr "Drafts"
+
+msgid "قيود معكوسة"
+msgstr "Reversed Entries"
+
+msgid "جميع المصادر"
+msgstr "All Sources"
+
+msgid "مسودة"
+msgstr "Draft"
+
+msgid "مرحّل"
+msgstr "Posted"
+
+msgid "معكوس"
+msgstr "Reversed"
+
+msgid "يدوي"
+msgstr "Manual"
+
+msgid "دفعة"
+msgstr "Payment"
+
+msgid "رقم القيد"
+msgstr "Entry Number"
+
+msgid "المصدر"
+msgstr "Source"
+
+msgid "قيد جديد"
+msgstr "New Entry"
+
+msgid "حفظ كمسودة"
+msgstr "Save as Draft"
+
+msgid "ترحيل"
+msgstr "Post"
+
+msgid "قيد عكسي"
+msgstr "Reverse"
+
+msgid "تفاصيل القيد"
+msgstr "Entry Details"
+
+msgid "بدون"
+msgstr "None"
+
+msgid "افتتاحي"
+msgstr "Opening"
+
+msgid "تسوية"
+msgstr "Adjustment"
+
+msgid "السطور"
+msgstr "Lines"
+
+msgid "إضافة سطر"
+msgstr "Add Line"
+
+msgid "اختر الحساب"
+msgstr "Select Account"
+
+msgid "الفرق"
+msgstr "Difference"
+
+msgid "الحساب"
+msgstr "Account"
+
+msgid "لا توجد قيود"
+msgstr "No entries"
+
+msgid "ابدأ بإنشاء قيد جديد"
+msgstr "Start by creating a new entry"
+
+msgid "فشل تحميل القيود"
+msgstr "Failed to load entries"
+
+msgid "الرجاء إدخال التاريخ والوصف"
+msgstr "Please enter date and description"
+
+msgid "يجب اختيار حساب لكل سطر"
+msgstr "Each line needs an account"
+
+msgid "يجب أن يحتوي القيد على سطرين على الأقل"
+msgstr "Entry must have at least 2 lines"
+
+msgid "هل تريد ترحيل القيد؟"
+msgstr "Post this entry?"
+
+msgid "هل تريد حذف هذه المسودة؟"
+msgstr "Delete this draft?"
+
+msgid "سبب القيد العكسي:"
+msgstr "Reversal reason:"

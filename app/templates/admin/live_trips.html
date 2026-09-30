@@ -1,0 +1,538 @@
+{% extends "admin/base_admin.html" %}
+
+{% block title %}{{ _("الرحلات المباشرة") }} - BusCore{% endblock %}
+{% block page_title %}{{ _("الرحلات المباشرة") }}{% endblock %}
+
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <p class="text-muted mb-0">{{ _("متابعة الرحلات المغادرة والقادمة اليوم") }}</p>
+        <small class="text-muted" id="lastUpdate">-</small>
+    </div>
+    <button class="btn btn-outline-primary" id="refreshBtn" type="button">
+        <i class="fas fa-sync-alt me-2"></i>{{ _("تحديث") }}
+    </button>
+</div>
+
+<!-- ملخص -->
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm live-stat-card live-departed">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <small class="text-muted">{{ _("انطلقت") }}</small>
+                        <h3 class="mb-0 fw-bold text-danger" id="departedCount">0</h3>
+                    </div>
+                    <i class="fas fa-plane-departure fa-2x text-danger" style="opacity: 0.3;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm live-stat-card live-departing">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <small class="text-muted">{{ _("تنطلق قريبًا") }}</small>
+                        <h3 class="mb-0 fw-bold text-warning" id="departingCount">0</h3>
+                    </div>
+                    <i class="fas fa-hourglass-half fa-2x text-warning" style="opacity: 0.3;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm live-stat-card live-upcoming">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <small class="text-muted">{{ _("قادمة") }}</small>
+                        <h3 class="mb-0 fw-bold text-success" id="upcomingCount">0</h3>
+                    </div>
+                    <i class="fas fa-clock fa-2x text-success" style="opacity: 0.3;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm live-stat-card live-bookings">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <small class="text-muted">{{ _("إجمالي الحجوزات") }}</small>
+                        <h3 class="mb-0 fw-bold text-primary" id="totalBookings">0</h3>
+                    </div>
+                    <i class="fas fa-ticket-alt fa-2x text-primary" style="opacity: 0.3;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- المغادرات -->
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-header bg-white">
+        <h5 class="mb-0 fw-bold">
+            <i class="fas fa-plane-departure text-primary me-2"></i>
+            {{ _("رحلات المغادرة اليوم") }}
+            <span class="badge bg-primary ms-2" id="departuresCount">0</span>
+        </h5>
+    </div>
+    <div class="card-body p-0">
+        <div id="departuresContainer">
+            <div class="text-center py-5">
+                <div class="spinner-border text-primary"></div>
+                <p class="mt-2 text-muted">{{ _("جاري التحميل...") }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- الوصولات -->
+<div class="card border-0 shadow-sm">
+    <div class="card-header bg-white">
+        <h5 class="mb-0 fw-bold">
+            <i class="fas fa-plane-arrival text-success me-2"></i>
+            {{ _("رحلات الوصول اليوم") }}
+            <span class="badge bg-success ms-2" id="arrivalsCount">0</span>
+        </h5>
+    </div>
+    <div class="card-body p-0">
+        <div id="arrivalsContainer">
+            <div class="text-center py-5">
+                <div class="spinner-border text-success"></div>
+                <p class="mt-2 text-muted">{{ _("جاري التحميل...") }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.live-stat-card {
+    border-{% if lang == 'ar' %}right{% else %}left{% endif %}: 4px solid transparent;
+    transition: all 0.3s;
+}
+.live-stat-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+}
+.live-departed { border-{% if lang == 'ar' %}right{% else %}left{% endif %}-color: #dc3545; }
+.live-departing { border-{% if lang == 'ar' %}right{% else %}left{% endif %}-color: #ffc107; }
+.live-upcoming { border-{% if lang == 'ar' %}right{% else %}left{% endif %}-color: #198754; }
+.live-bookings { border-{% if lang == 'ar' %}right{% else %}left{% endif %}-color: #0d6efd; }
+
+.trip-live-card {
+    padding: 16px 20px;
+    border-bottom: 1px solid #f0f0f0;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    transition: background 0.2s;
+    position: relative;
+}
+.trip-live-card:hover {
+    background: #f8f9fa;
+}
+.trip-live-card:last-child {
+    border-bottom: none;
+}
+
+.trip-live-status {
+    width: 50px;
+    height: 50px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.3rem;
+    flex-shrink: 0;
+}
+.status-departed {
+    background: #f8d7da;
+    color: #842029;
+}
+.status-just_departed {
+    background: #f8d7da;
+    color: #842029;
+    animation: pulse-red 1.5s infinite;
+}
+.status-departing_soon {
+    background: #fff3cd;
+    color: #664d03;
+    animation: pulse-yellow 1.5s infinite;
+}
+.status-upcoming {
+    background: #d1e7dd;
+    color: #0f5132;
+}
+.status-later {
+    background: #e2e3e5;
+    color: #41464b;
+}
+
+@keyframes pulse-yellow {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(255, 193, 7, 0.7); }
+    50% { box-shadow: 0 0 0 10px rgba(255, 193, 7, 0); }
+}
+@keyframes pulse-red {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.7); }
+    50% { box-shadow: 0 0 0 10px rgba(220, 53, 69, 0); }
+}
+
+.trip-live-route {
+    flex: 1;
+    min-width: 0;
+}
+.trip-live-route .route-title {
+    font-weight: 800;
+    color: #212529;
+    font-size: 1rem;
+    margin-bottom: 2px;
+}
+.trip-live-route .route-sub {
+    font-size: 0.8rem;
+    color: #6c757d;
+}
+
+.trip-live-time {
+    text-align: center;
+    min-width: 100px;
+}
+.trip-live-time .time-main {
+    font-family: 'Courier New', monospace;
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: #212529;
+}
+.trip-live-time .time-sub {
+    font-size: 0.7rem;
+    color: #6c757d;
+}
+
+.trip-live-crew {
+    min-width: 140px;
+    font-size: 0.8rem;
+}
+.trip-live-crew .crew-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: #495057;
+    margin-bottom: 2px;
+}
+.trip-live-crew .crew-item i {
+    width: 14px;
+    color: #adb5bd;
+}
+
+.trip-live-seats {
+    text-align: center;
+    min-width: 80px;
+}
+.trip-live-seats .seats-num {
+    font-size: 1.2rem;
+    font-weight: 800;
+    color: #0d6efd;
+    line-height: 1;
+}
+.trip-live-seats .seats-label {
+    font-size: 0.65rem;
+    color: #6c757d;
+}
+
+.trip-live-actions {
+    display: flex;
+    gap: 6px;
+    flex-shrink: 0;
+}
+
+.trip-countdown {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 10px;
+    border-radius: 50px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    margin-top: 4px;
+}
+.countdown-departed { background: #f8d7da; color: #842029; }
+.countdown-soon { background: #fff3cd; color: #664d03; }
+.countdown-upcoming { background: #d1e7dd; color: #0f5132; }
+
+@media (max-width: 768px) {
+    .trip-live-card {
+        flex-wrap: wrap;
+    }
+    .trip-live-time,
+    .trip-live-crew,
+    .trip-live-seats {
+        min-width: auto;
+    }
+}
+</style>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+const LANG = "{{ lang }}";
+let refreshTimer = null;
+
+document.addEventListener('DOMContentLoaded', async function() {
+    //  ربط زر التحديث
+    const refreshBtn = document.getElementById('refreshBtn');
+    if (refreshBtn) {
+        refreshBtn.addEventListener('click', async function() {
+            const icon = this.querySelector('i');
+            const originalText = this.innerHTML;
+
+            //  تأثير بصري واضح
+            if (icon) {
+                icon.classList.add('fa-spin');
+            }
+            this.disabled = true;
+            this.innerHTML = '<i class="fas fa-sync-alt fa-spin me-2"></i>{{ _("جاري التحديث...") }}';
+
+            //  تحديث البيانات
+            await loadLiveTrips();
+
+            //  انتظر 500ms على الأقل ليظهر التأثير
+            await new Promise(r => setTimeout(r, 500));
+
+            //  إعادة الزر
+            this.disabled = false;
+            this.innerHTML = originalText;
+        });
+    }
+
+    await loadLiveTrips();
+
+    //  تحديث تلقائي كل دقيقة
+    refreshTimer = setInterval(loadLiveTrips, 60000);
+});
+
+async function loadLiveTrips() {
+    try {
+        const res = await fetch('/trips/live');
+        if (!res.ok) throw new Error('فشل تحميل الرحلات');
+        const data = await res.json();
+
+        // آخر تحديث
+        const now = new Date();
+        const timeStr = now.toLocaleTimeString(LANG === 'ar' ? 'ar-SA' : 'en-GB', {
+            hour: '2-digit', minute: '2-digit', second: '2-digit'
+        });
+        document.getElementById('lastUpdate').textContent =
+            '{{ _("آخر تحديث:") }} ' + timeStr;
+
+        // الإحصائيات
+        updateStats(data);
+
+        // المغادرات
+        renderTrips(data.departures, 'departuresContainer', 'fa-plane-departure', 'text-primary');
+
+        // الوصولات
+        renderTrips(data.arrivals, 'arrivalsContainer', 'fa-plane-arrival', 'text-success');
+
+    } catch (e) {
+        console.error(e);
+        document.getElementById('departuresContainer').innerHTML =
+            '<div class="alert alert-danger m-3">{{ _("فشل تحميل الرحلات") }}: ' + e.message + '</div>';
+        document.getElementById('arrivalsContainer').innerHTML = '';
+    }
+}
+
+function updateStats(data) {
+    const departed = data.departures.filter(t => t.status === 'departed' || t.status === 'just_departed').length;
+    const departing = data.departures.filter(t => t.status === 'departing_soon').length;
+    const upcoming = data.departures.filter(t => t.status === 'upcoming' || t.status === 'later').length;
+    const totalBookings = data.departures.reduce((s, t) => s + (t.bookings_count || 0), 0);
+
+    document.getElementById('departedCount').textContent = departed;
+    document.getElementById('departingCount').textContent = departing;
+    document.getElementById('upcomingCount').textContent = upcoming;
+    document.getElementById('totalBookings').textContent = totalBookings;
+    document.getElementById('departuresCount').textContent = data.departures_count;
+    document.getElementById('arrivalsCount').textContent = data.arrivals_count;
+}
+
+function renderTrips(trips, containerId, icon, iconColor) {
+    const container = document.getElementById(containerId);
+
+    if (!trips || trips.length === 0) {
+        container.innerHTML = `
+            <div class="page-empty-state">
+                <i class="fas ${icon}"></i>
+                <h5>{{ _("لا توجد رحلات اليوم") }}</h5>
+                <p>{{ _("ستظهر الرحلات هنا عند إضافتها") }}</p>
+            </div>
+        `;
+        return;
+    }
+
+    let html = '';
+    trips.forEach(trip => {
+        //  استخدام قيم آمنة (لا تسمح بـ undefined)
+        const safe = (val, fallback) => (val !== null && val !== undefined && val !== '') ? val : (fallback || '-');
+
+        const depName = safe((LANG === 'en' && trip.departure_station_en) ? trip.departure_station_en : trip.departure_station);
+        const arrName = safe((LANG === 'en' && trip.arrival_station_en) ? trip.arrival_station_en : trip.arrival_station);
+        const code = safe(trip.code, '');
+
+        const depTime = trip.departure_time ? new Date(trip.departure_time) : null;
+        const arrTime = trip.arrival_time ? new Date(trip.arrival_time) : null;
+
+        const depTimeStr = depTime ? formatTime(depTime) : '-';
+        const arrTimeStr = arrTime ? formatTime(arrTime) : '-';
+
+        const statusInfo = getStatusInfo(trip.status, trip.minutes_left);
+
+        const driverName = (trip.driver && safe(trip.driver.name || trip.driver.name_en, null))
+            ? safe((LANG === 'en' && trip.driver.name_en) ? trip.driver.name_en : trip.driver.name, '{{ _("غير محدد") }}')
+            : '{{ _("غير محدد") }}';
+        const assistantName = (trip.assistant && safe(trip.assistant.name || trip.assistant.name_en, null))
+            ? safe((LANG === 'en' && trip.assistant.name_en) ? trip.assistant.name_en : trip.assistant.name, '{{ _("غير محدد") }}')
+            : '{{ _("غير محدد") }}';
+
+        const busPlate = (trip.bus && safe(trip.bus.plate_number, null)) ? trip.bus.plate_number : '-';
+        const busModel = (trip.bus && safe(trip.bus.model, null)) ? trip.bus.model : '';
+
+
+
+        const countdown = getCountdownText(trip.status, trip.minutes_left);
+
+        html += `
+            <div class="trip-live-card">
+                <div class="trip-live-status ${statusInfo.class}">
+                    <i class="fas ${statusInfo.icon}"></i>
+                </div>
+
+                <div class="trip-live-route">
+                    <div class="route-title">
+                        <span class="badge bg-light text-dark me-2">${code || '-'}</span>
+                        ${depName}
+                        <i class="fas fa-arrow-${LANG === 'ar' ? 'left' : 'right'} text-primary mx-2"></i>
+                        ${arrName}
+                    </div>
+                    <div class="route-sub">
+                        <i class="fas fa-bus me-1"></i> ${busPlate}
+                        <span class="mx-2">|</span>
+                        ${statusInfo.label}
+                        ${busModel ? `<span class="mx-2">|</span>${busModel}` : ''}
+                    </div>
+                    <div>
+                        <span class="trip-countdown ${countdown.class}">
+                            <i class="fas fa-hourglass-half"></i> ${countdown.text}
+                        </span>
+                    </div>
+                </div>
+
+                <div class="trip-live-time">
+                    <div class="time-main">${depTimeStr}</div>
+                    <div class="time-sub">{{ _("المغادرة") }}</div>
+                    <div class="time-main" style="margin-top: 4px;">${arrTimeStr}</div>
+                    <div class="time-sub">{{ _("الوصول") }}</div>
+                </div>
+
+                <div class="trip-live-crew">
+                    <div class="crew-item">
+                        <i class="fas fa-user-tie"></i> ${driverName}
+                    </div>
+                    <div class="crew-item">
+                        <i class="fas fa-user-friends"></i> ${assistantName}
+                    </div>
+                </div>
+
+                <div class="trip-live-seats">
+                    <div class="seats-num">${trip.booked_seats}/${trip.total_seats}</div>
+                    <div class="seats-label">{{ _("محجوز") }}</div>
+                </div>
+
+                <div class="trip-live-actions">
+                    <a href="/admin/trips" class="btn btn-sm btn-outline-primary"
+                       title="{{ _('التفاصيل') }}">
+                        <i class="fas fa-eye"></i>
+                    </a>
+                </div>
+            </div>
+        `;
+    });
+
+    container.innerHTML = html;
+}
+
+function formatTime(d) {
+    const h = d.getHours();
+    const m = String(d.getMinutes()).padStart(2, '0');
+    //  نستخدم \u200E (LEFT-TO-RIGHT MARK) لمنع انعكاس الترتيب في RTL
+    const ltrMark = '\u200E';
+    if (LANG === 'ar') {
+        const ampm = h >= 12 ? 'م' : 'ص';
+        const hour12 = h % 12 || 12;
+        return ltrMark + `${hour12}:${m} ${ampm}`;
+    }
+    return ltrMark + `${String(h).padStart(2, '0')}:${m}`;
+}
+
+function getStatusInfo(status, minutes) {
+    const map = {
+        'departed':        { label: '{{ _("انطلقت") }}', 'class': 'status-departed', icon: 'fa-plane-departure' },
+        'just_departed':   { label: '{{ _("انطلقت للتو") }}', 'class': 'status-just_departed', icon: 'fa-plane-departure' },
+        'departing_soon':  { label: '{{ _("تنطلق قريبًا") }}', 'class': 'status-departing_soon', icon: 'fa-hourglass-half' },
+        'upcoming':        { label: '{{ _("قادمة") }}', 'class': 'status-upcoming', icon: 'fa-clock' },
+        'later':           { label: '{{ _("لاحقًا") }}', 'class': 'status-later', icon: 'fa-clock' },
+    };
+    //  ضمان عدم وجود undefined
+    const info = map[status] || { label: '', 'class': 'status-later', icon: 'fa-circle' };
+    return {
+        label: info.label || '',
+        'class': info.class || 'status-later',
+        icon: info.icon || 'fa-circle',
+    };
+}
+
+function getCountdownText(status, minutes) {
+    //  إرجاع كائن {text, class} دائمًا
+    if (minutes === null || minutes === undefined || isNaN(minutes)) {
+        return { text: '-', 'class': 'countdown-upcoming' };
+    }
+
+    if (status === 'departed' || status === 'just_departed') {
+        const abs = Math.abs(minutes);
+        let text;
+        if (abs < 1) {
+            text = '{{ _("انطلقت للتو") }}';
+        } else if (abs < 60) {
+            text = '{{ _("انطلقت منذ") }} ' + abs + ' {{ _("دقيقة") }}';
+        } else {
+            const hours = Math.floor(abs / 60);
+            const mins = abs % 60;
+            text = '{{ _("انطلقت منذ") }} ' + hours + ' {{ _("ساعة") }}' + (mins > 0 ? ' و ' + mins + ' {{ _("دقيقة") }}' : '');
+        }
+        return { text: text, 'class': 'countdown-departed' };
+    }
+
+    let text;
+    if (minutes < 1) {
+        text = '{{ _("الآن") }}';
+    } else if (minutes < 60) {
+        text = '{{ _("بعد") }} ' + minutes + ' {{ _("دقيقة") }}';
+    } else {
+        const hours = Math.floor(minutes / 60);
+        const mins = minutes % 60;
+        text = '{{ _("بعد") }} ' + hours + ' {{ _("ساعة") }}' + (mins > 0 ? ' و ' + mins + ' {{ _("دقيقة") }}' : '');
+    }
+
+    if (minutes < 60) {
+        return { text: text, 'class': 'countdown-soon' };
+    }
+    return { text: text, 'class': 'countdown-upcoming' };
+}
+
+//  جعل الدوال متاحة عالميًا
+window.loadLiveTrips = loadLiveTrips;
+</script>
+{% endblock %}

@@ -1,0 +1,3927 @@
+{% extends "base.html" %}
+
+{% block title %}BI Dashboard - BusCore{% endblock %}
+
+{% block content %}
+
+<!--  -->
+<!-- BI Container -->
+<!--  -->
+<div class="bi-container">
+
+    <!-- Top Bar -->
+    <div class="bi-topbar">
+        <div class="bi-topbar-left">
+            <a href="/admin/dashboard" class="bi-back-btn" title="{{ _('عودة') }}">
+                <i class="fas fa-arrow-{% if lang == 'ar' %}right{% else %}left{% endif %}"></i>
+            </a>
+            <div class="bi-brand">
+                <i class="fas fa-chart-pie"></i>
+                <span>BusCore Analytics</span>
+            </div>
+            <div class="bi-divider"></div>
+            <div class="bi-page-title">
+                <i class="fas fa-chart-line"></i>
+                <span>{{ _("لوحة تحليل البيانات") }}</span>
+            </div>
+        </div>
+        <div class="bi-topbar-right">
+            <div class="bi-range-group" id="rangeFilter">
+                <button type="button" class="bi-range-btn" data-range="today">{{ _("اليوم") }}</button>
+                <button type="button" class="bi-range-btn" data-range="week">{{ _("7 أيام") }}</button>
+                <button type="button" class="bi-range-btn active" data-range="month">{{ _("هذا الشهر") }}</button>
+                <button type="button" class="bi-range-btn" data-range="year">{{ _("هذا العام") }}</button>
+                <button type="button" class="bi-range-btn" id="customRangeBtn" onclick="toggleDateRangePicker(event)" title="نطاق مخصص">
+                    <i class="fas fa-calendar-alt"></i>
+                </button>
+            </div>
+            <div class="date-range-picker ${LANG === 'ar' ? 'rtl' : 'ltr'}" id="dateRangePicker">
+                <label>من تاريخ</label>
+                <input type="date" id="dateFrom">
+                <label>إلى تاريخ</label>
+                <input type="date" id="dateTo">
+                <div class="date-range-actions">
+                    <button class="apply-btn" onclick="applyCustomRange()">
+                        <i class="fas fa-check"></i> تطبيق
+                    </button>
+                    <button class="cancel-btn" onclick="closeDateRangePicker()">
+                        إلغاء
+                    </button>
+                </div>
+            </div>
+            <div class="compare-select-wrap">
+                <i class="fas fa-balance-scale"></i>
+                <select class="compare-select" id="compareSelect" onchange="onCompareChange(this.value)">
+                    <option value="">لا مقارنة</option>
+                    <option value="prev_month">vs الشهر السابق</option>
+                    <option value="prev_year">vs السنة السابقة</option>
+                </select>
+            </div>
+            <div class="auto-refresh-wrap" id="autoRefreshWrap">
+                <i class="fas fa-sync-alt"></i>
+                <select class="auto-refresh-select" id="autoRefreshSelect" onchange="onAutoRefreshChange(this.value)">
+                    <option value="0">إيقاف التحديث</option>
+                    <option value="30">كل 30 ثانية</option>
+                    <option value="60">كل دقيقة</option>
+                    <option value="300">كل 5 دقائق</option>
+                </select>
+            </div>
+            <div class="bi-live">
+                <span class="bi-live-dot"></span>
+                <span>LIVE</span>
+                <span class="bi-live-time" id="lastUpdate">--:--</span>
+            </div>
+            <button class="bi-refresh" onclick="refreshAll()" title="{{ _('تحديث') }}">
+                <i class="fas fa-sync-alt"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="bi-tabs">
+        <button class="bi-tab active" onclick="switchTab('overview', event)">
+            <i class="fas fa-chart-line"></i> {{ _("نظرة عامة") }}
+        </button>
+        <button class="bi-tab" onclick="switchTab('branches', event)">
+            <i class="fas fa-building"></i> {{ _("الفروع") }}
+        </button>
+        <button class="bi-tab" onclick="switchTab('buses', event)">
+            <i class="fas fa-bus"></i> {{ _("الحافلات") }}
+        </button>
+        <button class="bi-tab" onclick="switchTab('employees', event)">
+            <i class="fas fa-users"></i> {{ _("الموظفون") }}
+        </button>
+        <button class="bi-tab" onclick="switchTab('trips', event)">
+            <i class="fas fa-route"></i> {{ _("الرحلات") }}
+        </button>
+        <button class="bi-tab" onclick="switchTab('cities', event)">
+            <i class="fas fa-map-marked-alt"></i> {{ _("المدن") }}
+        </button>
+        <button class="bi-tab" onclick="switchTab('financial', event)">
+            <i class="fas fa-money-bill-wave"></i> {{ _("المالية") }}
+        </button>
+        <button class="bi-tab" onclick="switchTab('customers', event)">
+            <i class="fas fa-user-friends"></i> {{ _("العملاء") }}
+        </button>
+        <button class="bi-tab" onclick="switchTab('recommendations', event)">
+            <i class="fas fa-lightbulb"></i> {{ _("التوصيات") }}
+        </button>
+    </div>
+
+    <!-- Content -->
+    <div id="biContent">
+        <div class="bi-loading">
+            <div class="spinner-border text-primary"></div>
+            <p>{{ _("جاري التحميل...") }}</p>
+        </div>
+    </div>
+
+</div>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+<style>
+/*  */
+/* Hide Main Navbar */
+/*  */
+body > nav,
+body > header,
+nav.navbar,
+header.navbar,
+.navbar.fixed-top,
+.navbar.sticky-top {
+    display: none !important;
+}
+body {
+    padding-top: 0 !important;
+    margin: 0 !important;
+    background: #f0f4f8 !important;
+}
+
+/*  */
+/* BI Container */
+/*  */
+.bi-container {
+    background: #f0f4f8;
+    min-height: 100vh;
+    padding: 0;
+}
+
+/*  */
+/* Top Bar */
+/*  */
+.bi-topbar {
+    background: white;
+    padding: 10px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    border-bottom: 1px solid #e2e8f0;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+}
+
+.bi-topbar-left,
+.bi-topbar-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.bi-back-btn {
+    width: 34px;
+    height: 34px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f1f5f9;
+    color: #1e293b;
+    border-radius: 50%;
+    text-decoration: none;
+    transition: all 0.2s;
+    flex-shrink: 0;
+}
+.bi-back-btn:hover {
+    background: #0d6efd;
+    color: white;
+    transform: scale(1.05);
+}
+
+.bi-brand {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 800;
+    font-size: 0.95rem;
+    color: #1e293b;
+}
+.bi-brand i { color: #0d6efd; font-size: 1.1rem; }
+
+.bi-divider {
+    width: 1px;
+    height: 22px;
+    background: #e2e8f0;
+}
+
+.bi-page-title {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 700;
+    color: #475569;
+    font-size: 0.85rem;
+}
+
+/* Range filter */
+.bi-range-group {
+    display: inline-flex;
+    background: #f1f5f9;
+    border-radius: 8px;
+    padding: 3px;
+    gap: 2px;
+}
+.bi-range-btn {
+    background: transparent;
+    border: none;
+    padding: 5px 12px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #64748b;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+.bi-range-btn:hover { color: #0d6efd; }
+.bi-range-btn.active {
+    background: #0d6efd;
+    color: white;
+    box-shadow: 0 2px 6px rgba(13,110,253,0.3);
+}
+
+/* LIVE badge */
+.bi-live {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: linear-gradient(135deg, #dc3545, #b02a37);
+    color: white;
+    padding: 5px 12px;
+    border-radius: 50px;
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+}
+.bi-live-dot {
+    width: 7px;
+    height: 7px;
+    background: white;
+    border-radius: 50%;
+    animation: pulse 1.5s infinite;
+}
+@keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(1.4); }
+}
+.bi-live-time {
+    font-family: 'Courier New', monospace;
+    font-size: 0.68rem;
+    opacity: 0.9;
+}
+
+.bi-refresh {
+    width: 34px;
+    height: 34px;
+    background: #0d6efd;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.bi-refresh:hover { background: #0a58ca; transform: rotate(90deg); }
+
+/*  */
+/* Tabs */
+/*  */
+.bi-tabs {
+    background: white;
+    padding: 6px 16px;
+    display: flex;
+    gap: 4px;
+    overflow-x: auto;
+    border-bottom: 1px solid #e2e8f0;
+    scrollbar-width: thin;
+}
+.bi-tabs::-webkit-scrollbar { height: 4px; }
+.bi-tabs::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 2px; }
+
+.bi-tab {
+    background: transparent;
+    border: none;
+    padding: 8px 14px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #64748b;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.15s;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+.bi-tab:hover { background: #f0f7ff; color: #0d6efd; }
+.bi-tab.active {
+    background: #0d6efd;
+    color: white;
+    box-shadow: 0 2px 8px rgba(13,110,253,0.25);
+}
+
+/*  */
+/* Content */
+/*  */
+#biContent {
+    padding: 16px;
+}
+
+.bi-loading {
+    text-align: center;
+    padding: 60px 20px;
+    color: #64748b;
+}
+
+/*  */
+/*  */
+/* KPI Row  6 بطاقات في الصف */
+/*  */
+.kpi-row {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    gap: 6px !important;
+    margin-bottom: 14px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+}
+
+.kpi-row > .kpi-card {
+    background: white;
+    border-radius: 8px;
+    padding: 8px 4px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    min-height: 85px;
+    min-width: 0;
+    border-top: 3px solid #0d6efd;
+    transition: all 0.2s;
+    overflow: hidden;
+    box-sizing: border-box;
+}
+
+.kpi-card {
+    background: white;
+    border-radius: 8px;
+    padding: 8px 4px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    min-height: 78px;
+    min-width: 0;
+    border-top: 3px solid #0d6efd;
+    transition: all 0.2s;
+    overflow: hidden;
+    box-sizing: border-box;
+}
+
+.kpi-card:hover {
+    box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+    transform: translateY(-3px);
+}
+.kpi-card.success { border-top-color: #198754; }
+.kpi-card.warning { border-top-color: #ffc107; }
+.kpi-card.danger { border-top-color: #dc3545; }
+.kpi-card.info { border-top-color: #0dcaf0; }
+.kpi-card.secondary { border-top-color: #6c757d; }
+
+.kpi-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    margin-bottom: 3px;
+    width: 100%;
+    min-width: 0;
+    overflow: hidden;
+}
+
+.kpi-icon {
+    font-size: 0.75rem;
+    line-height: 1;
+    flex-shrink: 0;
+    display: inline-block;
+}
+.kpi-icon.text-primary { color: #0d6efd !important; }
+.kpi-icon.text-success { color: #198754 !important; }
+.kpi-icon.text-warning { color: #ffc107 !important; }
+.kpi-icon.text-danger { color: #dc3545 !important; }
+.kpi-icon.text-info { color: #0dcaf0 !important; }
+.kpi-icon.text-secondary { color: #6c757d !important; }
+
+.kpi-label {
+    font-size: 0.65rem;
+    color: #475569;
+    font-weight: 700;
+    line-height: 1.1;
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+    display: block;
+}
+
+.kpi-value {
+    font-size: 1.15rem;
+    font-weight: 900;
+    color: #0f172a;
+    line-height: 1;
+    font-family: 'Tajawal', 'Cairo', sans-serif;
+    letter-spacing: -0.3px;
+    word-break: break-word;
+    margin: 0;
+    padding: 0;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    display: block;
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+    .kpi-row { flex-wrap: wrap !important; }
+    .kpi-row > .kpi-card { flex: 1 1 calc(20% - 6px) !important; }
+    .kpi-value { font-size: 1.3rem; }
+}
+
+
+    .kpi-label {
+    font-size: 0.78rem;
+    color: #475569;
+    font-weight: 700;
+    line-height: 1.15;
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+    display: block;
+}
+}
+
+
+}
+
+
+
+.chart-grid {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    gap: 12px;
+    margin-bottom: 14px;
+}
+
+.chart-card {
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    border: 1px solid #e2e8f0;
+    transition: all 0.2s;
+}
+.chart-card:hover {
+    box-shadow: 0 4px 14px rgba(0,0,0,0.1);
+    transform: translateY(-2px);
+}
+
+/* أحجام Grid */
+.chart-grid .chart-card.col-3 { grid-column: span 3; }
+.chart-grid .chart-card.col-4 { grid-column: span 4; }
+.chart-grid .chart-card.col-6 { grid-column: span 6; }
+.chart-grid .chart-card.col-8 { grid-column: span 8; }
+.chart-grid .chart-card.col-12 { grid-column: span 12; }
+
+.chart-card-header {
+    padding: 10px 14px;
+    background: #f8fafc;
+    border-bottom: 1px solid #f1f5f9;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.chart-card-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.82rem;
+    font-weight: 800;
+    color: #1e293b;
+    margin: 0;
+    line-height: 1.2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.chart-card-title i {
+    font-size: 1rem;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    background: rgba(13,110,253,0.1);
+    color: #0d6efd;
+    flex-shrink: 0;
+}
+.chart-card-title i.text-success { background: rgba(25,135,84,0.1); color: #198754 !important; }
+.chart-card-title i.text-warning { background: rgba(255,193,7,0.15); color: #ffc107 !important; }
+.chart-card-title i.text-info { background: rgba(13,202,240,0.1); color: #0dcaf0 !important; }
+.chart-card-title i.text-danger { background: rgba(220,53,69,0.1); color: #dc3545 !important; }
+.chart-card-title i.text-secondary { background: rgba(108,117,125,0.1); color: #6c757d !important; }
+
+.chart-card-subtitle {
+    font-size: 0.68rem;
+    color: #64748b;
+    font-weight: 600;
+    background: #f1f5f9;
+    padding: 2px 8px;
+    border-radius: 50px;
+    white-space: nowrap;
+}
+
+.chart-card-body {
+    padding: 10px;
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.chart-canvas-wrapper {
+    position: relative;
+    flex: 1;
+    min-height: 200px;
+    height: 200px;
+    width: 100%;
+}
+
+.chart-canvas-wrapper canvas {
+    width: 100% !important;
+    height: 100% !important;
+    display: block;
+}
+
+/*  */
+/* Table */
+/*  */
+.bi-table {
+    width: 100%;
+    font-size: 0.85rem;
+    border-collapse: collapse;
+}
+.bi-table thead {
+    background: #f8fafc;
+}
+.bi-table thead th {
+    padding: 10px 12px;
+    font-weight: 700;
+    color: #64748b;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 1px solid #e2e8f0;
+    text-align: right;
+}
+.bi-table tbody td {
+    padding: 10px 12px;
+    border-bottom: 1px solid #f1f5f9;
+    text-align: right;
+}
+.bi-table tbody tr:hover {
+    background: #f8fafc;
+}
+
+/*  */
+/* Recommendation */
+/*  */
+.recommendation {
+    display: flex;
+    gap: 12px;
+    padding: 12px 14px;
+    border-radius: 10px;
+    margin-bottom: 8px;
+    border-right: 4px solid;
+    background: #f8fafc;
+}
+.recommendation.opportunity {
+    border-color: #198754;
+    background: linear-gradient(135deg, #d1e7dd, #f0fdf4);
+}
+.recommendation.warning {
+    border-color: #ffc107;
+    background: linear-gradient(135deg, #fff3cd, #fffbeb);
+}
+.recommendation.danger {
+    border-color: #dc3545;
+    background: linear-gradient(135deg, #f8d7da, #fef2f2);
+}
+.recommendation-icon {
+    font-size: 1.4rem;
+    flex-shrink: 0;
+}
+.recommendation-content h6 {
+    margin: 0 0 4px 0;
+    font-weight: 800;
+    font-size: 0.88rem;
+}
+.recommendation-content p {
+    margin: 0;
+    font-size: 0.78rem;
+    color: #495057;
+}
+.recommendation-impact {
+    font-weight: 800;
+    color: #198754;
+    font-size: 0.78rem;
+    margin-top: 4px;
+}
+
+/*  */
+/* Responsive */
+/*  */
+
+    .chart-grid .chart-card.col-3 { grid-column: span 6; }
+    .chart-grid .chart-card.col-4 { grid-column: span 6; }
+    .chart-grid .chart-card.col-8 { grid-column: span 12; }
+}
+
+
+
+
+    .bi-page-title { display: none; }
+    .bi-divider { display: none; }
+}
+
+/*  */
+/* FORCE: Full width + flex for BI */
+/*  */
+html, body {
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-x: hidden !important;
+}
+
+body > .container,
+body > .container-fluid,
+body > main,
+body > div:not(.bi-container) {
+    max-width: 100% !important;
+    width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+}
+
+.bi-container {
+    width: 100% !important;
+    max-width: 100% !important;
+}
+
+#biContent {
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box;
+}
+
+.chart-grid {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 12px !important;
+    width: 100% !important;
+}
+
+.chart-grid > .chart-card.col-3 {
+    flex: 0 0 calc(25% - 9px) !important;
+    max-width: calc(25% - 9px) !important;
+    width: calc(25% - 9px) !important;
+}
+
+.chart-grid > .chart-card.col-4 {
+    flex: 0 0 calc(33.333% - 8px) !important;
+    max-width: calc(33.333% - 8px) !important;
+}
+
+.chart-grid > .chart-card.col-6 {
+    flex: 0 0 calc(50% - 6px) !important;
+    max-width: calc(50% - 6px) !important;
+}
+
+.chart-grid > .chart-card.col-8 {
+    flex: 0 0 calc(66.666% - 4px) !important;
+    max-width: calc(66.666% - 4px) !important;
+}
+
+.chart-grid > .chart-card.col-12 {
+    flex: 0 0 100% !important;
+    max-width: 100% !important;
+}
+
+.chart-card {
+    min-height: 280px !important;
+    box-sizing: border-box !important;
+}
+
+.chart-canvas-wrapper {
+    position: relative;
+    flex: 1;
+    min-height: 200px;
+    height: 200px;
+    width: 100%;
+}
+
+.kpi-row {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 12px !important;
+}
+
+.kpi-row > .kpi-card {
+    flex: 0 0 calc(20% - 10px) !important;
+    max-width: calc(20% - 10px) !important;
+}
+
+
+/*  */
+/* Responsive  KPI Row */
+/*  */
+@media (max-width: 1200px) {
+    .kpi-row { flex-wrap: wrap !important; }
+    .kpi-row > .kpi-card { flex: 1 1 calc(20% - 6px) !important; }
+    .kpi-value { font-size: 1.3rem; }
+}
+
+
+    .kpi-label {
+    font-size: 0.78rem;
+    color: #475569;
+    font-weight: 700;
+    line-height: 1.15;
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+    display: block;
+}
+}
+
+
+    .kpi-icon { font-size: 0.9rem; }
+}
+
+
+
+
+/*  */
+/* FORCE 6 Cards in Row */
+/*  */
+.kpi-row {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    gap: 6px !important;
+    width: 100% !important;
+    margin-bottom: 14px !important;
+    box-sizing: border-box !important;
+}
+.kpi-row > .kpi-card {
+    flex: 1 1 0 !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    box-sizing: border-box !important;
+}
+.kpi-card {
+    padding: 8px 4px !important;
+    min-height: 82px !important;
+    min-width: 0 !important;
+    overflow: hidden !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    text-align: center !important;
+    border-radius: 8px !important;
+}
+.kpi-header {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 3px !important;
+    margin-bottom: 5px !important;
+    width: 100% !important;
+    min-width: 0 !important;
+}
+.kpi-icon {
+    font-size: 0.85rem !important;
+    flex-shrink: 0 !important;
+}
+.kpi-label {
+    font-size: 0.78rem;
+    color: #475569;
+    font-weight: 700;
+    line-height: 1.15;
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+    display: block;
+}
+.kpi-value {
+    font-size: 1.4rem !important;
+    font-weight: 900 !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+}
+
+
+/*  */
+/* FINAL: kpi-label Bigger Font */
+/*  */
+.kpi-card .kpi-label {
+    font-size: 0.78rem !important;
+    font-weight: 700 !important;
+    line-height: 1.15 !important;
+    color: #334155 !important;
+    letter-spacing: 0 !important;
+}
+
+
+/*  */
+/* Table Footer */
+/*  */
+.bi-table tfoot td {
+    padding: 10px 12px;
+    border-top: 2px solid #e2e8f0;
+    font-weight: 800;
+    font-size: 0.82rem;
+}
+
+
+/*  */
+/* Underline Subtabs  Sticky Smart */
+/*  */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+}
+
+@media (max-width: 768px) {
+    
+    
+}
+
+
+/*  */
+/* Underline Subtabs  Sticky Smart */
+/*  */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+}
+
+@media (max-width: 768px) {
+    
+    
+}
+
+
+/*  */
+/*  */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+.subtabs-toggle.active 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+.subtabs-menu-item.active 
+
+
+
+.subtabs-menu-item.active 
+
+
+
+
+
+
+}
+
+/*  */
+/*  */
+
+
+/* RTL (عربي)  يمين */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+.subtabs-toggle.active 
+
+
+
+/* RTL  القائمة تنفتح على اليمين */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+.subtabs-menu-item.active 
+
+
+
+.subtabs-menu-item.active 
+
+
+
+
+
+
+}
+
+
+/*  */
+/* Dropdown Subtabs  Compact + RTL aware */
+/*  */
+.subtabs-dropdown-wrap {
+    display: flex;
+    margin-bottom: 12px;
+    padding: 0;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.subtabs-dropdown-wrap.rtl {
+    justify-content: flex-end;
+}
+
+.subtabs-dropdown-wrap.ltr {
+    justify-content: flex-start;
+}
+
+.subtabs-dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.subtabs-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: white;
+    border: 1.5px solid #e2e8f0;
+    padding: 8px 14px;
+    border-radius: 8px;
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: #1e293b;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+    min-width: 180px;
+    font-family: inherit;
+}
+
+.subtabs-toggle:hover {
+    border-color: #0d6efd;
+    box-shadow: 0 2px 8px rgba(13,110,253,0.15);
+}
+
+.subtabs-toggle.active {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 3px rgba(13,110,253,0.1);
+}
+
+.subtabs-toggle-icon {
+    width: 22px;
+    height: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(13,110,253,0.1);
+    color: #0d6efd;
+    border-radius: 5px;
+    font-size: 0.78rem;
+    flex-shrink: 0;
+}
+
+.subtabs-toggle-label {
+    flex: 1;
+    text-align: start;
+    font-size: 0.82rem;
+}
+
+.subtabs-toggle-badge {
+    background: #0d6efd;
+    color: white;
+    font-size: 0.68rem;
+    font-weight: 800;
+    padding: 2px 7px;
+    border-radius: 50px;
+    min-width: 24px;
+    text-align: center;
+}
+
+.subtabs-toggle-arrow {
+    color: #64748b;
+    font-size: 0.65rem;
+    transition: transform 0.2s;
+}
+
+.subtabs-toggle.active .subtabs-toggle-arrow {
+    transform: rotate(180deg);
+}
+
+.subtabs-menu {
+    position: absolute;
+    top: calc(100% + 4px);
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+    border: 1px solid #e2e8f0;
+    min-width: 220px;
+    z-index: 200;
+    overflow: hidden;
+    opacity: 0;
+    transform: translateY(-6px);
+    pointer-events: none;
+    transition: all 0.18s ease;
+}
+
+.subtabs-menu.rtl {
+    right: 0;
+    left: auto;
+}
+
+.subtabs-menu.ltr {
+    left: 0;
+    right: auto;
+}
+
+.subtabs-menu.open {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+}
+
+.subtabs-menu-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 14px;
+    cursor: pointer;
+    transition: all 0.15s;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #334155;
+    border-bottom: 1px solid #f1f5f9;
+    background: transparent;
+    border-left: none;
+    border-right: none;
+    border-top: none;
+    width: 100%;
+    text-align: start;
+    font-family: inherit;
+}
+
+.subtabs-menu-item:last-child {
+    border-bottom: none;
+}
+
+.subtabs-menu-item:hover {
+    background: #f8fafc;
+    color: #0d6efd;
+}
+
+.subtabs-menu-item.active {
+    background: rgba(13,110,253,0.06);
+    color: #0d6efd;
+}
+
+.subtabs-menu-item-icon {
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(13,110,253,0.08);
+    color: #0d6efd;
+    border-radius: 5px;
+    font-size: 0.78rem;
+    flex-shrink: 0;
+}
+
+.subtabs-menu-item-label {
+    flex: 1;
+}
+
+.subtabs-menu-item-badge {
+    background: #f1f5f9;
+    color: #475569;
+    font-size: 0.68rem;
+    font-weight: 800;
+    padding: 2px 7px;
+    border-radius: 50px;
+    min-width: 24px;
+    text-align: center;
+}
+
+.subtabs-menu-item.active .subtabs-menu-item-badge {
+    background: #0d6efd;
+    color: white;
+}
+
+.subtabs-menu-item-check {
+    color: #0d6efd;
+    font-size: 0.78rem;
+    opacity: 0;
+    transition: opacity 0.15s;
+}
+
+.subtabs-menu-item.active .subtabs-menu-item-check {
+    opacity: 1;
+}
+
+.subtab-content {
+    display: none;
+    animation: subtabFadeIn 0.25s ease;
+}
+
+.subtab-content.active {
+    display: block;
+}
+
+@keyframes subtabFadeIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+
+/*  */
+/* KPI Change Badge */
+/*  */
+.kpi-change {
+    font-size: 0.68rem;
+    font-weight: 800;
+    margin-top: 3px;
+    padding: 1px 6px;
+    border-radius: 4px;
+    display: inline-block;
+    letter-spacing: 0.2px;
+    line-height: 1.3;
+}
+
+.kpi-change.up {
+    color: #198754;
+    background: rgba(25, 135, 84, 0.12);
+}
+
+.kpi-change.down {
+    color: #dc3545;
+    background: rgba(220, 53, 69, 0.12);
+}
+
+/* Compare select */
+.compare-select-wrap {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #f1f5f9;
+    padding: 4px 10px;
+    border-radius: 8px;
+    font-size: 0.75rem;
+    color: #475569;
+}
+
+.compare-select-wrap i {
+    font-size: 0.8rem;
+    color: #64748b;
+}
+
+.compare-select {
+    background: transparent;
+    border: none;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #1e293b;
+    cursor: pointer;
+    outline: none;
+    font-family: inherit;
+    padding: 2px 4px;
+}
+
+.compare-select option {
+    background: white;
+    padding: 6px;
+}
+
+
+/*  */
+/* Custom Date Range + Auto Refresh */
+/*  */
+
+/* Date Range Picker */
+.date-range-picker {
+    position: absolute;
+    top: calc(100% + 8px);
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+    border: 1px solid #e2e8f0;
+    padding: 16px;
+    z-index: 300;
+    min-width: 300px;
+    opacity: 0;
+    transform: translateY(-8px);
+    pointer-events: none;
+    transition: all 0.2s ease;
+}
+
+.date-range-picker.open {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+}
+
+.date-range-picker.rtl { right: 0; left: auto; }
+.date-range-picker.ltr { left: 0; right: auto; }
+
+.date-range-picker label {
+    display: block;
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: #475569;
+    margin-bottom: 4px;
+}
+
+.date-range-picker input[type="date"] {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 0.82rem;
+    font-family: inherit;
+    margin-bottom: 12px;
+    outline: none;
+    transition: border-color 0.15s;
+}
+
+.date-range-picker input[type="date"]:focus {
+    border-color: #0d6efd;
+}
+
+.date-range-actions {
+    display: flex;
+    gap: 6px;
+}
+
+.date-range-actions button {
+    flex: 1;
+    padding: 8px 12px;
+    border-radius: 8px;
+    border: none;
+    font-size: 0.78rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.15s;
+    font-family: inherit;
+}
+
+.date-range-actions .apply-btn {
+    background: #0d6efd;
+    color: white;
+}
+
+.date-range-actions .apply-btn:hover {
+    background: #0a58ca;
+}
+
+.date-range-actions .cancel-btn {
+    background: #f1f5f9;
+    color: #475569;
+}
+
+.date-range-actions .cancel-btn:hover {
+    background: #e2e8f0;
+}
+
+/* Auto-refresh dropdown */
+.auto-refresh-wrap {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: #f1f5f9;
+    padding: 4px 10px;
+    border-radius: 8px;
+    font-size: 0.75rem;
+    color: #475569;
+}
+
+.auto-refresh-wrap i {
+    color: #64748b;
+    font-size: 0.8rem;
+    transition: transform 0.3s;
+}
+
+.auto-refresh-wrap.active i {
+    color: #198754;
+    animation: rotate-refresh 2s linear infinite;
+}
+
+@keyframes rotate-refresh {
+    from { transform: rotate(0); }
+    to { transform: rotate(360deg); }
+}
+
+.auto-refresh-select {
+    background: transparent;
+    border: none;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #1e293b;
+    cursor: pointer;
+    outline: none;
+    font-family: inherit;
+}
+
+/* زر مخصص */
+.bi-range-btn.custom-active {
+    background: #0d6efd !important;
+    color: white !important;
+}
+
+
+/*  */
+/* FORCE: Smaller KPI fonts */
+/*  */
+.kpi-card .kpi-value {
+    font-size: 1.1rem !important;
+    font-weight: 900 !important;
+    color: #0f172a !important;
+}
+.kpi-card .kpi-label {
+    font-size: 0.7rem !important;
+    color: #475569 !important;
+    font-weight: 700 !important;
+}
+.kpi-card .kpi-icon {
+    font-size: 0.75rem !important;
+}
+
+
+/*  */
+/* KPI Subtitle */
+/*  */
+.kpi-subtitle {
+    font-size: 0.75rem;
+    color: #1e293b;
+    font-weight: 800;
+    margin-top: 4px;
+    letter-spacing: 0.1px;
+    line-height: 1.15;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+    text-align: center;
+}
+
+
+/*  */
+/* FORCE: KPI Subtitle  Clear & Bold */
+/*  */
+.kpi-card .kpi-subtitle {
+    font-size: 0.75rem !important;
+    color: #1e293b !important;
+    font-weight: 800 !important;
+    margin-top: 4px !important;
+    line-height: 1.15 !important;
+    letter-spacing: 0.1px !important;
+    display: block !important;
+    width: 100% !important;
+    text-align: center !important;
+}
+
+.kpi-card .kpi-value {
+    font-size: 1.1rem !important;
+}
+
+.kpi-card .kpi-label {
+    font-size: 0.7rem !important;
+}
+
+.kpi-card {
+    min-height: 85px !important;
+}
+
+
+/*  */
+/* Compact Table  للمالية */
+/*  */
+.chart-card .bi-table {
+    font-size: 0.78rem;
+}
+.chart-card .bi-table thead th {
+    padding: 6px 8px;
+    font-size: 0.68rem;
+}
+.chart-card .bi-table tbody td {
+    padding: 6px 8px;
+}
+.chart-card .bi-table tfoot td {
+    padding: 6px 8px;
+    font-size: 0.78rem;
+}
+
+/* Chart Card  ارتفاع أصغر */
+.chart-canvas-wrapper {
+    position: relative;
+    flex: 1;
+    min-height: 200px;
+    height: 200px;
+    width: 100%;
+}
+
+
+/*  */
+/* UNIFIED: Tables */
+/*  */
+.bi-table {
+    width: 100%;
+    font-size: 0.78rem;
+    border-collapse: collapse;
+}
+.bi-table thead th {
+    padding: 8px 10px;
+    font-weight: 700;
+    color: #64748b;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    border-bottom: 1px solid #e2e8f0;
+    text-align: right;
+    background: #f8fafc;
+}
+.bi-table tbody td {
+    padding: 8px 10px;
+    border-bottom: 1px solid #f1f5f9;
+    text-align: right;
+    vertical-align: middle;
+}
+.bi-table tbody tr:hover {
+    background: #f8fafc;
+}
+.bi-table tfoot td {
+    padding: 8px 10px;
+    font-weight: 800;
+    font-size: 0.78rem;
+}
+
+/*  */
+/* UNIFIED: Chart Card */
+/*  */
+.chart-card {
+    border-radius: 10px !important;
+}
+.chart-card-header {
+    padding: 10px 14px !important;
+    min-height: 40px !important;
+}
+.chart-card-title {
+    font-size: 0.82rem !important;
+}
+.chart-card-body {
+    padding: 10px !important;
+    min-height: 220px !important;
+}
+
+/*  */
+/* UNIFIED: Chart Grid */
+/*  */
+.chart-grid {
+    gap: 12px !important;
+    margin-bottom: 12px !important;
+}
+
+/*  */
+/* UNIFIED: KPI */
+/*  */
+.kpi-card {
+    min-height: 85px !important;
+}
+.kpi-row {
+    gap: 8px !important;
+    margin-bottom: 12px !important;
+}
+
+</style>
+
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+// 
+// Config
+// 
+const LANG = "{{ lang }}";
+let currentRange = 'month';
+let compareWith = '';
+let customFromDate = '';
+let customToDate = '';
+let autoRefreshTimer = null;
+let autoRefreshSeconds = 0;
+let currentTab = 'overview';
+let charts = {};
+let biData = null;
+
+// Chart.js Defaults
+Chart.defaults.responsive = true;
+Chart.defaults.maintainAspectRatio = false;
+Chart.defaults.font.family = "'Tajawal', 'Cairo', sans-serif";
+Chart.defaults.font.size = 10;
+Chart.defaults.color = '#64748b';
+Chart.defaults.plugins.legend.labels.padding = 8;
+Chart.defaults.plugins.legend.labels.boxWidth = 10;
+Chart.defaults.plugins.legend.labels.font = { size: 9 };
+Chart.defaults.plugins.legend.position = 'bottom';
+Chart.defaults.layout.padding = 4;
+Chart.defaults.elements.point.radius = 0;
+Chart.defaults.elements.point.hoverRadius = 4;
+Chart.defaults.elements.line.borderWidth = 2;
+Chart.defaults.elements.bar.borderRadius = 4;
+
+// 
+// Init
+// 
+document.addEventListener('DOMContentLoaded', async function() {
+    document.querySelectorAll('#rangeFilter .bi-range-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            document.querySelectorAll('#rangeFilter .bi-range-btn').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            currentRange = this.dataset.range;
+            refreshAll();
+        });
+    });
+
+    await refreshAll();
+    setInterval(() => { if (currentTab === 'overview') loadOverview(); }, 60000);
+});
+
+async function refreshAll() {
+    switchTab(currentTab);
+    updateLastUpdate();
+}
+
+
+// 
+// Compare helpers
+// 
+
+// 
+// onCompareChange  يُستدعى عند تغيير خيار المقارنة
+// 
+function onCompareChange(value) {
+    compareWith = value || '';
+    // إعادة تحميل التبويب الحالي
+    if (typeof switchTab === 'function') {
+        switchTab(currentTab);
+    }
+    if (typeof refreshAll === 'function') {
+        updateLastUpdate();
+    }
+}
+
+// 
+// إغلاق Date Range Picker عند النقر خارجها
+// 
+document.addEventListener('click', function(e) {
+    const picker = document.getElementById('dateRangePicker');
+    const customBtn = document.getElementById('customRangeBtn');
+    if (!picker || !customBtn) return;
+    if (!picker.contains(e.target) && !customBtn.contains(e.target)) {
+        picker.classList.remove('open');
+    }
+});
+
+// 
+// استرجاع تفضيل Auto-refresh + تعيين التواريخ
+// 
+document.addEventListener('DOMContentLoaded', function() {
+    // استرجاع Auto-refresh
+    try {
+        const saved = localStorage.getItem('bi_autoRefresh');
+        if (saved && saved !== '0') {
+            const sel = document.getElementById('autoRefreshSelect');
+            if (sel) {
+                sel.value = saved;
+                onAutoRefreshChange(saved);
+            }
+        }
+    } catch(e) {}
+});
+
+
+// 
+// Date Range Picker
+// 
+function toggleDateRangePicker(event) {
+    if (event) event.stopPropagation();
+    const picker = document.getElementById('dateRangePicker');
+    if (!picker) return;
+    picker.classList.toggle('open');
+    
+    // إغلاق Auto-refresh و المقارنة عند الفتح
+    if (picker.classList.contains('open')) {
+        // ضبط التواريخ الحالية
+        const fromInput = document.getElementById('dateFrom');
+        const toInput = document.getElementById('dateTo');
+        if (fromInput && !fromInput.value) {
+            const today = new Date();
+            const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+            fromInput.value = firstDay.toISOString().slice(0, 10);
+        }
+        if (toInput && !toInput.value) {
+            toInput.value = new Date().toISOString().slice(0, 10);
+        }
+    }
+}
+
+function closeDateRangePicker() {
+    const picker = document.getElementById('dateRangePicker');
+    if (picker) picker.classList.remove('open');
+}
+
+function applyCustomRange() {
+    const fromInput = document.getElementById('dateFrom');
+    const toInput = document.getElementById('dateTo');
+    
+    if (!fromInput || !toInput || !fromInput.value || !toInput.value) {
+        alert('الرجاء تحديد التاريخين');
+        return;
+    }
+    
+    customFromDate = fromInput.value;
+    customToDate = toInput.value;
+    currentRange = 'custom';
+    
+    // تحديث الأزرار
+    document.querySelectorAll('#rangeFilter .bi-range-btn').forEach(b => b.classList.remove('active', 'custom-active'));
+    const customBtn = document.getElementById('customRangeBtn');
+    if (customBtn) customBtn.classList.add('custom-active');
+    
+    closeDateRangePicker();
+    refreshAll();
+}
+
+// 
+// Auto Refresh
+// 
+function onAutoRefreshChange(value) {
+    const seconds = parseInt(value) || 0;
+    autoRefreshSeconds = seconds;
+    
+    // إلغاء المؤقت الحالي
+    if (autoRefreshTimer) {
+        clearInterval(autoRefreshTimer);
+        autoRefreshTimer = null;
+    }
+    
+    const wrap = document.getElementById('autoRefreshWrap');
+    
+    if (seconds > 0) {
+        console.log(` Auto-refresh started: every ${seconds}s`);
+        if (wrap) wrap.classList.add('active');
+        
+        autoRefreshTimer = setInterval(() => {
+            // نُحدّث التبويب الحالي
+            if (typeof switchTab === 'function' && currentTab) {
+                switchTab(currentTab);
+            }
+            updateLastUpdate();
+        }, seconds * 1000);
+        
+        // حفظ التفضيل
+        try {
+            localStorage.setItem('bi_autoRefresh', seconds.toString());
+        } catch(e) {}
+    } else {
+        console.log(' Auto-refresh stopped');
+        if (wrap) wrap.classList.remove('active');
+        try {
+            localStorage.setItem('bi_autoRefresh', '0');
+        } catch(e) {}
+    }
+}
+
+// 
+// تحديث getCompareParam لتشمل التاريخ المخصص
+// 
+function getRangeParams() {
+    let params = `range_type=${currentRange}`;
+    
+    // التاريخ المخصص
+    if (currentRange === 'custom' && customFromDate && customToDate) {
+        params += `&from_date=${customFromDate}T00:00:00&to_date=${customToDate}T23:59:59`;
+    }
+    
+    // المقارنة
+    if (compareWith) {
+        params += `&compare_with=${compareWith}`;
+    }
+    
+    return params;
+}
+
+function getCompareParam() {
+    return compareWith ? `&compare_with=${compareWith}` : '';
+}
+
+function renderChangeBadge(change) {
+    if (change === null || change === undefined || change === 0) {
+        return '';
+    }
+    const isUp = change > 0;
+    const icon = isUp ? '' : '';
+    const cls = isUp ? 'up' : 'down';
+    const sign = isUp ? '+' : '';
+    return `<div class="kpi-change ${cls}">${icon} ${sign}${change}%</div>`;
+}
+
+function updateLastUpdate() {
+    const now = new Date();
+    const t = now.toLocaleTimeString(LANG === 'ar' ? 'ar-SA' : 'en-GB', { hour: '2-digit', minute: '2-digit' });
+    const el = document.getElementById('lastUpdate');
+    if (el) el.textContent = t;
+}
+
+function switchTab(tab, event) {
+    currentTab = tab;
+    document.querySelectorAll('.bi-tab').forEach(t => t.classList.remove('active'));
+    if (event && event.target) {
+        const btn = event.target.closest('.bi-tab');
+        if (btn) btn.classList.add('active');
+    } else {
+        // تفعيل التبويب الأول عند التحميل
+        const btn = document.querySelector(`.bi-tab[onclick*="${tab}"]`);
+        if (btn) btn.classList.add('active');
+    }
+
+    const loaders = {
+        overview: loadOverview,
+        branches: loadBranchesTab,
+        buses: loadBusesTab,
+        employees: loadEmployeesTab,
+        trips: loadTripsTab,
+        cities: loadCitiesTab,
+        financial: loadFinancialTab,
+        customers: loadCustomersTab,
+        recommendations: loadRecommendationsTab,
+    };
+
+    (loaders[tab] || (() => showPlaceholder(tab)))();
+}
+
+function showPlaceholder(tab) {
+    document.getElementById('biContent').innerHTML =
+        `<div class="chart-card col-12"><div class="chart-card-body text-center py-5">
+            <i class="fas fa-tools fa-3x text-muted mb-3"></i>
+            <h5>${tab}</h5><p class="text-muted">قيد التطوير</p>
+        </div></div>`;
+}
+
+// 
+// Helper Builders
+// 
+
+
+function chartCard(colClass, icon, color, title, subtitle, canvasId, height) {
+    const h = height || 240;
+    return `
+    <div class="chart-card ${colClass}">
+        <div class="chart-card-header">
+            <h6 class="chart-card-title"><i class="fas ${icon} text-${color}"></i> ${title}</h6>
+            ${subtitle ? `<span class="chart-card-subtitle">${subtitle}</span>` : ''}
+        </div>
+        <div class="chart-card-body">
+            <div class="chart-canvas-wrapper" style="height:${Math.min(h, 180)}px; min-height:${Math.min(h, 180)}px;">
+                <canvas id="${canvasId}"></canvas>
+            </div>
+        </div>
+    </div>`;
+}
+
+function tableCard(colClass, icon, color, title, subtitle, tableHTML) {
+    return `
+    <div class="chart-card ${colClass}">
+        <div class="chart-card-header">
+            <h6 class="chart-card-title"><i class="fas ${icon} text-${color}"></i> ${title}</h6>
+            ${subtitle ? `<span class="chart-card-subtitle">${subtitle}</span>` : ''}
+        </div>
+        <div class="chart-card-body">
+            <div class="table-responsive">${tableHTML}</div>
+        </div>
+    </div>`;
+}
+
+function destroyChart(key) {
+    if (charts[key]) { charts[key].destroy(); charts[key] = null; }
+}
+
+// 
+// renderKPIs  يعمل في كل التبويبات
+// 
+
+
+// 
+// renderKPIs  الدالة الموحدة
+// 
+function renderKPIs(items) {
+    if (!Array.isArray(items)) return '';
+    const cardsHTML = items.map(i => {
+        const colorCls = i.color === 'primary' ? '' : i.color;
+        const badge = i.change !== undefined ? renderChangeBadge(i.change) : '';
+        const subtitle = i.subtitle ? `<div class="kpi-subtitle">${i.subtitle}</div>` : '';
+        return `<div class="kpi-card ${colorCls}" style="flex:1 1 0;min-width:0;">
+            <div class="kpi-header">
+                <i class="fas ${i.icon} kpi-icon text-${i.color}"></i>
+                <div class="kpi-label">${i.label}</div>
+            </div>
+            <div class="kpi-value">${i.value}</div>
+            ${subtitle}
+            ${badge}
+        </div>`;
+    }).join('');
+    
+    return `<div class="kpi-row" style="display:flex !important;flex-wrap:nowrap !important;gap:6px !important;width:100% !important;">${cardsHTML}</div>`;
+}
+
+// 
+// OVERVIEW
+// 
+async function loadOverview() {
+    try {
+        const res = await fetch(`/bi/overview?${getRangeParams()}`);
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        biData = await res.json();
+        renderOverview(biData);
+        updateLastUpdate();
+    } catch (e) {
+        console.error(e);
+        document.getElementById('biContent').innerHTML =
+            `<div class="alert alert-danger m-3">فشل التحميل: ${e.message}</div>`;
+    }
+}
+
+function renderOverview(data) {
+    const k = data.kpis;
+    let html = '';
+
+    // KPIs
+    html += renderKPIs([
+        { icon: 'fa-money-bill-wave', color: 'primary', label: 'إجمالي الإيرادات', value: formatCurrency(k.total_revenue) },
+        { icon: 'fa-ticket-alt', color: 'success', label: 'الحجوزات', value: (k.total_bookings || 0).toLocaleString() },
+        { icon: 'fa-users', color: 'info', label: 'العملاء', value: (k.total_customers || 0).toLocaleString() },
+        { icon: 'fa-bus', color: 'warning', label: 'الرحلات النشطة', value: k.active_trips || 0 },
+
+    ]);
+
+    // Chart Grid
+    html += '<div class="chart-grid">';
+    html += chartCard('col-3', 'fa-chart-line', 'primary', 'الإيرادات', '30 يوم', 'revenueChart', 200);
+    html += chartCard('col-3', 'fa-chart-pie', 'success', 'المصادر', 'توزيع', 'sourcesChart', 200);
+    html += chartCard('col-3', 'fa-chart-bar', 'info', 'الحجوزات', '6 أشهر', 'monthlyChart', 200);
+    html += chartCard('col-3', 'fa-building', 'warning', 'الفروع', 'مقارنة', 'branchesChart', 200);
+    html += '</div>';
+
+    html += '<div class="chart-grid">';
+    html += tableCard('col-6', 'fa-list', 'secondary', 'آخر 5 حجوزات', 'مباشر', renderRecentBookings(data.recent_bookings, data.comparison?.prev_revenue && data.recent_bookings?.length ? (data.comparison.prev_revenue / data.recent_bookings.length) : 0));
+    html += `<div class="chart-card col-6">
+        <div class="chart-card-header">
+            <h6 class="chart-card-title"><i class="fas fa-lightbulb text-warning"></i> التوصيات الذكية</h6>
+            <span class="chart-card-subtitle">AI</span>
+        </div>
+        <div class="chart-card-body">${renderRecommendations(data)}</div>
+    </div>`;
+    html += '</div>';
+
+    document.getElementById('biContent').innerHTML = html;
+    setTimeout(() => renderOverviewCharts(data), 100);
+}
+
+function renderOverviewCharts(data) {
+    const cmp = data.comparison || {};
+    const hasCompare = compareWith && data.daily_revenue_prev;
+
+    // 1) Line Revenue
+    const c1 = document.getElementById('revenueChart');
+    if (c1) {
+        destroyChart('revenue');
+        const datasets = [{
+            label: 'الإيرادات الحالية',
+            data: data.daily_revenue.map(d => d.revenue),
+            borderColor: '#0d6efd',
+            backgroundColor: 'rgba(13,110,253,0.1)',
+            tension: 0.4, fill: true,
+            borderWidth: 2,
+        }];
+        
+        // Line مقارن (إذا مطلوب)
+        if (hasCompare && data.daily_revenue_prev) {
+            datasets.push({
+                label: 'الفترة السابقة',
+                data: data.daily_revenue_prev.map(d => d.revenue),
+                borderColor: '#94a3b8',
+                backgroundColor: 'transparent',
+                borderDash: [5, 5],
+                tension: 0.4, fill: false,
+                borderWidth: 2,
+                pointRadius: 0,
+            });
+        }
+        
+        charts.revenue = new Chart(c1, {
+            type: 'line',
+            data: {
+                labels: data.daily_revenue.map(d => d.date.slice(5)),
+                datasets: datasets,
+            },
+            options: {
+                plugins: {
+                    legend: { display: hasCompare, position: 'bottom', labels: { font: { size: 10 }, padding: 8 } },
+                },
+                scales: { y: { beginAtZero: true, ticks: { callback: v => formatShortCurrency(v) } } }
+            }
+        });
+    }
+
+    // 2) Donut Sources
+    const c2 = document.getElementById('sourcesChart');
+    if (c2) {
+        const src = data.sources;
+        const map = { office: ['مكتب', '#0d6efd'], online: ['أونلاين', '#198754'],
+                      app: ['تطبيق', '#ffc107'], web: ['موقع', '#0dcaf0'] };
+        const labels = [], values = [], colors = [];
+        Object.keys(src).forEach(key => {
+            if (src[key] > 0 && map[key]) { labels.push(map[key][0]); values.push(src[key]); colors.push(map[key][1]); }
+        });
+        if (!values.length) { labels.push('لا توجد'); values.push(1); colors.push('#e2e8f0'); }
+        destroyChart('sources');
+        charts.sources = new Chart(c2, {
+            type: 'doughnut',
+            data: { labels, datasets: [{ data: values, backgroundColor: colors, borderWidth: 0 }] },
+            options: { cutout: '60%', plugins: { legend: { position: 'bottom' } } }
+        });
+    }
+
+    // 3) Bar Monthly
+    const c3 = document.getElementById('monthlyChart');
+    if (c3) {
+        destroyChart('monthly');
+        charts.monthly = new Chart(c3, {
+            type: 'bar',
+            data: { labels: data.monthly_bookings.map(m => m.month.slice(5)),
+                datasets: [{ label: 'الحجوزات', data: data.monthly_bookings.map(m => m.count),
+                    backgroundColor: 'rgba(13,110,253,0.7)', borderRadius: 6 }] },
+            options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+        });
+    }
+
+    // 4) Bar Branches
+    const c4 = document.getElementById('branchesChart');
+    if (c4 && data.branches) {
+        destroyChart('branches');
+        charts.branches = new Chart(c4, {
+            type: 'bar',
+            data: { labels: data.branches.map(b => (LANG === 'en' && b.name_en) ? b.name_en : b.name),
+                datasets: [{ label: 'الإيرادات', data: data.branches.map(b => b.revenue),
+                    backgroundColor: 'rgba(25,135,84,0.7)', borderRadius: 6 }] },
+            options: { plugins: { legend: { display: false } },
+                scales: { y: { beginAtZero: true, ticks: { callback: v => formatShortCurrency(v) } } } }
+        });
+    }
+}
+
+// 
+// BRANCHES
+// 
+async function loadBranchesTab() {
+    let branchesData;
+    try {
+        const res = await fetch(`/bi/branches?${getRangeParams()}`);
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        branchesData = await res.json();
+    } catch (e) {
+        document.getElementById('biContent').innerHTML =
+            `<div class="alert alert-danger m-3">فشل التحميل: ${e.message}</div>`;
+        return;
+    }
+
+    window._branchesData = branchesData;
+
+    const k = branchesData.kpis;
+    const cmp = branchesData.comparison || {};
+
+    // حساب الإيرادات والنسبة للأعلى والأقل
+    const sorted = [...branchesData.list].sort((a, b) => b.revenue - a.revenue);
+    const topBranch = sorted[0] || { name: '', revenue: 0 };
+    const bottomBranch = sorted[sorted.length - 1] || { name: '', revenue: 0 };
+    const totalRev = k.total_revenue || 1;
+    const topPct = Math.round((topBranch.revenue / totalRev) * 100);
+    const bottomPct = Math.round((bottomBranch.revenue / totalRev) * 100);
+
+    // 5 بطاقات KPIs
+    let html = renderKPIs([
+        { icon: 'fa-building', color: 'primary', label: 'إجمالي الفروع', value: k.total },
+        { icon: 'fa-trophy', color: 'success', label: 'الأعلى إيراداً', value: topBranch.name, 
+          subtitle: `${formatCurrency(topBranch.revenue)} (${topPct}%)` },
+        { icon: 'fa-arrow-down', color: 'danger', label: 'الأقل إيراداً', value: bottomBranch.name,
+          subtitle: `${formatCurrency(bottomBranch.revenue)} (${bottomPct}%)` },
+        { icon: 'fa-chart-line', color: 'info', label: 'متوسط الإيراد', value: formatCurrency(k.avg_revenue), change: cmp.revenue_change },
+        { icon: 'fa-ticket-alt', color: 'warning', label: 'إجمالي الحجوزات', value: k.total_bookings, change: cmp.bookings_change },
+    ]);
+
+    // 3 رسوم بيانية + جدول
+    html += '<div class="chart-grid" style="margin-top:14px;">';
+    html += chartCard('col-4', 'fa-chart-bar', 'primary', 'الإيرادات', 'مقارنة', 'brRevenueChart', 200);
+    html += chartCard('col-4', 'fa-chart-pie', 'success', 'توزيع الحجوزات', 'نسبة', 'brBookingsChart', 200);
+    html += chartCard('col-4', 'fa-chart-line', 'info', 'النمو الشهري', '6 أشهر', 'brGrowthChart', 200);
+    html += '</div>';
+
+    // جدول أداء الفروع
+    const rows = branchesData.list.map((b, i) => {
+        const badge = b.revenue > 0 ? 'success' : 'secondary';
+        return `
+        <tr>
+            <td>${i + 1}</td>
+            <td><strong>${b.name}</strong></td>
+            <td>${b.city}</td>
+            <td class="text-success fw-bold">${formatCurrency(b.revenue)}</td>
+            <td>${b.bookings}</td>
+            <td>${b.employees}</td>
+            <td><span class="badge bg-${badge}">${b.is_active ? 'نشط' : 'غير نشط'}</span></td>
+        </tr>`;
+    }).join('');
+
+    const tableHTML = `<table class="bi-table">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>الفرع</th>
+                <th>المدينة</th>
+                <th>الإيرادات</th>
+                <th>الحجوزات</th>
+                <th>الموظفون</th>
+                <th>الحالة</th>
+            </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+    </table>`;
+
+    html += '<div class="chart-grid">';
+    html += tableCard('col-12', 'fa-list', 'secondary', 'أداء الفروع التفصيلي', `${k.total} فرع`, tableHTML);
+    html += '</div>';
+
+    document.getElementById('biContent').innerHTML = html;
+    setTimeout(() => renderBranchesChartsWithAPI(branchesData), 100);
+}
+
+function renderBranchesChartsWithAPI(data) {
+    // 1) Bar  الإيرادات
+    const c1 = document.getElementById('brRevenueChart');
+    if (c1) {
+        destroyChart('brRevenue');
+        charts.brRevenue = new Chart(c1, {
+            type: 'bar',
+            data: {
+                labels: data.list.map(b => b.name),
+                datasets: [{
+                    label: 'الإيرادات',
+                    data: data.list.map(b => b.revenue),
+                    backgroundColor: 'rgba(13,110,253,0.7)',
+                    borderRadius: 6,
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                plugins: { legend: { display: false } },
+                scales: { x: { beginAtZero: true, ticks: { callback: v => formatShortCurrency(v) } } }
+            }
+        });
+    }
+
+    // 2) Donut  الحجوزات
+    const c2 = document.getElementById('brBookingsChart');
+    if (c2) {
+        const palette = ['#0d6efd', '#198754', '#ffc107', '#dc3545', '#0dcaf0'];
+        destroyChart('brBookings');
+        charts.brBookings = new Chart(c2, {
+            type: 'doughnut',
+            data: {
+                labels: data.list.map(b => b.name),
+                datasets: [{
+                    data: data.list.map(b => b.bookings),
+                    backgroundColor: palette,
+                }]
+            },
+            options: { cutout: '60%', plugins: { legend: { position: 'bottom', labels: { font: { size: 9 } } } } }
+        });
+    }
+
+    // 3) Line  النمو الشهري
+    const c3 = document.getElementById('brGrowthChart');
+    if (c3) {
+        destroyChart('brGrowth');
+        charts.brGrowth = new Chart(c3, {
+            type: 'line',
+            data: {
+                labels: data.monthly.map(m => m.month.slice(5)),
+                datasets: [{
+                    label: 'الإيرادات',
+                    data: data.monthly.map(m => m.revenue),
+                    borderColor: '#0dcaf0',
+                    backgroundColor: 'rgba(13,202,240,0.1)',
+                    tension: 0.4,
+                    fill: true,
+                }]
+            },
+            options: {
+                plugins: { legend: { display: false } },
+                scales: { y: { beginAtZero: true, ticks: { callback: v => formatShortCurrency(v) } } }
+            }
+        });
+    }
+}
+
+// 
+// BUSES
+// 
+async function loadBusesTab() {
+    let busesData;
+    try {
+        const res = await fetch(`/bi/buses?${getRangeParams()}`);
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        busesData = await res.json();
+    } catch (e) {
+        document.getElementById('biContent').innerHTML =
+            `<div class="alert alert-danger m-3">فشل التحميل: ${e.message}</div>`;
+        return;
+    }
+
+    window._busesData = busesData;
+    const k = busesData.kpis;
+
+    // الصف 1: 5 بطاقات KPIs
+    let html = renderKPIs([
+        { icon: 'fa-bus', color: 'primary', label: 'إجمالي الحافلات', value: k.total },
+        { icon: 'fa-check-circle', color: 'success', label: 'نشطة', value: k.active },
+        { icon: 'fa-wrench', color: 'warning', label: 'صيانة', value: k.maintenance },
+        { icon: 'fa-ban', color: 'danger', label: 'متوقفة', value: k.inactive },
+        { icon: 'fa-percentage', color: 'info', label: 'معدل الاستخدام', value: (k.utilization || 0) + '%' },
+    ]);
+
+    // الصف 2: جدول (8) + Donut (4)
+    html += '<div class="chart-grid" style="margin-top:14px;">';
+
+    // جدول أفضل 10 حافلات
+    const rows = (busesData.top_by_revenue || []).map((b, i) => {
+        const plate = b.plate || '';
+        const model = b.model || '';
+        return `
+        <tr>
+            <td>${i + 1}</td>
+            <td><strong>${plate}</strong></td>
+            <td>${model}</td>
+            <td class="text-center">${b.trips}</td>
+            <td class="text-success fw-bold">${formatCurrency(b.revenue)}</td>
+        </tr>`;
+    }).join('');
+
+    const tableHTML = `<table class="bi-table">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>اللوحة</th>
+                <th>الموديل</th>
+                <th class="text-center">الرحلات</th>
+                <th>الإيرادات</th>
+            </tr>
+        </thead>
+        <tbody>${rows || '<tr><td colspan="5" class="text-center text-muted">لا توجد بيانات</td></tr>'}</tbody>
+    </table>`;
+
+    html += tableCard('col-8', 'fa-trophy', 'warning', 'أفضل 10 حافلات دخلاً', 'الأعلى إيراداً', tableHTML);
+
+    // Donut  حالة الحافلات
+    html += chartCard('col-4', 'fa-chart-pie', 'success', 'حالة الحافلات', 'توزيع', 'busesStatusChart', 200);
+
+    html += '</div>';
+
+    // الصف 3: 2 رسوم بيانية
+    html += '<div class="chart-grid">';
+    html += chartCard('col-6', 'fa-chart-bar', 'info', 'الأنواع', 'تصنيف', 'busesTypeChart', 200);
+    html += chartCard('col-6', 'fa-chart-line', 'primary', 'النشاط الشهري', '6 أشهر', 'busesMaintChart', 200);
+    html += '</div>';
+
+    document.getElementById('biContent').innerHTML = html;
+    setTimeout(() => renderBusesChartsWithAPI(busesData), 100);
+}
+
+function renderBusesChartsWithAPI(data) {
+    const k = data.kpis;
+
+    // 1) Donut  حالة الحافلات
+    const c1 = document.getElementById('busesStatusChart');
+    if (c1) {
+        destroyChart('busesStatus');
+        charts.busesStatus = new Chart(c1, {
+            type: 'doughnut',
+            data: {
+                labels: ['نشطة', 'صيانة', 'متوقفة'],
+                datasets: [{
+                    data: [k.active, k.maintenance, k.inactive],
+                    backgroundColor: ['#198754', '#ffc107', '#dc3545'],
+                }]
+            },
+            options: { cutout: '60%', plugins: { legend: { position: 'bottom' } } }
+        });
+    }
+
+    // 2) Bar  الأنواع
+    const c2 = document.getElementById('busesTypeChart');
+    if (c2) {
+        destroyChart('busesType');
+        charts.busesType = new Chart(c2, {
+            type: 'bar',
+            data: {
+                labels: data.types.map(t => t.name),
+                datasets: [{
+                    label: 'العدد',
+                    data: data.types.map(t => t.count),
+                    backgroundColor: 'rgba(13,202,240,0.7)',
+                    borderRadius: 6,
+                }]
+            },
+            options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+        });
+    }
+
+    // 3) Line  النشاط الشهري
+    const c3 = document.getElementById('busesMaintChart');
+    if (c3) {
+        destroyChart('busesMaint');
+        charts.busesMaint = new Chart(c3, {
+            type: 'line',
+            data: {
+                labels: data.monthly_maintenance.map(m => m.month.slice(5)),
+                datasets: [{
+                    label: 'الرحلات',
+                    data: data.monthly_maintenance.map(m => m.count),
+                    borderColor: '#0d6efd',
+                    backgroundColor: 'rgba(13,110,253,0.1)',
+                    tension: 0.4,
+                    fill: true,
+                }]
+            },
+            options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+        });
+    }
+}
+
+// 
+// EMPLOYEES
+// 
+async function loadEmployeesTab() {
+    let empData;
+    try {
+        const res = await fetch(`/bi/employees?${getRangeParams()}`);
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        empData = await res.json();
+    } catch (e) {
+        document.getElementById('biContent').innerHTML =
+            `<div class="alert alert-danger m-3">فشل التحميل: ${e.message}</div>`;
+        return;
+    }
+
+    window._empData = empData;
+    const k = empData.kpis;
+
+    // 5 بطاقات KPIs
+    let html = renderKPIs([
+        { icon: 'fa-users', color: 'primary', label: 'إجمالي الموظفين', value: k.total },
+        { icon: 'fa-user-check', color: 'success', label: 'الموظفون النشطون', value: k.active },
+        { icon: 'fa-money-bill-wave', color: 'info', label: 'إجمالي الرواتب', value: formatCurrency(k.total_salary) },
+        { icon: 'fa-chart-line', color: 'warning', label: 'متوسط الراتب', value: formatCurrency(k.avg_salary) },
+        { icon: 'fa-crown', color: 'danger', label: 'الأعلى راتبا', 
+          value: k.top_salary_name ? k.top_salary_name.substring(0, 12) + '...' : '',
+          subtitle: formatCurrency(k.top_salary) },
+    ]);
+
+    // الصف 2: جدول (8) + Donut (4)
+    html += '<div class="chart-grid" style="margin-top:14px;">';
+
+    const rows = (empData.list || []).map((e, i) => {
+        return `
+        <tr>
+            <td>${i + 1}</td>
+            <td><strong>${e.name || ''}</strong></td>
+            <td>${e.position || ''}</td>
+            <td class="text-center"><small>${e.phone || ''}</small></td>
+            <td class="text-success fw-bold">${formatCurrency(e.salary)}</td>
+        </tr>`;
+    }).join('');
+
+    const tableHTML = `<table class="bi-table">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>الاسم</th>
+                <th>المنصب</th>
+                <th class="text-center">الجوال</th>
+                <th>الراتب</th>
+            </tr>
+        </thead>
+        <tbody>${rows || '<tr><td colspan="5" class="text-center text-muted">لا توجد بيانات</td></tr>'}</tbody>
+    </table>`;
+
+    html += tableCard('col-8', 'fa-list', 'primary', 'قائمة الموظفين', `${k.total} موظف`, tableHTML);
+    html += chartCard('col-4', 'fa-chart-pie', 'success', 'توزيع المناصب', 'حسب العدد', 'empDeptChart', 200);
+    html += '</div>';
+
+    // الصف 3: Bar  الرواتب حسب المنصب
+    html += '<div class="chart-grid">';
+    html += chartCard('col-12', 'fa-chart-bar', 'warning', 'الرواتب حسب المنصب', 'إجمالي', 'empSalaryChart', 200);
+    html += '</div>';
+
+    document.getElementById('biContent').innerHTML = html;
+    setTimeout(() => renderEmployeesChartsWithAPI(empData), 100);
+}
+
+function renderEmployeesChartsWithAPI(data) {
+    // 1) Donut  توزيع المناصب
+    const c1 = document.getElementById('empDeptChart');
+    if (c1) {
+        const palette = ['#0d6efd', '#198754', '#ffc107', '#0dcaf0', '#dc3545', '#6c757d'];
+        destroyChart('empDept');
+        charts.empDept = new Chart(c1, {
+            type: 'doughnut',
+            data: {
+                labels: data.positions.map(p => p.name),
+                datasets: [{
+                    data: data.positions.map(p => p.count),
+                    backgroundColor: palette,
+                }]
+            },
+            options: { cutout: '60%', plugins: { legend: { position: 'bottom', labels: { font: { size: 10 } } } } }
+        });
+    }
+
+    // 2) Bar  الرواتب حسب المنصب
+    const c2 = document.getElementById('empSalaryChart');
+    if (c2) {
+        destroyChart('empSalary');
+        charts.empSalary = new Chart(c2, {
+            type: 'bar',
+            data: {
+                labels: data.positions.map(p => p.name),
+                datasets: [{
+                    label: 'إجمالي الرواتب',
+                    data: data.positions.map(p => p.salary),
+                    backgroundColor: 'rgba(25,135,84,0.7)',
+                    borderRadius: 6,
+                }]
+            },
+            options: {
+                plugins: { legend: { display: false } },
+                scales: { y: { beginAtZero: true, ticks: { callback: v => formatShortCurrency(v) } } }
+            }
+        });
+    }
+}
+
+// 
+// INCIDENTS
+// 
+
+
+
+
+// 
+// TRIPS
+// 
+async function loadTripsTab() {
+    // تحميل 3 APIs بالتوازي
+    let tripsData, luggageData, occupancyData, heatmapData;
+    try {
+        const [r1, r2, r3, r4] = await Promise.all([
+            fetchTabData('trips'),
+            fetch(`/bi/luggage?${getRangeParams()}`).then(r => r.json()),
+            fetch(`/bi/occupancy?${getRangeParams()}`).then(r => r.json()),
+            fetch(`/bi/heatmap?${getRangeParams()}`).then(r => r.json()),
+        ]);
+        tripsData = r1;
+        luggageData = r2;
+        occupancyData = r3;
+        heatmapData = r4;
+    } catch (e) {
+        document.getElementById('biContent').innerHTML =
+            `<div class="alert alert-danger m-3">فشل التحميل: ${e.message}</div>`;
+        return;
+    }
+
+    // حفظ البيانات للاستخدام في تبويبات داخلية
+    window._tripsData = tripsData;
+    window._luggageData = luggageData;
+    window._occupancyData = occupancyData;
+    window._heatmapData = heatmapData;
+
+    // 
+    // Subtabs
+    // 
+    let html = `
+    <div class="subtabs-dropdown-wrap ${LANG === 'ar' ? 'rtl' : 'ltr'}">
+        <div class="subtabs-dropdown" id="tripsDropdown">
+            <button class="subtabs-toggle" onclick="toggleSubtabsMenu(event)">
+                <span class="subtabs-toggle-icon"><i class="fas fa-route" id="subtabToggleIcon"></i></span>
+                <span class="subtabs-toggle-label" id="subtabToggleLabel">الرحلات</span>
+                <span class="subtabs-toggle-badge" id="subtabToggleBadge">${tripsData.total}</span>
+                <i class="fas fa-chevron-down subtabs-toggle-arrow"></i>
+            </button>
+            <div class="subtabs-menu ${LANG === 'ar' ? 'rtl' : 'ltr'}" id="subtabsMenu">
+                <button class="subtabs-menu-item active" onclick="switchSubtab('trips-overview', event)">
+                    <span class="subtabs-menu-item-icon"><i class="fas fa-route"></i></span>
+                    <span class="subtabs-menu-item-label">الرحلات</span>
+                    <span class="subtabs-menu-item-badge">${tripsData.total}</span>
+                    <i class="fas fa-check subtabs-menu-item-check"></i>
+                </button>
+                <button class="subtabs-menu-item" onclick="switchSubtab('trips-luggage', event)">
+                    <span class="subtabs-menu-item-icon"><i class="fas fa-suitcase-rolling"></i></span>
+                    <span class="subtabs-menu-item-label">الأمتعة</span>
+                    <span class="subtabs-menu-item-badge">${formatShortCurrency(luggageData.kpis.luggage_revenue)}</span>
+                    <i class="fas fa-check subtabs-menu-item-check"></i>
+                </button>
+                <button class="subtabs-menu-item" onclick="switchSubtab('trips-occupancy', event)">
+                    <span class="subtabs-menu-item-icon"><i class="fas fa-chart-pie"></i></span>
+                    <span class="subtabs-menu-item-label">الإشغال</span>
+                    <span class="subtabs-menu-item-badge">${occupancyData.kpis.avg_occupancy}%</span>
+                    <i class="fas fa-check subtabs-menu-item-check"></i>
+                </button>
+                <button class="subtabs-menu-item" onclick="switchSubtab('trips-heatmap', event)">
+                    <span class="subtabs-menu-item-icon"><i class="fas fa-fire"></i></span>
+                    <span class="subtabs-menu-item-label">أوقات الذروة</span>
+                    <span class="subtabs-menu-item-badge"></span>
+                    <i class="fas fa-check subtabs-menu-item-check"></i>
+                </button>
+            </div>
+        </div>
+    </div><!--  -->
+    <!-- Subtab 1: الرحلات -->
+    <!--  -->
+    <div class="subtab-content active" id="subtab-trips-overview">
+        ${renderTripsOverview(tripsData)}
+    </div>
+
+    <!--  -->
+    <!-- Subtab 2: الأمتعة -->
+    <!--  -->
+    <div class="subtab-content" id="subtab-trips-luggage">
+        ${renderLuggageSection(luggageData)}
+    </div>
+
+    <!--  -->
+    <!-- Subtab 3: الإشغال -->
+    <!--  -->
+    <div class="subtab-content" id="subtab-trips-occupancy">
+        ${renderOccupancySection(occupancyData)}
+    </div>
+
+    <!--  -->
+    <!-- Subtab 4: Heat Map (أوقات الذروة) -->
+    <!--  -->
+    <div class="subtab-content" id="subtab-trips-heatmap">
+        ${renderHeatmapSection(heatmapData)}
+    </div>`;
+
+    document.getElementById('biContent').innerHTML = html;
+    setTimeout(() => {
+        renderTripsOverviewCharts(tripsData);
+    }, 100);
+}
+
+// 
+// Subtabs Functions
+// 
+function switchSubtab(id, event) {
+    // إخفاء/إظهار المحتوى
+    document.querySelectorAll('.subtab-content').forEach(c => c.classList.remove('active'));
+    const target = document.getElementById('subtab-' + id);
+    if (target) target.classList.add('active');
+
+    // تحديث القائمة المنسدلة
+    document.querySelectorAll('.subtabs-menu-item').forEach(item => item.classList.remove('active'));
+    if (event && event.target) {
+        const menuItem = event.target.closest('.subtabs-menu-item');
+        if (menuItem) menuItem.classList.add('active');
+    }
+
+    // تحديث زر الـ Toggle
+    const labelMap = {
+        'trips-overview': { label: 'الرحلات', icon: 'fa-route' },
+        'trips-luggage': { label: 'الأمتعة', icon: 'fa-suitcase-rolling' },
+        'trips-occupancy': { label: 'الإشغال', icon: 'fa-chart-pie' },
+    };
+    const info = labelMap[id] || { label: id, icon: 'fa-circle' };
+    
+    const toggleLabel = document.getElementById('subtabToggleLabel');
+    const toggleIcon = document.getElementById('subtabToggleIcon');
+    const toggleBadge = document.getElementById('subtabToggleBadge');
+    const menu = document.getElementById('subtabsMenu');
+    const toggle = document.querySelector('.subtabs-toggle');
+    
+    if (toggleLabel) toggleLabel.textContent = info.label;
+    if (toggleIcon) toggleIcon.className = 'fas ' + info.icon;
+    
+    // Badge
+    if (toggleBadge) {
+        if (id === 'trips-overview' && window._tripsData) {
+            toggleBadge.textContent = window._tripsData.total;
+        } else if (id === 'trips-luggage' && window._luggageData) {
+            toggleBadge.textContent = formatShortCurrency(window._luggageData.kpis.luggage_revenue);
+        } else if (id === 'trips-occupancy' && window._occupancyData) {
+            toggleBadge.textContent = window._occupancyData.kpis.avg_occupancy + '%';
+        }
+    }
+    
+    // إغلاق القائمة
+    if (menu) menu.classList.remove('open');
+    if (toggle) toggle.classList.remove('active');
+
+    // رسم الرسوم
+    setTimeout(() => {
+        if (id === 'trips-overview' && window._tripsData) {
+            renderTripsOverviewCharts(window._tripsData);
+        } else if (id === 'trips-luggage' && window._luggageData) {
+        } else if (id === 'trips-occupancy' && window._occupancyData) {
+            renderOccupancyCharts(window._occupancyData);
+        } else if (id === 'trips-heatmap') {
+            // Heat map لا يحتاج رسم خاص (HTML table)
+            applyHeatmapColors();
+        }
+    }, 50);
+}
+
+// 
+// Dropdown Toggle Functions
+// 
+function toggleSubtabsMenu(event) {
+    event.stopPropagation();
+    const menu = document.getElementById('subtabsMenu');
+    const toggle = document.querySelector('.subtabs-toggle');
+    if (!menu) return;
+    menu.classList.toggle('open');
+    if (toggle) toggle.classList.toggle('active');
+}
+
+// إغلاق القائمة عند النقر خارجها
+document.addEventListener('click', function(e) {
+    const dropdown = document.getElementById('tripsDropdown');
+    if (dropdown && !dropdown.contains(e.target)) {
+        const menu = document.getElementById('subtabsMenu');
+        const toggle = document.querySelector('.subtabs-toggle');
+        if (menu) menu.classList.remove('open');
+        if (toggle) toggle.classList.remove('active');
+    }
+});
+
+// 
+// Subtab 1: الرحلات
+// 
+function renderTripsOverview(d) {
+    let html = renderKPIs([
+        { icon: 'fa-route', color: 'primary', label: 'إجمالي الرحلات', value: d.total },
+        { icon: 'fa-check', color: 'success', label: 'مكتملة', value: d.completed },
+        { icon: 'fa-clock', color: 'warning', label: 'جارية', value: d.ongoing },
+        { icon: 'fa-times', color: 'danger', label: 'ملغاة', value: d.cancelled },
+        { icon: 'fa-percentage', color: 'info', label: 'نسبة الإكمال', value: Math.round((d.completed / d.total) * 100) + '%' },
+        { icon: 'fa-money-bill-wave', color: 'secondary', label: 'إجمالي الإيراد', value: formatCurrency(d.total_revenue || 531000) },
+    ]);
+
+    html += '<div class="chart-grid" style="margin-top:14px;">';
+    html += chartCard('col-6', 'fa-chart-bar', 'primary', 'الرحلات حسب الوجهة', 'أعلى 5', 'tripDestChart', 200);
+    html += chartCard('col-6', 'fa-chart-line', 'success', 'الرحلات اليومية', '7 أيام', 'tripDailyChart', 200);
+    html += '</div>';
+
+    // جدول الرحلات الأكثر ربحية
+    const profitRows = d.top_profitable.map((t, i) => `
+        <tr>
+            <td>${i + 1}</td>
+            <td><strong>${t.route}</strong></td>
+            <td class="text-center">${t.trips}</td>
+            <td class="text-success fw-bold">${formatCurrency(t.revenue)}</td>
+            <td><span class="badge bg-success">${t.margin}%</span></td>
+        </tr>`).join('');
+    const profitTable = `<table class="bi-table">
+        <thead><tr><th>#</th><th>الخط</th><th class="text-center">الرحلات</th><th>الإيرادات</th><th>الهامش</th></tr></thead>
+        <tbody>${profitRows || '<tr><td colspan="5" class="text-center text-muted">لا توجد بيانات</td></tr>'}</tbody>
+    </table>`;
+    html += '<div class="chart-grid">';
+    html += tableCard('col-12', 'fa-trophy', 'warning', 'الرحلات الأكثر ربحية', 'أعلى 5', profitTable);
+    html += '</div>';
+    return html;
+}
+
+function renderTripsOverviewCharts(d) {
+    const c1 = document.getElementById('tripDestChart');
+    if (c1) {
+        destroyChart('tripDest');
+        charts.tripDest = new Chart(c1, {
+            type: 'bar',
+            data: { labels: d.destinations.map(x => x.name),
+                datasets: [{ label: 'الرحلات', data: d.destinations.map(x => x.count),
+                    backgroundColor: 'rgba(13,110,253,0.7)', borderRadius: 6 }] },
+            options: { indexAxis: 'y', plugins: { legend: { display: false } } }
+        });
+    }
+    const c2 = document.getElementById('tripDailyChart');
+    if (c2) {
+        destroyChart('tripDaily');
+        charts.tripDaily = new Chart(c2, {
+            type: 'line',
+            data: { labels: d.daily.map(x => x.date),
+                datasets: [{ label: 'الرحلات', data: d.daily.map(x => x.count),
+                    borderColor: '#198754', backgroundColor: 'rgba(25,135,84,0.1)', tension: 0.4, fill: true }] },
+            options: { plugins: { legend: { display: false } } }
+        });
+    }
+}
+
+// 
+// Subtab 2: الأمتعة
+// 
+function renderLuggageSection(l) {
+    let html = renderKPIs([
+        { icon: 'fa-money-bill-wave', color: 'success', label: 'إيراد الأمتعة', value: formatCurrency(l.kpis.luggage_revenue) },
+        { icon: 'fa-percentage', color: 'primary', label: 'نسبة من الإجمالي', value: l.kpis.percentage + '%' },
+        { icon: 'fa-suitcase-rolling', color: 'info', label: 'عدد الأمتعة', value: l.kpis.luggage_count },
+        { icon: 'fa-weight-hanging', color: 'warning', label: 'متوسط الوزن', value: l.kpis.avg_weight + ' kg' },
+    ]);
+
+    // جدول الأمتعة
+    const typeLabels = { free: 'مجاني', small: 'صغير', medium: 'متوسط', large: 'كبير' };
+    const typeColors = { free: 'secondary', small: 'info', medium: 'warning', large: 'danger' };
+    const totalLuggageRev = l.kpis.luggage_revenue || 1;
+    
+    const luggageRows = l.by_type.map(t => {
+        const pct = ((t.revenue / totalLuggageRev) * 100).toFixed(1);
+        const avgPrice = t.count > 0 ? (t.revenue / t.count) : 0;
+        return `
+        <tr>
+            <td><span class="badge bg-${typeColors[t.type] || 'primary'}">${typeLabels[t.type] || t.type}</span></td>
+            <td class="text-center">${t.count}</td>
+            <td class="text-success fw-bold">${formatCurrency(t.revenue)}</td>
+            <td class="text-muted">${formatCurrency(avgPrice)}</td>
+            <td>
+                <div style="display:flex;align-items:center;gap:6px;">
+                    <div style="flex:1;height:6px;background:#e2e8f0;border-radius:3px;overflow:hidden;">
+                        <div style="height:100%;width:${pct}%;background:#0d6efd;border-radius:3px;"></div>
+                    </div>
+                    <small class="fw-bold">${pct}%</small>
+                </div>
+            </td>
+        </tr>`;
+    }).join('');
+    
+    const luggageTable = `
+        <table class="bi-table">
+            <thead>
+                <tr><th>النوع</th><th class="text-center">العدد</th><th>الإيراد</th><th>متوسط السعر</th><th>النسبة</th></tr>
+            </thead>
+            <tbody>${luggageRows}</tbody>
+            <tfoot style="background:#f8fafc;font-weight:800;">
+                <tr>
+                    <td>الإجمالي</td>
+                    <td class="text-center">${l.kpis.luggage_count}</td>
+                    <td class="text-success">${formatCurrency(l.kpis.luggage_revenue)}</td>
+                    <td class="text-muted">${formatCurrency(l.kpis.luggage_revenue / (l.kpis.luggage_count || 1))}</td>
+                    <td><span class="badge bg-primary">${l.kpis.percentage}% من الإيراد</span></td>
+                </tr>
+            </tfoot>
+        </table>`;
+
+    html += '<div class="chart-grid" style="margin-top:14px;">';
+    html += tableCard('col-6', 'fa-list', 'primary', 'تفاصيل الأمتعة', 'حسب النوع', luggageTable);
+    
+    html += '</div>';
+    return html;
+}
+
+
+
+// 
+// Subtab 3: الإشغال
+// 
+function renderOccupancySection(o) {
+    let html = renderKPIs([
+        { icon: 'fa-percentage', color: o.kpis.avg_occupancy > 60 ? 'success' : (o.kpis.avg_occupancy > 30 ? 'warning' : 'danger'),
+          label: 'متوسط الإشغال', value: o.kpis.avg_occupancy + '%' },
+        { icon: 'fa-ticket-alt', color: 'success', label: 'تذاكر مُباعة', value: o.kpis.sold_tickets },
+        { icon: 'fa-chair', color: 'danger', label: 'مقاعد شاغرة', value: o.kpis.empty_seats },
+        { icon: 'fa-trophy', color: 'info', label: 'أعلى مسار', value: o.kpis.top_route },
+    ]);
+
+    const occRows = o.by_route.map(r => {
+        const color = r.occupancy >= 60 ? 'success' : (r.occupancy >= 30 ? 'warning' : 'danger');
+        const icon = r.occupancy >= 60 ? '' : (r.occupancy >= 30 ? '' : '');
+        return `
+        <tr>
+            <td><strong>${r.route}</strong></td>
+            <td class="text-center">${r.sold}</td>
+            <td class="text-center text-danger">${r.empty}</td>
+            <td>
+                <div style="display:flex;align-items:center;gap:6px;">
+                    <div style="flex:1;height:6px;background:#e2e8f0;border-radius:3px;overflow:hidden;">
+                        <div style="height:100%;width:${r.occupancy}%;background:${r.occupancy >= 60 ? '#198754' : (r.occupancy >= 30 ? '#ffc107' : '#dc3545')};border-radius:3px;"></div>
+                    </div>
+                    <small class="fw-bold">${r.occupancy}%</small>
+                </div>
+            </td>
+            <td class="text-center">${icon}</td>
+        </tr>`;
+    }).join('');
+    
+    const occTable = `
+        <table class="bi-table">
+            <thead>
+                <tr><th>الخط</th><th class="text-center">مُباع</th><th class="text-center">شاغر</th><th>الإشغال</th><th class="text-center">التوصية</th></tr>
+            </thead>
+            <tbody>${occRows}</tbody>
+            <tfoot style="background:#f8fafc;font-weight:800;">
+                <tr>
+                    <td>الإجمالي</td>
+                    <td class="text-center">${o.kpis.sold_tickets}</td>
+                    <td class="text-center text-danger">${o.kpis.empty_seats}</td>
+                    <td><span class="badge bg-${o.kpis.avg_occupancy >= 60 ? 'success' : (o.kpis.avg_occupancy >= 30 ? 'warning' : 'danger')}">${o.kpis.avg_occupancy}%</span></td>
+                    <td class="text-center text-muted"></td>
+                </tr>
+            </tfoot>
+        </table>`;
+
+    html += '<div class="chart-grid" style="margin-top:14px;">';
+    html += tableCard('col-6', 'fa-list', 'success', 'تفاصيل الإشغال', 'Manifest', occTable);
+    html += chartCard('col-12', 'fa-chart-bar', 'info', 'الإشغال', 'حسب الخط', 'occupancyChart', 200);
+    html += '</div>';
+    return html;
+}
+
+function renderOccupancyCharts(o) {
+    const c = document.getElementById('occupancyChart');
+    if (c) {
+        destroyChart('occupancy');
+        const palette = o.by_route.map(r =>
+            r.occupancy >= 60 ? 'rgba(25,135,84,0.7)' :
+            r.occupancy >= 30 ? 'rgba(255,193,7,0.7)' :
+            'rgba(220,53,69,0.7)'
+        );
+        charts.occupancy = new Chart(c, {
+            type: 'bar',
+            data: {
+                labels: o.by_route.map(r => r.route),
+                datasets: [{
+                    label: 'الإشغال %',
+                    data: o.by_route.map(r => r.occupancy),
+                    backgroundColor: palette,
+                    borderRadius: 6,
+                }]
+            },
+            options: {
+                plugins: { legend: { display: false } },
+                scales: { y: { beginAtZero: true, max: 100, ticks: { callback: v => v + '%' } } }
+            }
+        });
+    }
+}
+
+function renderTripsCharts(d) {
+    const c1 = document.getElementById('tripDestChart');
+    if (c1) {
+        destroyChart('tripDest');
+        charts.tripDest = new Chart(c1, {
+            type: 'bar',
+            data: { labels: d.destinations.map(x => x.name),
+                datasets: [{ label: 'الرحلات', data: d.destinations.map(x => x.count),
+                    backgroundColor: 'rgba(13,110,253,0.7)', borderRadius: 6 }] },
+            options: { indexAxis: 'y', plugins: { legend: { display: false } } }
+        });
+    }
+
+    const c2 = document.getElementById('tripDailyChart');
+    if (c2) {
+        destroyChart('tripDaily');
+        charts.tripDaily = new Chart(c2, {
+            type: 'line',
+            data: { labels: d.daily.map(x => x.date),
+                datasets: [{ label: 'الرحلات', data: d.daily.map(x => x.count),
+                    borderColor: '#198754', backgroundColor: 'rgba(25,135,84,0.1)', tension: 0.4, fill: true }] },
+            options: { plugins: { legend: { display: false } } }
+        });
+    }
+
+    const c3 = document.getElementById('tripStatusChart');
+    if (c3) {
+        destroyChart('tripStatus');
+        charts.tripStatus = new Chart(c3, {
+            type: 'doughnut',
+            data: { labels: ['مكتملة', 'جارية', 'ملغاة'],
+                datasets: [{ data: [d.completed, d.ongoing, d.cancelled],
+                    backgroundColor: ['#198754', '#ffc107', '#dc3545'] }] },
+            options: { cutout: '60%', plugins: { legend: { position: 'bottom' } } }
+        });
+    }
+}
+
+// 
+// CITIES
+// 
+async function loadCitiesTab() {
+    let citiesData;
+    try {
+        const res = await fetch(`/bi/cities?${getRangeParams()}`);
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        citiesData = await res.json();
+    } catch (e) {
+        document.getElementById('biContent').innerHTML =
+            `<div class="alert alert-danger m-3">فشل التحميل: ${e.message}</div>`;
+        return;
+    }
+
+    window._citiesData = citiesData;
+
+    const k = citiesData.kpis;
+    const cmp = citiesData.comparison || {};
+
+    // حساب عدد الحجوزات والنسبة للأكثر والأقل حجزاً
+    const sorted = [...citiesData.list].sort((a, b) => b.bookings - a.bookings);
+    const topCity = sorted[0] || { name: '', bookings: 0 };
+    const bottomCity = sorted[sorted.length - 1] || { name: '', bookings: 0 };
+    const totalBk = k.total_bookings || 1;
+    const topPct = Math.round((topCity.bookings / totalBk) * 100);
+    const bottomPct = Math.round((bottomCity.bookings / totalBk) * 100);
+
+    // 5 بطاقات KPIs
+    let html = renderKPIs([
+        { icon: 'fa-map-marked-alt', color: 'primary', label: 'إجمالي المدن', value: k.total },
+        { icon: 'fa-trophy', color: 'success', label: 'الأكثر حجزا', value: topCity.name, subtitle: `${topCity.bookings} حجز (${topPct}%)` },
+        { icon: 'fa-arrow-down', color: 'danger', label: 'الأقل حجزا', value: bottomCity.name, subtitle: `${bottomCity.bookings} حجز (${bottomPct}%)` },
+        { icon: 'fa-route', color: 'info', label: 'إجمالي الرحلات', value: k.total_trips },
+        { icon: 'fa-money-bill', color: 'warning', label: 'متوسط الإيراد', value: formatCurrency(k.avg_revenue), change: cmp.revenue_change },
+    ]);
+
+    // رسمان
+    html += '<div class="chart-grid" style="margin-top:14px;">';
+    html += chartCard('col-8', 'fa-chart-bar', 'primary', 'الحجوزات', 'مقارنة المدن', 'citiesChart', 200);
+    html += chartCard('col-4', 'fa-chart-pie', 'success', 'التوزيع', 'نسبة', 'citiesDistChart', 200);
+    html += '</div>';
+
+    // جدول المدن
+    const rows = citiesData.list.filter(c => c.revenue > 0 || c.bookings > 0).map((c, i) => {
+        const growthCls = c.growth > 0 ? 'success' : (c.growth < 0 ? 'danger' : 'secondary');
+        return `
+        <tr>
+            <td>${i + 1}</td>
+            <td><strong>${c.name}</strong></td>
+            <td>${c.code}</td>
+            <td class="text-center">${c.bookings}</td>
+            <td class="text-success fw-bold">${formatCurrency(c.revenue)}</td>
+            <td><span class="badge bg-${growthCls}">${c.growth > 0 ? '+' : ''}${c.growth}%</span></td>
+        </tr>`;
+    }).join('');
+
+    const emptyMsg = '<tr><td colspan="6" class="text-center text-muted py-3">لا توجد مدن بإيرادات في هذه الفترة</td></tr>';
+
+    const tableHTML = `<table class="bi-table">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>المدينة</th>
+                <th>الرمز</th>
+                <th class="text-center">الحجوزات</th>
+                <th>الإيرادات</th>
+                <th>النمو</th>
+            </tr>
+        </thead>
+        <tbody>${rows || emptyMsg}</tbody>
+    </table>`;
+
+    html += '<div class="chart-grid">';
+    html += tableCard('col-12', 'fa-list', 'secondary', 'بيانات المدن', `${citiesData.list.length} مدينة`, tableHTML);
+    html += '</div>';
+
+    document.getElementById('biContent').innerHTML = html;
+    setTimeout(() => renderCitiesChartsWithAPI(citiesData), 100);
+}
+
+function renderCitiesChartsWithAPI(data) {
+    // 1) Bar  الحجوزات
+    const c1 = document.getElementById('citiesChart');
+    if (c1) {
+        // نعرض فقط المدن التي فيها إيرادات أو حجوزات
+        const active = data.list.filter(c => c.revenue > 0 || c.bookings > 0);
+        destroyChart('cities');
+        charts.cities = new Chart(c1, {
+            type: 'bar',
+            data: {
+                labels: active.map(c => c.name),
+                datasets: [{
+                    label: 'الحجوزات',
+                    data: active.map(c => c.bookings),
+                    backgroundColor: 'rgba(13,202,240,0.7)',
+                    borderRadius: 6,
+                }]
+            },
+            options: {
+                plugins: { legend: { display: false } },
+                scales: { y: { beginAtZero: true } }
+            }
+        });
+    }
+
+    // 2) Donut  التوزيع
+    const c2 = document.getElementById('citiesDistChart');
+    if (c2) {
+        const active = data.list.filter(c => c.revenue > 0 || c.bookings > 0);
+        const palette = ['#0d6efd', '#198754', '#ffc107', '#dc3545', '#0dcaf0', '#6c757d'];
+        destroyChart('citiesDist');
+        charts.citiesDist = new Chart(c2, {
+            type: 'doughnut',
+            data: {
+                labels: active.map(c => c.name),
+                datasets: [{
+                    data: active.map(c => c.bookings),
+                    backgroundColor: palette,
+                }]
+            },
+            options: { cutout: '60%', plugins: { legend: { position: 'bottom', labels: { font: { size: 9 } } } } }
+        });
+    }
+}
+
+// 
+// FINANCIAL
+// 
+async function loadFinancialTab() {
+    let finData;
+    try {
+        const res = await fetch(`/bi/financial?${getRangeParams()}`);
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        finData = await res.json();
+    } catch (e) {
+        document.getElementById('biContent').innerHTML =
+            `<div class="alert alert-danger m-3">فشل التحميل: ${e.message}</div>`;
+        return;
+    }
+
+    window._finData = finData;
+    const k = finData.kpis;
+
+    // 5 بطاقات KPIs
+    let html = renderKPIs([
+        { icon: 'fa-money-bill-wave', color: 'success', label: 'الإيرادات', value: formatCurrency(k.revenue) },
+        { icon: 'fa-shopping-cart', color: 'danger', label: 'المصروفات', value: formatCurrency(k.expenses) },
+        { icon: 'fa-chart-line', color: 'info', label: 'صافي الربح', value: formatCurrency(k.profit) },
+        { icon: 'fa-percentage', color: 'warning', label: 'هامش الربح', value: (k.margin || 0) + '%' },
+        { icon: 'fa-fire', color: 'primary', label: 'أعلى مصروف', value: k.top_category || '' },
+    ]);
+
+    // الصف 2: جدول (8) + Donut (4)
+    html += '<div class="chart-grid" style="margin-top:14px;">';
+
+    const rows = (finData.expense_categories || []).map((e, i) => {
+        const pct = k.expenses > 0 ? ((e.amount / k.expenses) * 100).toFixed(1) : '0';
+        return `
+        <tr>
+            <td>${i + 1}</td>
+            <td><strong>${e.name}</strong></td>
+            <td><small>${e.name_en || ''}</small></td>
+            <td class="text-danger fw-bold">${formatCurrency(e.amount)}</td>
+            <td>
+                <div style="display:flex;align-items:center;gap:6px;">
+                    <div style="flex:1;height:6px;background:#e2e8f0;border-radius:3px;overflow:hidden;">
+                        <div style="height:100%;width:${pct}%;background:#dc3545;border-radius:3px;"></div>
+                    </div>
+                    <small class="fw-bold">${pct}%</small>
+                </div>
+            </td>
+        </tr>`;
+    }).join('');
+
+    const tableHTML = `<table class="bi-table">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>الفئة</th>
+                <th>English</th>
+                <th>المبلغ</th>
+                <th>النسبة</th>
+            </tr>
+        </thead>
+        <tbody>${rows || '<tr><td colspan="5" class="text-center text-muted">لا توجد مصروفات</td></tr>'}</tbody>
+        <tfoot style="background:#f8fafc;font-weight:800;">
+            <tr>
+                <td colspan="3">الإجمالي</td>
+                <td class="text-danger">${formatCurrency(k.expenses)}</td>
+                <td>100%</td>
+            </tr>
+        </tfoot>
+    </table>`;
+
+    html += tableCard('col-8', 'fa-list', 'danger', 'توزيع المصروفات', `${finData.expense_categories.length} فئة`, tableHTML);
+    html += chartCard('col-4', 'fa-chart-pie', 'danger', 'توزيع المصروفات', 'نسبة', 'expensesDistChart', 200);
+    html += '</div>';
+
+    // الصف 3: Line  الإيرادات vs المصروفات
+    html += '<div class="chart-grid">';
+    html += chartCard('col-12', 'fa-chart-line', 'primary', 'الإيرادات vs المصروفات', '6 أشهر', 'profitChart', 200);
+    html += '</div>';
+
+    document.getElementById('biContent').innerHTML = html;
+    setTimeout(() => renderFinancialChartsWithAPI(finData), 100);
+}
+
+function renderFinancialChartsWithAPI(data) {
+    const k = data.kpis;
+
+    // 1) Donut  توزيع المصروفات
+    const c1 = document.getElementById('expensesDistChart');
+    if (c1) {
+        const palette = ['#dc3545', '#ffc107', '#0dcaf0', '#6c757d', '#198754', '#0d6efd', '#fd7e14'];
+        destroyChart('expensesDist');
+        charts.expensesDist = new Chart(c1, {
+            type: 'doughnut',
+            data: {
+                labels: data.expense_categories.map(e => e.name),
+                datasets: [{
+                    data: data.expense_categories.map(e => e.amount),
+                    backgroundColor: palette,
+                }]
+            },
+            options: { cutout: '60%', plugins: { legend: { position: 'bottom', labels: { font: { size: 10 } } } } }
+        });
+    }
+
+    // 2) Line  الإيرادات vs المصروفات
+    const c2 = document.getElementById('profitChart');
+    if (c2) {
+        destroyChart('profit');
+        charts.profit = new Chart(c2, {
+            type: 'line',
+            data: {
+                labels: data.monthly.map(m => m.month.slice(5)),
+                datasets: [
+                    {
+                        label: 'الإيرادات',
+                        data: data.monthly.map(m => m.revenue),
+                        borderColor: '#198754',
+                        backgroundColor: 'rgba(25,135,84,0.1)',
+                        tension: 0.4,
+                        fill: true,
+                    },
+                    {
+                        label: 'المصروفات',
+                        data: data.monthly.map(m => m.expenses),
+                        borderColor: '#dc3545',
+                        backgroundColor: 'rgba(220,53,69,0.05)',
+                        tension: 0.4,
+                        fill: false,
+                    },
+                    {
+                        label: 'صافي الربح',
+                        data: data.monthly.map(m => m.profit),
+                        borderColor: '#0d6efd',
+                        backgroundColor: 'rgba(13,110,253,0.05)',
+                        borderDash: [5, 5],
+                        tension: 0.4,
+                        fill: false,
+                    }
+                ]
+            },
+            options: {
+                plugins: { legend: { position: 'bottom', labels: { font: { size: 10 } } } },
+                scales: { y: { beginAtZero: true, ticks: { callback: v => formatShortCurrency(v) } } }
+            }
+        });
+    }
+}
+
+// 
+// CUSTOMERS
+// 
+async function loadCustomersTab() {
+    let custData, rfmData;
+    try {
+        const [r1, r2] = await Promise.all([
+            fetchTabData('customers'),
+            fetch(`/bi/rfm?${getRangeParams()}`).then(r => r.json()),
+        ]);
+        custData = r1;
+        rfmData = r2;
+    } catch (e) {
+        document.getElementById('biContent').innerHTML =
+            `<div class="alert alert-danger m-3">فشل التحميل: ${e.message}</div>`;
+        return;
+    }
+
+    window._custData = custData;
+    window._rfmData = rfmData;
+
+    const k = rfmData.kpis;
+
+    // 
+    // 5 بطاقات KPIs (RFM)
+    // 
+    let html = renderKPIs([
+        { icon: 'fa-users', color: 'primary', label: 'إجمالي العملاء', value: k.total },
+        { icon: 'fa-crown', color: 'warning', label: 'عملاء VIP', value: k.vip },
+        { icon: 'fa-star', color: 'success', label: 'عملاء دائمون', value: k.regular },
+        { icon: 'fa-user-plus', color: 'info', label: 'عملاء جدد', value: k.new },
+        { icon: 'fa-user-clock', color: 'danger', label: 'عملاء خاملون', value: k.dormant },
+    ]);
+
+    // 
+    // 3 رسوم بيانية
+    // 
+    html += '<div class="chart-grid" style="margin-top:14px;">';
+    html += chartCard('col-6', 'fa-chart-pie', 'warning', 'توزيع الفئات', 'RFM', 'rfmDistChart', 200);
+    
+    html += chartCard('col-6', 'fa-chart-line', 'success', 'نمو العملاء', '6 أشهر', 'rfmGrowthChart', 200);
+    html += '</div>';
+
+    // 
+    // جدول أفضل 10 عملاء
+    // 
+    const rows = rfmData.top_customers.map((c, i) => {
+        const vipBadge = c.is_vip ? '<span class="badge bg-warning text-dark">VIP</span>' : '';
+        const recencyBadge = c.recency_days < 7 ? 'success' :
+                            c.recency_days < 30 ? 'info' :
+                            c.recency_days < 60 ? 'warning' : 'danger';
+        const recencyText = c.recency_days === 9999 ? 'لم يحجز' : c.recency_days + ' يوم';
+        return `
+        <tr>
+            <td>${i + 1}</td>
+            <td><strong>${c.name}</strong> ${vipBadge}</td>
+            <td><small>${c.phone || '-'}</small></td>
+            <td class="text-center">${c.frequency}</td>
+            <td class="text-success fw-bold">${formatCurrency(c.monetary)}</td>
+            <td><span class="badge bg-${recencyBadge}">${recencyText}</span></td>
+        </tr>`;
+    }).join('');
+
+    const tableHTML = `<table class="bi-table">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>العميل</th>
+                <th>الجوال</th>
+                <th class="text-center">F (الحجوزات)</th>
+                <th>M (الإنفاق)</th>
+                <th>R (آخر حجز)</th>
+            </tr>
+        </thead>
+        <tbody>${rows || '<tr><td colspan="6" class="text-center text-muted">لا توجد بيانات</td></tr>'}</tbody>
+    </table>`;
+    html += '<div class="chart-grid">';
+    html += tableCard('col-12', 'fa-crown', 'warning', 'أفضل 10 عملاء VIP', 'الأعلى إنفاقاً', tableHTML);
+    html += '</div>';
+
+    document.getElementById('biContent').innerHTML = html;
+    setTimeout(() => renderRFMCharts(rfmData, custData), 100);
+}
+
+function renderCustomersCharts(d) {
+    const c1 = document.getElementById('custTypeChart');
+    if (c1) {
+        destroyChart('custType');
+        charts.custType = new Chart(c1, {
+            type: 'doughnut',
+            data: { labels: ['جدد', 'متكررون'],
+                datasets: [{ data: [d.new_this_month, d.repeat],
+                    backgroundColor: ['#0d6efd', '#198754'] }] },
+            options: { cutout: '60%', plugins: { legend: { position: 'bottom' } } }
+        });
+    }
+
+    const c2 = document.getElementById('custGrowthChart');
+    if (c2) {
+        destroyChart('custGrowth');
+        charts.custGrowth = new Chart(c2, {
+            type: 'line',
+            data: { labels: d.monthly.map(m => m.month),
+                datasets: [{ label: 'عملاء جدد', data: d.monthly.map(m => m.count),
+                    borderColor: '#198754', backgroundColor: 'rgba(25,135,84,0.1)', tension: 0.4, fill: true }] },
+            options: { plugins: { legend: { display: false } } }
+        });
+    }
+
+    const c3 = document.getElementById('custSpendChart');
+    if (c3) {
+        destroyChart('custSpend');
+        charts.custSpend = new Chart(c3, {
+            type: 'bar',
+            data: { labels: d.spend_segments.map(s => s.name),
+                datasets: [{ label: 'الإنفاق', data: d.spend_segments.map(s => s.amount),
+                    backgroundColor: 'rgba(13,202,240,0.7)', borderRadius: 6 }] },
+            options: { plugins: { legend: { display: false } } }
+        });
+    }
+}
+
+// 
+// RECOMMENDATIONS
+// 
+async function loadRecommendationsTab() {
+    if (!biData) await loadOverview();
+    let html = '<div class="chart-grid">';
+    html += `<div class="chart-card col-12">
+        <div class="chart-card-header">
+            <h6 class="chart-card-title"><i class="fas fa-lightbulb text-warning"></i> التوصيات الذكية</h6>
+            <span class="chart-card-subtitle">AI</span>
+        </div>
+        <div class="chart-card-body">${renderRecommendations(biData)}</div>
+    </div>`;
+
+    const k = biData.kpis;
+    const kpiTable = `<table class="bi-table">
+        <thead><tr><th>المؤشر</th><th>القيمة</th><th>الحالة</th></tr></thead>
+        <tbody>
+            <tr><td>نسبة الإشغال</td><td>${k.occupancy_rate}%</td><td><span class="badge bg-success">جيد</span></td></tr>
+            <tr><td>معدل النمو</td><td>+12%</td><td><span class="badge bg-success">ممتاز</span></td></tr>
+            <tr><td>رضا العملاء</td><td>4.5/5</td><td><span class="badge bg-success">جيد</span></td></tr>
+            <tr><td>معدل الإلغاء</td><td>3.2%</td><td><span class="badge bg-warning">مقبول</span></td></tr>
+        </tbody></table>`;
+    html += tableCard('col-6', 'fa-chart-line', 'primary', 'مؤشرات الأداء', 'KPIs', kpiTable);
+
+    html += `<div class="chart-card col-6">
+        <div class="chart-card-header">
+            <h6 class="chart-card-title"><i class="fas fa-tasks text-info"></i> إجراءات مقترحة</h6>
+        </div>
+        <div class="chart-card-body">
+            <div class="recommendation opportunity">
+                <div class="recommendation-icon"></div>
+                <div class="recommendation-content">
+                    <h6>زيادة الرحلات في أوقات الذروة</h6>
+                    <p>الطلب مرتفع صباحاً</p>
+                    <div class="recommendation-impact">+15% إيرادات متوقعة</div>
+                </div>
+            </div>
+            <div class="recommendation warning">
+                <div class="recommendation-icon"></div>
+                <div class="recommendation-content">
+                    <h6>حملة تسويقية للفروع الضعيفة</h6>
+                    <p>فرع كسلا يحتاج دعم</p>
+                    <div class="recommendation-impact">+10% حجوزات</div>
+                </div>
+            </div>
+        </div>
+    </div>`;
+    html += '</div>';
+    document.getElementById('biContent').innerHTML = html;
+}
+
+// 
+// Render Helpers
+// 
+function renderRecentBookings(bookings, avgPrice) {
+    if (!bookings || !bookings.length) return '<p class="text-muted text-center py-3">لا توجد حجوزات</p>';
+    
+    const statusMap = {
+        'BookingStatus.PENDING': { cls: 'bg-warning', txt: 'معلق' },
+        'BookingStatus.CONFIRMED': { cls: 'bg-success', txt: 'مؤكد' },
+        'BookingStatus.CANCELLED': { cls: 'bg-danger', txt: 'ملغي' },
+    };
+    
+    const showCompare = compareWith && avgPrice > 0;
+    
+    let html = '<table class="bi-table"><thead><tr>'
+        + '<th>#</th><th>رقم الحجز</th><th>PNR</th><th>المبلغ</th>'
+        + (showCompare ? '<th>vs المتوسط</th>' : '')
+        + '<th>الحالة</th><th>التاريخ</th></tr></thead><tbody>';
+    
+    bookings.forEach((b, i) => {
+        const s = statusMap[b.status] || { cls: 'bg-secondary', txt: b.status };
+        const diff = avgPrice > 0 ? ((b.total_price - avgPrice) / avgPrice * 100) : 0;
+        const diffCls = diff > 0 ? 'text-success' : (diff < 0 ? 'text-danger' : 'text-muted');
+        const diffIcon = diff > 0 ? '' : (diff < 0 ? '' : '');
+        const diffText = showCompare
+            ? `<span class="${diffCls} fw-bold">${diffIcon} ${diff > 0 ? '+' : ''}${diff.toFixed(0)}%</span>`
+            : '';
+        
+        html += `<tr>
+            <td>${i+1}</td>
+            <td><strong class="text-primary">${b.reference}</strong></td>
+            <td><small>${b.pnr || '-'}</small></td>
+            <td><strong class="text-success">${formatCurrency(b.total_price)}</strong></td>
+            ${showCompare ? `<td>${diffText}</td>` : ''}
+            <td><span class="badge ${s.cls}">${s.txt}</span></td>
+            <td><small>${formatDate(b.booked_at)}</small></td>
+        </tr>`;
+    });
+    return html + '</tbody></table>';
+}
+
+function renderRecommendations(data) {
+    const recs = generateRecommendations(data);
+    if (!recs.length) return '<p class="text-muted text-center py-3">لا توجد توصيات</p>';
+    return recs.map(r => `
+        <div class="recommendation ${r.type}">
+            <div class="recommendation-icon">${r.icon}</div>
+            <div class="recommendation-content">
+                <h6>${r.title}</h6>
+                <p>${r.message}</p>
+                <div class="recommendation-impact">${r.impact}</div>
+            </div>
+        </div>`).join('');
+}
+
+function generateRecommendations(data) {
+    const recs = [];
+    const k = data.kpis;
+    if (k.occupancy_rate > 80) {
+        recs.push({ type: 'opportunity', icon: '', title: 'فرصة توسع',
+            message: `نسبة الإشغال ${k.occupancy_rate}%`, impact: '+15% إيرادات' });
+    }
+    if (data.branches && data.branches.length > 1) {
+        const avg = data.branches.reduce((s, b) => s + b.revenue, 0) / data.branches.length;
+        data.branches.forEach(b => {
+            if (b.revenue < avg * 0.7 && b.revenue > 0) {
+                recs.push({ type: 'warning', icon: '', title: `فرع ${b.name} أقل من المتوسط`,
+                    message: formatCurrency(b.revenue), impact: '+10%' });
+            }
+        });
+    }
+    recs.push({ type: 'opportunity', icon: '', title: 'دعم القرار',
+        message: 'استخدم التبويبات الأخرى', impact: 'قرارات مبنية على البيانات' });
+    return recs;
+}
+
+
+
+// 
+// Trips + Luggage + Occupancy Charts
+// 
+
+
+
+// 
+// RFM Charts
+// 
+function renderRFMCharts(rfmData, custData) {
+    // 1) توزيع الفئات (Donut)
+    const c1 = document.getElementById('rfmDistChart');
+    if (c1) {
+        destroyChart('rfmDist');
+        charts.rfmDist = new Chart(c1, {
+            type: 'doughnut',
+            data: {
+                labels: rfmData.distribution.map(d => d.type),
+                datasets: [{
+                    data: rfmData.distribution.map(d => d.count),
+                    backgroundColor: rfmData.distribution.map(d => d.color),
+                }]
+            },
+            options: { cutout: '60%', plugins: { legend: { position: 'bottom' } } }
+        });
+    }
+
+    // 3) نمو العملاء (Line)
+    const c3 = document.getElementById('rfmGrowthChart');
+    if (c3 && rfmData.monthly_growth) {
+        destroyChart('rfmGrowth');
+        charts.rfmGrowth = new Chart(c3, {
+            type: 'line',
+            data: {
+                labels: rfmData.monthly_growth.map(m => m.month.slice(5)),
+                datasets: [{
+                    label: 'عملاء جدد',
+                    data: rfmData.monthly_growth.map(m => m.count),
+                    borderColor: '#198754',
+                    backgroundColor: 'rgba(25,135,84,0.1)',
+                    tension: 0.4, fill: true,
+                }]
+            },
+            options: { plugins: { legend: { display: false } },
+                scales: { y: { beginAtZero: true } } }
+        });
+    }
+}
+
+
+// 
+// HEAT MAP  أوقات الذروة
+// 
+function renderHeatmapSection(h) {
+    if (!h || !h.matrix) {
+        return '<div class="alert alert-warning">لا توجد بيانات</div>';
+    }
+
+    const k = h.kpis;
+
+    // 4 KPIs
+    let html = renderKPIs([
+        { icon: 'fa-calendar-check', color: 'primary', label: 'إجمالي الحجوزات', value: k.total },
+        { icon: 'fa-calendar-day', color: 'warning', label: 'أعلى يوم', value: k.peak_day },
+        { icon: 'fa-clock', color: 'info', label: 'أعلى ساعة', value: k.peak_hour },
+        { icon: 'fa-fire', color: 'danger', label: 'أعلى كثافة', value: k.peak_count },
+    ]);
+
+    // Heat Map Table
+    html += '<div class="chart-grid" style="margin-top:14px;">';
+    html += '<div class="chart-card col-12">';
+    html += '<div class="chart-card-header">';
+    html += '<h6 class="chart-card-title"><i class="fas fa-fire text-danger"></i> أوقات الذروة (أيام × ساعات)</h6>';
+    html += '<span class="chart-card-subtitle">كثافة الحجوزات</span>';
+    html += '</div>';
+    html += '<div class="chart-card-body">';
+    html += '<div class="table-responsive">';
+    html += '<table class="bi-table heatmap-table" style="text-align:center;">';
+
+    // Header
+    html += '<thead><tr><th style="text-align:center;">الساعة</th>';
+    h.days.forEach(d => {
+        html += `<th style="text-align:center;font-size:0.72rem;">${d}</th>`;
+    });
+    html += '</tr></thead><tbody>';
+
+    // Rows
+    h.hours.forEach((hour, hourIdx) => {
+        html += `<tr><td style="text-align:center;font-weight:700;font-size:0.72rem;background:#f8fafc;">${hour}</td>`;
+        h.days.forEach((day, dayIdx) => {
+            const val = h.matrix[dayIdx][hourIdx];
+            html += `<td class="heatmap-cell" data-value="${val}" style="text-align:center;padding:8px;font-weight:700;font-size:0.72rem;">${val || ''}</td>`;
+        });
+        html += '</tr>';
+    });
+
+    html += '</tbody></table></div>';
+    html += '</div>';
+    html += '</div>';
+    html += '</div>';
+
+    return html;
+}
+
+// تلوين الخلايا
+function applyHeatmapColors() {
+    const cells = document.querySelectorAll('.heatmap-cell');
+    if (!cells.length) return;
+    // نجد أعلى قيمة
+    let maxVal = 0;
+    cells.forEach(c => {
+        const v = parseInt(c.dataset.value) || 0;
+        if (v > maxVal) maxVal = v;
+    });
+    if (maxVal === 0) return;
+
+    cells.forEach(c => {
+        const v = parseInt(c.dataset.value) || 0;
+        const ratio = v / maxVal;
+        if (v === 0) {
+            c.style.background = '#f8fafc';
+            c.style.color = '#cbd5e1';
+        } else {
+            // تدرج من فاتح إلى غامق
+            const intensity = Math.round(ratio * 100);
+            if (ratio >= 0.75) {
+                c.style.background = '#dc2626';
+                c.style.color = 'white';
+            } else if (ratio >= 0.5) {
+                c.style.background = '#f97316';
+                c.style.color = 'white';
+            } else if (ratio >= 0.25) {
+                c.style.background = '#fbbf24';
+                c.style.color = '#1e293b';
+            } else {
+                c.style.background = '#fef3c7';
+                c.style.color = '#1e293b';
+            }
+        }
+    });
+}
+
+// 
+// Formatters
+// 
+function formatCurrency(amount) {
+    if (amount == null) return '0';
+    const num = parseFloat(amount);
+    if (isNaN(num)) return '0';
+    if (Math.abs(num) >= 1000000) return (num / 1000000).toFixed(1) + 'M';
+    if (Math.abs(num) >= 1000) return (num / 1000).toFixed(0) + 'K';
+    return num.toLocaleString();
+}
+function formatShortCurrency(amount) {
+    if (amount == null) return '0';
+    const num = parseFloat(amount);
+    if (Math.abs(num) >= 1000000) return (num / 1000000).toFixed(1) + 'M';
+    if (Math.abs(num) >= 1000) return (num / 1000).toFixed(0) + 'K';
+    return num.toFixed(0);
+}
+function formatDate(dateStr) {
+    if (!dateStr) return '-';
+    const d = new Date(dateStr);
+    return d.toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' });
+}
+
+// 
+// Mock Data
+// 
+async function fetchTabData(tab) {
+    const mock = {
+        branches: {
+            total: 5, top_branch: 'الخرطوم', bottom_branch: 'كسلا',
+            avg_revenue: 1500000, total_employees: 45, total_bookings: 1320,
+            list: [
+                { name: 'الخرطوم', city: 'الخرطوم', revenue: 2500000, bookings: 450, growth: 12 },
+                { name: 'بورتسودان', city: 'بورتسودان', revenue: 1800000, bookings: 320, growth: 8 },
+                { name: 'كسلا', city: 'كسلا', revenue: 900000, bookings: 150, growth: -5 },
+                { name: 'عطبرة', city: 'عطبرة', revenue: 1200000, bookings: 210, growth: 6 },
+                { name: 'ود مدني', city: 'ود مدني', revenue: 1100000, bookings: 190, growth: 10 }
+            ],
+            monthly: [
+                { month: '2026-04', growth: 8 }, { month: '2026-05', growth: 12 },
+                { month: '2026-06', growth: 6 }, { month: '2026-07', growth: 15 },
+                { month: '2026-08', growth: 9 }, { month: '2026-09', growth: 12 }
+            ]
+        },
+        buses: {
+            total: 25, active: 18, maintenance: 4, inactive: 3, utilization: 72,
+            types: [{ name: 'هايس', count: 10 }, { name: 'باص', count: 8 }, { name: 'كوستر', count: 7 }],
+            monthly_maintenance: [
+                { month: '2026-04', count: 3 }, { month: '2026-05', count: 2 },
+                { month: '2026-06', count: 5 }, { month: '2026-07', count: 4 },
+                { month: '2026-08', count: 2 }, { month: '2026-09', count: 4 }
+            ],
+            top_used: [
+                { plate: 'A-1023', model: 'هايس 2020', trips: 45, revenue: 950000, efficiency: 92 },
+                { plate: 'A-1045', model: 'باص 2019', trips: 38, revenue: 820000, efficiency: 88 },
+                { plate: 'A-1088', model: 'هايس 2021', trips: 36, revenue: 780000, efficiency: 85 },
+                { plate: 'A-1102', model: 'كوستر 2020', trips: 32, revenue: 690000, efficiency: 82 },
+                { plate: 'A-1125', model: 'باص 2018', trips: 28, revenue: 610000, efficiency: 78 }
+            ]
+        },
+        employees: {
+            total: 45, present_today: 38, on_leave: 5, avg_salary: 25000, attendance_rate: 84,
+            departments: [
+                { name: 'الإدارة', count: 5, salary: 200000 },
+                { name: 'الحجوزات', count: 15, salary: 300000 },
+                { name: 'السائقون', count: 20, salary: 400000 },
+                { name: 'الصيانة', count: 5, salary: 125000 }
+            ],
+            top_performers: [
+                { name: 'أحمد محمد', department: 'الحجوزات', tasks: 245, score: 96 },
+                { name: 'سارة علي', department: 'الإدارة', tasks: 180, score: 94 },
+                { name: 'خالد يوسف', department: 'الحجوزات', tasks: 220, score: 91 },
+                { name: 'منى إبراهيم', department: 'الحجوزات', tasks: 198, score: 89 },
+                { name: 'عمر حسن', department: 'الصيانة', tasks: 156, score: 87 }
+            ]
+        },
+        trips: {
+            total: 145, completed: 120, ongoing: 15, cancelled: 10,
+            destinations: [
+                { name: 'الخرطوم - بورتسودان', count: 45 },
+                { name: 'الخرطوم - كسلا', count: 30 },
+                { name: 'بورتسودان - عطبرة', count: 25 },
+                { name: 'الخرطوم - ود مدني', count: 25 },
+                { name: 'أخرى', count: 20 }
+            ],
+            daily: [
+                { date: '09-20', count: 5 }, { date: '09-21', count: 7 }, { date: '09-22', count: 6 },
+                { date: '09-23', count: 8 }, { date: '09-24', count: 4 }, { date: '09-25', count: 9 }, { date: '09-26', count: 6 }
+            ],
+            top_profitable: [
+                { route: 'الخرطوم - بورتسودان', trips: 45, revenue: 2250000, margin: 42 },
+                { route: 'الخرطوم - كسلا', trips: 30, revenue: 1500000, margin: 38 },
+                { route: 'الخرطوم - ود مدني', trips: 25, revenue: 1250000, margin: 35 },
+                { route: 'بورتسودان - عطبرة', trips: 25, revenue: 1000000, margin: 30 },
+                { route: 'أخرى', trips: 20, revenue: 800000, margin: 28 }
+            ]
+        },
+        cities: {
+            total: 8, top_city: 'الخرطوم', bottom_city: 'دنقلا',
+            total_trips: 145, avg_revenue: 1200000, top_growth: '+18%',
+            list: [
+                { name: 'الخرطوم', bookings: 450, revenue: 2500000, growth: 15 },
+                { name: 'بورتسودان', bookings: 320, revenue: 1800000, growth: 12 },
+                { name: 'كسلا', bookings: 150, revenue: 900000, growth: -3 },
+                { name: 'عطبرة', bookings: 210, revenue: 1200000, growth: 8 },
+                { name: 'ود مدني', bookings: 190, revenue: 1100000, growth: 18 },
+                { name: 'الأبيض', bookings: 120, revenue: 700000, growth: 5 },
+                { name: 'نيالا', bookings: 80, revenue: 500000, growth: 10 },
+                { name: 'دنقلا', bookings: 60, revenue: 400000, growth: 3 }
+            ]
+        },
+        financial: {
+            revenue: 7500000, expenses: 4200000, profit: 3300000, margin: 44, top_month: 'يوليو',
+            expense_categories: [
+                { name: 'وقود', amount: 1800000 }, { name: 'رواتب', amount: 1200000 },
+                { name: 'صيانة', amount: 600000 }, { name: 'تسويق', amount: 300000 }, { name: 'أخرى', amount: 300000 }
+            ],
+            monthly: [
+                { month: 'أبريل', revenue: 1200000, expenses: 700000 },
+                { month: 'مايو', revenue: 1350000, expenses: 720000 },
+                { month: 'يونيو', revenue: 1100000, expenses: 680000 },
+                { month: 'يوليو', revenue: 1450000, expenses: 750000 },
+                { month: 'أغسطس', revenue: 1250000, expenses: 690000 },
+                { month: 'سبتمبر', revenue: 1150000, expenses: 660000 }
+            ]
+        },
+        customers: {
+            total: 890, new_this_month: 45, repeat: 320, avg_spend: 8500, retention: 78,
+            spend_segments: [
+                { name: 'أقل من 5K', amount: 200 },
+                { name: '5K - 10K', amount: 350 },
+                { name: '10K - 20K', amount: 220 },
+                { name: 'أكثر من 20K', amount: 120 }
+            ],
+            monthly: [
+                { month: 'أبريل', count: 30 }, { month: 'مايو', count: 35 }, { month: 'يونيو', count: 28 },
+                { month: 'يوليو', count: 42 }, { month: 'أغسطس', count: 38 }, { month: 'سبتمبر', count: 45 }
+            ],
+            top_customers: [
+                { name: 'محمد أحمد', bookings: 45, total_spend: 385000, last_booking: '2026-09-25' },
+                { name: 'فاطمة علي', bookings: 38, total_spend: 320000, last_booking: '2026-09-24' },
+                { name: 'حسن يوسف', bookings: 35, total_spend: 295000, last_booking: '2026-09-23' },
+                { name: 'عائشة محمد', bookings: 32, total_spend: 270000, last_booking: '2026-09-22' },
+                { name: 'عمر إبراهيم', bookings: 30, total_spend: 250000, last_booking: '2026-09-21' },
+                { name: 'زينب خالد', bookings: 28, total_spend: 235000, last_booking: '2026-09-20' },
+                { name: 'يوسف عبدالله', bookings: 25, total_spend: 210000, last_booking: '2026-09-19' },
+                { name: 'ليلى أحمد', bookings: 22, total_spend: 185000, last_booking: '2026-09-18' },
+                { name: 'كريم محمد', bookings: 20, total_spend: 168000, last_booking: '2026-09-17' },
+                { name: 'هدى علي', bookings: 18, total_spend: 150000, last_booking: '2026-09-16' }
+            ]
+        }
+    };
+    return mock[tab] || {};
+}
+
+window.switchSubtab = switchSubtab;
+
+// 
+(function() {
+    let lastScrollTop = 0;
+    const threshold = 80;
+
+    window.addEventListener('scroll', function() {
+        const subtabs = document.getElementById('tripsSubtabs');
+        if (!subtabs) return;
+
+        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+        const diff = scrollTop - lastScrollTop;
+
+        if (scrollTop > threshold) {
+            if (diff > 5) {
+                subtabs.classList.add('hidden');
+            } else if (diff < -5) {
+                subtabs.classList.remove('hidden');
+            }
+        } else {
+            subtabs.classList.remove('hidden');
+        }
+
+        lastScrollTop = scrollTop <= 0 ? 0 : scrollTop;
+    }, { passive: true });
+})();
+
+
+// 
+// Smart Sticky Subtabs
+// 
+(function() {
+    let lastScrollTop = 0;
+    const threshold = 80;
+
+    window.addEventListener('scroll', function() {
+        const subtabs = document.getElementById('tripsSubtabs');
+        if (!subtabs) return;
+
+        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+        const diff = scrollTop - lastScrollTop;
+
+        if (scrollTop > threshold) {
+            if (diff > 5) {
+                subtabs.classList.add('hidden');
+            } else if (diff < -5) {
+                subtabs.classList.remove('hidden');
+            }
+        } else {
+            subtabs.classList.remove('hidden');
+        }
+
+        lastScrollTop = scrollTop <= 0 ? 0 : scrollTop;
+    }, { passive: true });
+})();
+
+// 
+// Global Exports
+// 
+window.onCompareChange = onCompareChange;
+window.toggleDateRangePicker = toggleDateRangePicker;
+window.closeDateRangePicker = closeDateRangePicker;
+window.applyCustomRange = applyCustomRange;
+window.onAutoRefreshChange = onAutoRefreshChange;
+window.switchTab = switchTab;
+window.switchSubtab = switchSubtab;
+window.loadTripsTab = loadTripsTab;
+window.renderRFMCharts = renderRFMCharts;
+window.renderBranchesChartsWithAPI = renderBranchesChartsWithAPI;
+window.renderCitiesChartsWithAPI = renderCitiesChartsWithAPI;
+window.renderBusesChartsWithAPI = renderBusesChartsWithAPI;
+window.renderEmployeesChartsWithAPI = renderEmployeesChartsWithAPI;
+window.renderFinancialChartsWithAPI = renderFinancialChartsWithAPI;
+window.renderHeatmapSection = renderHeatmapSection;
+window.applyHeatmapColors = applyHeatmapColors;
+window.refreshAll = refreshAll;
+
+
+// 
+// Force 6 cards in row (يُشغَّل بعد كل render)
+// 
+function forceKpiLayout() {
+    document.querySelectorAll('.kpi-row').forEach(row => {
+        row.style.cssText = 'display:flex !important;flex-wrap:nowrap !important;gap:6px !important;width:100% !important;';
+        row.querySelectorAll('.kpi-card').forEach(card => {
+            card.style.cssText = 'flex:1 1 0 !important;min-width:0 !important;padding:8px 4px !important;min-height:78px !important;box-sizing:border-box !important;';
+        });
+    });
+}
+
+// نشغّلها بعد كل تحديث
+const _origSetInner = Element.prototype.innerHTML;
+Object.defineProperty(Element.prototype, 'innerHTML', {
+    set: function(val) {
+        _origSetInner.call(this, val);
+        if (this.id === 'biContent') {
+            setTimeout(forceKpiLayout, 50);
+        }
+    },
+    get: function() { return _origSetInner.call(this); }
+});
+
+
+
+// 
+// Force Subtabs Style  JavaScript مباشر
+// 
+
+
+// تصدير كل الدوال المهمة
+window.loadTripsTab = loadTripsTab;
+window.switchSubtab = switchSubtab;
+
+
+// استدعاء التنسيق بعد كل تحميل
+document.addEventListener('DOMContentLoaded', () => {
+    
+});
+
+
+// 
+// Global Exports
+// 
+window.switchTab = switchTab;
+window.switchSubtab = switchSubtab;
+window.toggleSubtabsMenu = toggleSubtabsMenu;
+window.loadTripsTab = loadTripsTab;
+window.refreshAll = refreshAll;
+
+</script>
+{% endblock %}
