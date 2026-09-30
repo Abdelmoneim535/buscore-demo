@@ -59,6 +59,45 @@ from app.models import branches_models, customers_models
 # إنشاء جداول قاعدة البيانات
 Base.metadata.create_all(bind=engine)
 
+# 
+# Seed Data  إنشاء بيانات افتراضية عند أول تشغيل
+# 
+try:
+    from app.database.database import SessionLocal
+    from app.models.user_models import User
+    from app.auth_utils import get_password_hash
+    
+    _db = SessionLocal()
+    try:
+        # إذا لا يوجد مستخدمون  أنشئهم
+        if _db.query(User).count() == 0:
+            print("SEED: Creating default users...")
+            _db.add(User(
+                username="admin",
+                email="admin@buscore.com",
+                hashed_password=get_password_hash("admin"),
+                is_active=True,
+                is_admin=True,
+                role="admin",
+                is_super_admin=True,
+            ))
+            _db.add(User(
+                username="demo",
+                email="demo@buscore.com",
+                hashed_password=get_password_hash("demo"),
+                is_active=True,
+                is_admin=True,
+                role="admin",
+            ))
+            _db.commit()
+            print("SEED: Users created (admin/admin, demo/demo)")
+    finally:
+        _db.close()
+except Exception as _e:
+    print(f"SEED ERROR: {_e}")
+    import traceback
+    traceback.print_exc()
+
 app = FastAPI(title="BusCore API", version="1.0.0")
 
 # ========================================
