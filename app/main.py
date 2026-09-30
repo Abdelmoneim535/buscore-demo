@@ -222,6 +222,12 @@ def _seed_all_data():
     finally:
         db.close()
 
+# 
+# FastAPI App
+# 
+app = FastAPI(title="BusCore API", version="1.0.0")
+
+
 
 try:
     _seed_all_data()
