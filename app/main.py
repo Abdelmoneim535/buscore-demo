@@ -213,22 +213,21 @@ def _seed_all_data():
             import traceback
             traceback.print_exc()
 
-        
         # 7) الموظفون
         try:
             from app.models.employees_models import Employee
             if db.query(Employee).count() == 0:
                 employees = [
-                    ("أحمد عمر محمد", "Ahmed Omer Mohamed", "سائق", "Driver", "0902136780", 1500000),
-                    ("أحمد حسن محمد", "Ahmed Hassan Mohamed", "سائق", "Driver", "0902136789", 1200000),
+                    ("أحمد عمر محمد", "Ahmed Omer", "سائق", "Driver", "0902136780", 1500000),
+                    ("أحمد حسن محمد", "Ahmed Hassan", "سائق", "Driver", "0902136789", 1200000),
                     ("فضل خالد رحمة", "Fadul Khalid", "مساعد سائق", "Driver Assistant", "096541238", 900000),
-                    ("عبدالرحمن عزالدين", "Abdulrahman Ezaldden", "مضيف", "Host", "091267853", 950000),
+                    ("عبدالرحمن عزالدين", "Abdulrahman", "مضيف", "Host", "091267853", 950000),
                     ("محمد إبراهيم", "Mohamed Ibrahim", "سائق", "Driver", "0905551234", 1300000),
                     ("خالد يوسف", "Khaled Youssef", "مشرف", "Supervisor", "0906661234", 1100000),
                     ("سارة علي", "Sara Ali", "محاسب", "Accountant", "0907771234", 1000000),
-                    ("منى إبراهيم", "Mona Ibrahim", "موظف حجوزات", "Booking Clerk", "0908881234", 850000),
-                    ("عمر حسن", "Omer Hassan", "فني صيانة", "Maintenance", "0909991234", 900000),
-                    ("ليلى أحمد", "Laila Ahmed", "موظف حجوزات", "Booking Clerk", "0910101234", 850000),
+                    ("منى إبراهيم", "Mona Ibrahim", "حجوزات", "Booking", "0908881234", 850000),
+                    ("عمر حسن", "Omer Hassan", "صيانة", "Maintenance", "0909991234", 900000),
+                    ("ليلى أحمد", "Laila Ahmed", "حجوزات", "Booking", "0910101234", 850000),
                 ]
                 for name, name_en, pos, pos_en, phone, salary in employees:
                     db.add(Employee(
@@ -239,94 +238,68 @@ def _seed_all_data():
                         phone=phone,
                         base_salary=salary,
                         is_active=True,
-                        hire_date=datetime.now(),
                     ))
                 db.commit()
                 print("SEED: 10 employees")
         except Exception as e:
             print(f"SEED employees error: {e}")
 
-        # 8) الحسابات المحاسبية
+        # 8) المدن الإضافية
+        try:
+            from app.models.stations_models import City
+            extra_cities = [
+                ("شندي", "SHN"), ("بربر", "BBR"), ("العبيدية", "OBD"),
+                ("أبو حمد", "AHM"), ("كريمة", "KRM"), ("الدبة", "DBB"),
+                ("مروي", "MRW"), ("دنقلا", "DOG"), ("الكاملين", "KML"),
+                ("الحصاحيصا", "HSA"), ("حلفا الجديدة", "NHF"), ("سواكن", "SWK"),
+                ("أم روابة", "URW"), ("بارا", "BRA"), ("الرهد", "RHD"),
+                ("كادقلي", "KDG"), ("أم درمان", "OMD"), ("بحري", "KRN"),
+                ("الدامر", "DAM"), ("القضارف", "GDF"), ("الأبيض", "EBD"),
+                ("الفاشر", "ELF"), ("نيالا", "NLA"), ("الجنينة", "EGN"),
+                ("وادي حلفا", "WHF"), ("سنار", "SNR"), ("الدمازين", "DMZ"),
+                ("كوستي", "KST"), ("ربك", "RBK"),
+            ]
+            added = 0
+            for name, code in extra_cities:
+                if not db.query(City).filter(City.code == code).first():
+                    db.add(City(name=name, code=code))
+                    added += 1
+            db.commit()
+            print(f"SEED: +{added} cities")
+        except Exception as e:
+            print(f"SEED cities error: {e}")
+
+        # 9) الحسابات المحاسبية
         try:
             from app.models.accounts_models import Account
             if db.query(Account).count() == 0:
                 accounts = [
-                    ("1000", "الأصول", "Assets", "asset", None),
-                    ("1100", "النقدية", "Cash", "asset", "1000"),
-                    ("1200", "البنك", "Bank", "asset", "1000"),
-                    ("1300", "الذمم المدينة", "Accounts Receivable", "asset", "1000"),
-                    ("2000", "الخصوم", "Liabilities", "liability", None),
-                    ("2100", "الذمم الدائنة", "Accounts Payable", "liability", "2000"),
-                    ("3000", "حقوق الملكية", "Equity", "equity", None),
-                    ("4000", "الإيرادات", "Revenue", "revenue", None),
-                    ("4100", "إيرادات التذاكر", "Ticket Revenue", "revenue", "4000"),
-                    ("5000", "المصروفات", "Expenses", "expense", None),
-                    ("5100", "رواتب", "Salaries", "expense", "5000"),
-                    ("5200", "وقود", "Fuel", "expense", "5000"),
-                    ("5300", "صيانة", "Maintenance", "expense", "5000"),
-                    ("5400", "إيجار", "Rent", "expense", "5000"),
+                    ("1000", "الأصول", "asset"),
+                    ("1100", "النقدية", "asset"),
+                    ("1200", "البنك", "asset"),
+                    ("1300", "الذمم المدينة", "asset"),
+                    ("2000", "الخصوم", "liability"),
+                    ("2100", "الذمم الدائنة", "liability"),
+                    ("3000", "حقوق الملكية", "equity"),
+                    ("4000", "الإيرادات", "revenue"),
+                    ("4100", "إيرادات التذاكر", "revenue"),
+                    ("5000", "المصروفات", "expense"),
+                    ("5100", "رواتب", "expense"),
+                    ("5200", "وقود", "expense"),
+                    ("5300", "صيانة", "expense"),
+                    ("5400", "إيجار", "expense"),
                 ]
-                for code, name, name_en, type_, parent_code in accounts:
-                    parent_id = None
-                    if parent_code:
-                        parent = db.query(Account).filter(Account.code == parent_code).first()
-                        if parent:
-                            parent_id = parent.id
+                for code, name, type_ in accounts:
                     db.add(Account(
                         code=code,
                         name=name,
-                        name_en=name_en,
                         account_type=type_,
-                        parent_id=parent_id,
                         is_active=True,
                     ))
                 db.commit()
                 print("SEED: 14 accounts")
         except Exception as e:
             print(f"SEED accounts error: {e}")
-
-        # 9) مدن إضافية
-        try:
-            from app.models.stations_models import City
-            extra_cities = [
-                ("شندي", "SHN", "Shendi"),
-                ("بربر", "BBR", "Berber"),
-                ("العبيدية", "OBD", "El Obeidiya"),
-                ("أبو حمد", "AHM", "Abu Hamad"),
-                ("كريمة", "KRM", "Karima"),
-                ("الدبة", "DBB", "Al Dabbah"),
-                ("مروي", "MRW", "Merowe"),
-                ("دنقلا", "DOG", "Dongola"),
-                ("الكاملين", "KML", "Al Kamlin"),
-                ("الحصاحيصا", "HSA", "Al Hasaheisa"),
-                ("حلفا الجديدة", "NHF", "New Halfa"),
-                ("سواكن", "SWK", "Suakin"),
-                ("أم روابة", "URW", "Umm Ruwaba"),
-                ("بارا", "BRA", "Bara"),
-                ("الرهد", "RHD", "Er Rahad"),
-                ("كادقلي", "KDG", "Kadugli"),
-                ("أم درمان", "OMD", "Omdurman"),
-                ("بحري", "KRN", "Khartoum North"),
-                ("الدامر", "DAM", "Ad-Damer"),
-                ("القضارف", "GDF", "Gedaref"),
-                ("الأبيض", "EBD", "El Obeid"),
-                ("الفاشر", "ELF", "El Fasher"),
-                ("نيالا", "NLA", "Nyala"),
-                ("الجنينة", "EGN", "Geneina"),
-                ("وادي حلفا", "WHF", "Wadi Halfa"),
-                ("سنار", "SNR", "Sennar"),
-                ("الدمازين", "DMZ", "Ad-Damazin"),
-                ("كوستي", "KST", "Kosti"),
-                ("ربك", "RBK", "Rabak"),
-            ]
-            added = 0
-            for name, code, name_en in extra_cities:
-                if not db.query(City).filter(City.code == code).first():
-                    db.add(City(name=name, code=code, name_en=name_en))
-                    added += 1
-            db.commit()
-            print(f"SEED: +{added} cities")
-
 
         print("SEED: COMPLETE")
 
