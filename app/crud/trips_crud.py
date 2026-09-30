@@ -268,6 +268,36 @@ def create_trip(db: Session, trip: TripCreate):
                 f"من {existing_dep.strftime('%Y-%m-%d %H:%M')} "
                 f"حتى {existing_arr.strftime('%Y-%m-%d %H:%M')}"
             )
+        # ========================================
+    # ✅ التحقق من تعارض السائق
+    # ========================================
+    if trip.driver_id:
+        driver_conflict = _check_driver_conflict(
+            db,
+            trip.driver_id,
+            trip.departure_time,
+            trip.arrival_time,
+        )
+        if driver_conflict["has_conflict"]:
+            raise ValueError(
+                f"❌ السائق مشغول في رحلة أخرى: {driver_conflict['conflict_range']}"
+            )
+
+    # ========================================
+    # ✅ التحقق من تعارض المساعد
+    # ========================================
+    if trip.assistant_id:
+        assistant_conflict = _check_driver_conflict(
+            db,
+            trip.assistant_id,
+            trip.departure_time,
+            trip.arrival_time,
+        )
+        if assistant_conflict["has_conflict"]:
+            raise ValueError(
+                f"❌ المساعد مشغول في رحلة أخرى: {assistant_conflict['conflict_range']}"
+            )
+
     
     # تعيين السعر
     if latest_price:
